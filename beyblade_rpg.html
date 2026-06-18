@@ -1,0 +1,2971 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Beyblade Metal Rio — Painel do Mestre</title>
+<style>
+:root{--bg:#07102a;--bg2:#0d1b4b;--bg3:#162260;--blue:#1E90FF;--cyan:#00B4D8;--red:#E63946;--gold:#FFD700;--text:#E8F0FF;--muted:#7A9ACA;--bord:#1E3A8A;--res:#27AE60;--eq:#9B59B6}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;min-height:100vh}
+nav{background:#04091e;border-bottom:2px solid var(--red);display:flex;align-items:center;padding:0 16px;position:sticky;top:0;z-index:100}
+.logo{font-size:15px;font-weight:900;letter-spacing:2px;text-transform:uppercase;padding:14px 16px 14px 0;border-right:1px solid var(--bord);margin-right:14px;white-space:nowrap}
+.logo span{color:var(--red)}
+.nav-tabs{display:flex;flex:1}
+.nav-tab{padding:14px 16px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap}
+.nav-tab:hover{color:var(--text)}
+.nav-tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+.nav-right{margin-left:auto;display:flex;gap:10px;align-items:center}
+.save-status{font-size:11px;color:var(--muted)}
+.save-status.ok{color:var(--res)}
+.screen{display:none;padding:20px;max-width:1200px;margin:0 auto}
+.screen.active{display:block}
+.btn{border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.5px;transition:all .15s}
+.btn:active{transform:scale(.96)}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:#f04550}
+.btn-blue{background:var(--bg3);color:var(--blue);border:1px solid var(--blue)}.btn-blue:hover{background:#1E90FF18}
+.btn-green{background:var(--bg3);color:var(--res);border:1px solid var(--res)}.btn-green:hover{background:#27AE6018}
+.btn-gold{background:var(--bg3);color:var(--gold);border:1px solid #FFD70055}.btn-gold:hover{background:#FFD70011}
+.btn-gray{background:var(--bg3);color:var(--muted);border:1px solid var(--bord)}.btn-gray:hover{background:var(--bg2)}
+.btn-sm{padding:5px 10px;font-size:11px}.btn-xs{padding:3px 8px;font-size:10px}
+.panel{background:var(--bg2);border:1px solid var(--bord);border-radius:12px;padding:16px}
+.panel-title{font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.panel-title::before{content:'';display:block;width:3px;height:14px;background:var(--red);border-radius:2px}
+.form-label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:5px;display:block}
+.form-input,.form-select{width:100%;background:var(--bg);border:1px solid var(--bord);border-radius:8px;color:var(--text);font-size:14px;padding:9px 12px}
+.form-input:focus,.form-select:focus{outline:none;border-color:var(--blue)}
+.form-row{margin-bottom:12px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:12px}
+.g4 label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);display:block;margin-bottom:4px}
+.num-in{width:100%;background:var(--bg);border:1px solid var(--bord);border-radius:8px;color:var(--text);font-size:14px;font-weight:700;text-align:center;padding:8px}
+.num-in:focus{outline:none;border-color:var(--blue)}
+textarea.form-input{resize:vertical;min-height:60px}
+.sep{border:none;border-top:1px solid var(--bord);margin:14px 0}
+.sec-title{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px}
+/* PILLS */
+.cat-pill{display:inline-block;border-radius:20px;padding:2px 10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px}
+.cat-player{background:#1E90FF22;color:var(--blue);border:1px solid var(--blue)}
+.cat-npc{background:#E6394622;color:var(--red);border:1px solid var(--red)}
+.cat-generico{background:#7A9ACA22;color:var(--muted);border:1px solid var(--muted)}
+.tp{display:inline-block;border-radius:12px;padding:2px 10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px}
+.tp-atk{background:#E6394618;color:var(--red);border:1px solid var(--red)}
+.tp-def{background:#1E90FF18;color:var(--blue);border:1px solid var(--blue)}
+.tp-eq{background:#9B59B618;color:var(--eq);border:1px solid var(--eq)}
+.tp-res{background:#27AE6018;color:var(--res);border:1px solid var(--res)}
+.level-tag{background:var(--bg);border:1px solid #FFD70055;color:var(--gold);border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700}
+/* TYPE SELECTOR */
+.type-sel{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:4px}
+.type-opt{background:var(--bg2);border:1px solid var(--bord);border-radius:8px;padding:8px;text-align:center;cursor:pointer;transition:all .15s;font-size:12px;font-weight:700}
+.type-opt:hover{border-color:var(--blue)}
+.sel-atk{border-color:var(--red)!important;background:#E6394615!important;color:var(--red)!important}
+.sel-def{border-color:var(--blue)!important;background:#1E90FF15!important;color:var(--blue)!important}
+.sel-eq{border-color:var(--eq)!important;background:#9B59B615!important;color:var(--eq)!important}
+.sel-res{border-color:var(--res)!important;background:#27AE6015!important;color:var(--res)!important}
+/* CAT SELECTOR */
+.cat-sel{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:4px}
+.cat-opt{border-radius:8px;padding:10px;text-align:center;cursor:pointer;transition:all .15s;font-size:12px;font-weight:700;background:var(--bg);border:1px solid var(--bord)}
+.cat-opt:hover{border-color:var(--blue)}
+.sel-player{border-color:var(--blue)!important;background:#1E90FF15!important;color:var(--blue)!important}
+.sel-npc{border-color:var(--red)!important;background:#E6394615!important;color:var(--red)!important}
+.sel-generico{border-color:var(--muted)!important;background:#7A9ACA15!important;color:var(--muted)!important}
+/* ROSTER */
+.roster-header{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.roster-header h2{font-size:18px;font-weight:800}
+.roster-filter{display:flex;gap:6px;flex-wrap:wrap}
+.filter-btn{background:var(--bg2);border:1px solid var(--bord);border-radius:20px;padding:5px 14px;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;text-transform:uppercase;letter-spacing:1px;transition:all .15s}
+.filter-btn:hover{border-color:var(--blue);color:var(--blue)}
+.filter-btn.active{background:var(--bg3);border-color:var(--blue);color:var(--blue)}
+.roster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+.roster-card{background:var(--bg2);border:1px solid var(--bord);border-radius:12px;overflow:hidden;transition:border-color .15s;border-top:3px solid var(--bord)}
+.roster-card:hover{border-color:var(--blue)}
+.rc-atk{border-top-color:var(--red)!important}
+.rc-def{border-top-color:var(--blue)!important}
+.rc-eq{border-top-color:var(--eq)!important}
+.rc-res{border-top-color:var(--res)!important}
+.rc-head{background:var(--bg3);padding:10px 14px;display:flex;justify-content:space-between;align-items:flex-start}
+.rc-names .blader{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.rc-names .bey{font-size:15px;font-weight:800;margin-top:1px}
+.rc-badges{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.rc-body{padding:10px 14px}
+.rc-attrs{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:8px}
+.rc-attr{background:var(--bg);border-radius:6px;padding:5px;text-align:center}
+.rc-al{font-size:8px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
+.rc-av{font-size:17px;font-weight:900;font-family:monospace}
+.rc-av.a{color:var(--red)}.rc-av.d{color:var(--blue)}.rc-av.v{color:var(--cyan)}.rc-av.e{color:var(--gold)}
+.rc-hp{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.hp-bar-mini{flex:1;height:8px;background:var(--bg);border-radius:4px;overflow:hidden;border:1px solid var(--bord)}
+.hp-bar-mini-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#1565C0,var(--cyan))}
+.rc-manobra{font-size:11px;color:var(--gold);margin-bottom:4px}
+.rc-foot{padding:8px 14px;border-top:1px solid var(--bord);display:flex;gap:6px;flex-wrap:wrap}
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted);grid-column:1/-1}
+.empty-state .icon{font-size:48px;margin-bottom:12px}
+/* REGISTER */
+.reg-layout{display:grid;grid-template-columns:1fr 340px;gap:16px;align-items:start}
+.reg-form{background:var(--bg2);border:1px solid var(--bord);border-radius:12px;padding:20px;border-top:3px solid var(--red)}
+.reg-title{font-size:18px;font-weight:800;margin-bottom:4px}
+.reg-sub{font-size:13px;color:var(--muted);margin-bottom:20px}
+.submit-btn{width:100%;padding:13px;background:linear-gradient(135deg,var(--red),#9B1C22);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:2px;cursor:pointer;margin-top:8px;transition:all .15s}
+.submit-btn:hover{filter:brightness(1.1)}
+.prev-card{background:var(--bg2);border:1px solid var(--bord);border-radius:12px;padding:16px;border-top:3px solid var(--bord);transition:border-top-color .3s}
+.prev-title{font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:12px}
+/* BATTLE SELECT */
+.bs-layout{display:grid;grid-template-columns:1fr 220px 1fr;gap:16px;align-items:start;margin-bottom:16px}
+.slot-box{background:var(--bg2);border:2px dashed var(--bord);border-radius:12px;padding:18px;text-align:center;min-height:170px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;transition:all .15s}
+.slot-box.filled{border-style:solid;border-color:var(--blue);text-align:left;justify-content:flex-start}
+.vs-center{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding-top:40px}
+.vs-big{font-size:30px;font-weight:900;color:var(--red)}
+.bs-roster-list{display:flex;flex-direction:column;gap:5px;max-height:480px;overflow-y:auto;padding-right:4px}
+.bs-roster-list::-webkit-scrollbar{width:4px}
+.bs-roster-list::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:2px}
+.bs-sec{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);padding:4px 0 6px;display:flex;align-items:center;gap:8px}
+.bs-sec::after{content:'';flex:1;height:1px;background:var(--bord)}
+.bs-item{background:var(--bg3);border:1px solid var(--bord);border-radius:8px;padding:8px 10px;cursor:pointer;transition:all .15s;display:flex;justify-content:space-between;align-items:center}
+.bs-item:hover{border-color:var(--cyan);background:#00B4D810}
+.bs-iname{font-size:13px;font-weight:700}
+.bs-isub{font-size:11px;color:var(--muted)}
+.ass-btns{display:flex;gap:4px}
+.ass-btn{padding:4px 9px;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;text-transform:uppercase;transition:all .15s}
+.ass-1{background:#1E90FF22;color:var(--blue);border:1px solid var(--blue)}.ass-1:hover{background:#1E90FF44}
+.ass-2{background:#E6394622;color:var(--red);border:1px solid var(--red)}.ass-2:hover{background:#E6394644}
+.start-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--red),#9B1C22);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:2px;cursor:pointer;transition:all .15s}
+.start-btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.start-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+/* BATTLE */
+.battle-area{display:grid;grid-template-columns:1fr 90px 1fr;gap:12px;align-items:start;margin-bottom:16px}
+.bey-card{background:var(--bg2);border:1px solid var(--bord);border-radius:12px;overflow:hidden;border-top:3px solid var(--bord)}
+.bey-card.type-atk{border-top-color:var(--red)}.bey-card.type-def{border-top-color:var(--blue)}
+.bey-card.type-eq{border-top-color:var(--eq)}.bey-card.type-res{border-top-color:var(--res)}
+.card-head{background:var(--bg3);padding:10px 14px;display:flex;justify-content:space-between;align-items:flex-start}
+.blader-name{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:2px}
+.bey-name{font-size:16px;font-weight:800}
+.meta-row{display:flex;gap:5px;margin-top:4px;flex-wrap:wrap}
+.card-body{padding:12px 14px}
+.stat-label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:4px;display:flex;justify-content:space-between}
+.hp-bar-wrap{background:#0a1540;border-radius:6px;height:18px;overflow:hidden;margin-bottom:10px;border:1px solid var(--bord)}
+.hp-bar{height:100%;border-radius:6px;transition:width .5s,background .5s;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;font-size:12px;font-weight:700}
+.hp-bar.high{background:linear-gradient(90deg,#1565C0,var(--cyan))}
+.hp-bar.mid{background:linear-gradient(90deg,#E65100,#FFB74D)}
+.hp-bar.low{background:linear-gradient(90deg,#B71C1C,var(--red));animation:pulse-red 1s infinite}
+@keyframes pulse-red{0%,100%{opacity:1}50%{opacity:.7}}
+.arm-bar-wrap{background:#0a1540;border-radius:6px;height:9px;overflow:hidden;margin-bottom:11px;border:1px solid var(--bord)}
+.arm-bar{height:100%;border-radius:6px;background:linear-gradient(90deg,#1E3A8A,#3B82F6);transition:width .4s}
+.shield-bar-wrap{background:#0a1540;border-radius:6px;height:13px;overflow:hidden;margin-bottom:11px;border:1px solid #00B4D855;display:none}
+.shield-bar-wrap.active{display:block}
+.shield-bar{height:100%;border-radius:6px;background:linear-gradient(90deg,#0E7490,var(--cyan));transition:width .4s;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;font-size:10px;font-weight:700;color:#04212b}
+.attrs-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:9px}
+.attr-box{background:var(--bg);border:1px solid var(--bord);border-radius:8px;padding:7px 9px;display:flex;align-items:center;gap:7px}
+.attr-icon{font-size:14px;width:20px;text-align:center}
+.attr-name{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
+.attr-val{font-size:18px;font-weight:900;font-family:monospace;line-height:1}
+.attr-val.ac{color:var(--red)}.attr-val.dc{color:var(--blue)}.attr-val.vc{color:var(--cyan)}.attr-val.ec{color:var(--gold)}
+.energy-row{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:9px}
+.energy-dot{width:19px;height:19px;border-radius:50%;background:var(--bg3);border:2px solid var(--bord);cursor:pointer;transition:all .2s}
+.energy-dot.filled{background:var(--gold);border-color:var(--gold);box-shadow:0 0 6px #FFD70077}
+.eb-row{display:flex;gap:4px;flex-wrap:wrap}
+.eb-dot{width:16px;height:16px;border-radius:50%;background:var(--bg3);border:2px solid var(--bord);cursor:pointer;transition:all .2s}
+.eb-dot.filled{background:var(--cyan);border-color:var(--cyan);box-shadow:0 0 5px #00B4D877}
+.presas-tag{background:#FFD70011;border:1px solid #FFD70044;color:var(--gold);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;text-align:center;margin-top:9px;display:block}
+.presas-tag.active{background:var(--gold);color:#0A0F2E;box-shadow:0 0 14px #FFD70055}
+.card-controls{padding:9px 14px;border-top:1px solid var(--bord);display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.dmg-input{width:50px;background:var(--bg);border:1px solid var(--bord);border-radius:8px;color:var(--text);font-size:14px;font-weight:700;text-align:center;padding:6px}
+.dmg-input:focus{outline:none;border-color:var(--blue)}
+.vs-col{display:flex;flex-direction:column;align-items:center;gap:9px;padding-top:44px}
+.vs-text{font-size:24px;font-weight:900;color:var(--red);text-shadow:0 0 20px #E6394655}
+.arena-ctrls{background:var(--bg2);border:1px solid var(--bord);border-radius:12px;padding:11px;display:flex;flex-direction:column;gap:7px;align-items:center;width:100%}
+.turn-num{font-size:32px;font-weight:900;color:var(--blue);font-family:monospace;line-height:1}
+.turn-sub{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--muted)}
+.arena-btn{width:100%;text-align:center}
+.init-row{display:flex;justify-content:space-between;align-items:center;background:var(--bg);border-radius:6px;padding:5px 8px;font-size:12px;margin-bottom:3px;border-left:3px solid transparent;width:100%}
+.init-row.active{border-left-color:var(--cyan)}
+.bottom-area{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.dice-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:9px}
+.dice-btn{background:var(--bg3);border:1px solid var(--bord);border-radius:8px;color:var(--cyan);font-size:13px;font-weight:700;padding:9px 4px;cursor:pointer;text-align:center;transition:all .15s;font-family:monospace}
+.dice-btn:hover{border-color:var(--cyan);background:#00B4D810}
+.dice-btn.selected{border-color:var(--cyan);background:#00B4D820;box-shadow:0 0 10px #00B4D840}
+.dice-config{display:flex;gap:7px;align-items:center;margin-bottom:9px}
+.dice-config label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;white-space:nowrap}
+.roll-btn{width:100%;padding:11px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--red),#9B1C22);color:#fff;font-size:14px;font-weight:900;cursor:pointer;text-transform:uppercase;letter-spacing:2px;margin-bottom:9px;transition:all .15s}
+.roll-btn:hover{filter:brightness(1.15)}.roll-btn:active{transform:scale(.97)}
+.roll-result{background:var(--bg);border:1px solid var(--bord);border-radius:10px;padding:12px;text-align:center;min-height:68px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.roll-expr{font-size:11px;color:var(--muted);margin-bottom:3px}
+.roll-number{font-size:38px;font-weight:900;font-family:monospace;color:var(--cyan);line-height:1}
+.roll-number.rolling{animation:spin-n .35s ease}
+@keyframes spin-n{0%{opacity:0;transform:scale(.5)}100%{opacity:1;transform:scale(1)}}
+.roll-detail{font-size:12px;color:var(--muted);margin-top:3px}
+.actions-list{display:flex;flex-direction:column;gap:5px;max-height:300px;overflow-y:auto}
+.action-item{background:var(--bg);border:1px solid var(--bord);border-radius:8px;padding:7px 10px;display:flex;align-items:flex-start;gap:7px}
+.action-cost{min-width:30px;height:19px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;text-transform:uppercase;flex-shrink:0;margin-top:1px}
+.cost-free{background:#27AE6020;color:var(--res);border:1px solid var(--res)}
+.cost-1e{background:#FFD70020;color:var(--gold);border:1px solid #FFD70055}
+.cost-2e{background:#E6394620;color:var(--red);border:1px solid var(--red)}
+.action-name{font-size:12px;font-weight:700}
+.action-roll{font-size:11px;color:var(--cyan);font-family:monospace;font-weight:700}
+.action-desc{font-size:11px;color:var(--muted);line-height:1.4;margin-top:2px}
+.log-list{display:flex;flex-direction:column;gap:5px;max-height:360px;overflow-y:auto;padding-right:4px}
+.log-list::-webkit-scrollbar{width:4px}
+.log-list::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:2px}
+.log-entry{background:var(--bg);border-left:3px solid var(--bord);border-radius:0 6px 6px 0;padding:6px 10px;font-size:12px;line-height:1.4}
+.log-entry.dmg{border-left-color:var(--red)}.log-entry.heal{border-left-color:var(--res)}
+.log-entry.roll{border-left-color:var(--cyan)}.log-entry.event{border-left-color:var(--gold)}
+.log-turn{font-size:10px;color:var(--muted)}
+.lv{font-weight:700;font-family:monospace}.lv.red{color:var(--red)}.lv.cyan{color:var(--cyan)}.lv.green{color:var(--res)}.lv.gold{color:var(--gold)}
+.ko-overlay{display:none;position:fixed;inset:0;background:#00000099;z-index:300;align-items:center;justify-content:center;flex-direction:column;gap:20px}
+.ko-overlay.open{display:flex}
+.ko-text{font-size:64px;font-weight:900;color:var(--red);text-shadow:0 0 40px #E6394699;letter-spacing:4px}
+.ko-sub{font-size:22px;color:var(--text)}
+.ko-btn{padding:12px 32px;background:var(--bg2);border:2px solid var(--blue);border-radius:12px;color:var(--blue);font-size:14px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:2px}
+.modal-overlay{display:none;position:fixed;inset:0;background:#00000088;z-index:200;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--bord);border-radius:16px;padding:22px;min-width:300px;max-width:520px;width:90%;position:relative;border-top:3px solid var(--red);max-height:90vh;overflow-y:auto}
+.modal-title{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px}
+.modal-close{position:absolute;top:12px;right:16px;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer}
+.ficha-tabs{display:flex;gap:7px;margin-bottom:14px}
+.tab-btn{background:var(--bg3);border:1px solid var(--bord);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;text-transform:uppercase;letter-spacing:1px}
+.tab-btn.active{border-color:var(--blue);color:var(--blue)}
+.tab-content{display:none}.tab-content.active{display:block}
+.manobra-item{background:var(--bg3);border-radius:8px;padding:10px 12px;margin-bottom:8px}
+.manobra-name{font-size:13px;font-weight:700;color:var(--gold);margin-bottom:2px}
+.manobra-desc{font-size:12px;color:var(--muted)}
+.manobra-uses{font-size:11px;color:var(--cyan);margin-top:3px}
+.man-dot{width:13px;height:13px;border-radius:50%;background:var(--gold);cursor:pointer;display:inline-block;margin-right:4px;margin-top:5px;transition:all .2s}
+.man-dot.used{background:var(--bg);border:1px solid var(--gold)}
+.hab-item{background:var(--bg);border:1px solid var(--bord);border-radius:6px;padding:8px 10px;margin-bottom:5px}
+.hab-name{font-size:12px;font-weight:700}.hab-desc{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.4}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--bg2);border:1px solid var(--bord);border-radius:10px;padding:12px 18px;font-size:13px;font-weight:600;z-index:400;transform:translateY(80px);opacity:0;transition:all .3s;pointer-events:none}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ok{border-color:var(--res);color:var(--res)}.toast.err{border-color:var(--red);color:var(--red)}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:3px}
+@media(max-width:760px){.battle-area,.bs-layout,.reg-layout{grid-template-columns:1fr}.bottom-area{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- ============ PLAYER MODE OVERLAY ============ -->
+<div id="playerOverlay" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:500;overflow-y:auto">
+
+  <!-- PLAYER LOGIN GATE -->
+  <div id="playerGate" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px">
+    <div style="background:var(--bg2);border:1px solid var(--bord);border-top:3px solid var(--red);border-radius:16px;padding:32px;width:100%;max-width:380px;text-align:center">
+      <div style="font-size:22px;font-weight:900;letter-spacing:1px;margin-bottom:4px">BEYBLADE <span style="color:var(--red)">METAL RIO</span></div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:24px">Digite seu PIN de 4 dígitos para acessar seu Bey</div>
+      <input id="pin-input" class="form-input" type="text" inputmode="numeric" maxlength="4" placeholder="• • • •" style="text-align:center;font-size:28px;font-weight:900;letter-spacing:12px;padding:14px;margin-bottom:16px" onkeydown="if(event.key==='Enter')playerLogin()" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+      <button class="submit-btn" onclick="playerLogin()">🔑 Entrar</button>
+      <div id="pin-error" style="color:var(--red);font-size:12px;margin-top:10px;display:none">PIN inválido. Verifique com o mestre.</div>
+      <button class="btn btn-gray btn-sm" style="width:100%;margin-top:16px" onclick="closePlayerOverlay()">← Voltar ao Painel do Mestre</button>
+    </div>
+  </div>
+
+  <!-- PLAYER BATTLE VIEW -->
+  <div id="playerView" style="display:none;padding:16px;max-width:700px;margin:0 auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-size:14px;font-weight:900;letter-spacing:1px">BEYBLADE <span style="color:var(--red)">MR</span></div>
+      <button class="btn btn-gray btn-sm" onclick="playerLogout()">🚪 Sair</button>
+    </div>
+
+    <!-- PENDING REWARD BANNER -->
+    <div id="pv-reward-banner" style="display:none;background:linear-gradient(135deg,#9B1C22,#5a0f12);border:1px solid var(--gold);border-radius:12px;padding:14px 16px;margin-bottom:16px;cursor:pointer" onclick="openPlayerRewardFlow()">
+      <div style="font-size:13px;font-weight:900;color:var(--gold);display:flex;align-items:center;gap:8px">🎁 Você tem uma recompensa de level up para escolher! <span style="margin-left:auto;font-size:11px">Toque aqui →</span></div>
+    </div>
+
+    <div id="player-no-battle" style="text-align:center;padding:60px 20px;color:var(--muted)">
+      <div style="font-size:48px;margin-bottom:12px">🌀</div>
+      <p>Nenhum duelo em andamento.<br>Aguarde o mestre iniciar a batalha.</p>
+    </div>
+
+    <div id="player-battle-content" style="display:none">
+      <!-- TURN INFO -->
+      <div style="text-align:center;margin-bottom:14px">
+        <span class="level-tag" id="pv-turn">Turno 1</span>
+      </div>
+
+      <!-- YOUR BEY -->
+      <div class="bey-card" id="pv-own-card" style="margin-bottom:14px">
+        <div class="card-head">
+          <div>
+            <div class="blader-name" id="pv-own-blader"></div>
+            <div class="bey-name" id="pv-own-bey"></div>
+            <div class="meta-row"><span class="tp" id="pv-own-type"></span><span style="font-size:11px;color:var(--muted)" id="pv-own-classe"></span></div>
+          </div>
+          <div class="level-tag" id="pv-own-nivel">Nv 1</div>
+        </div>
+        <div class="card-body">
+          <div class="stat-label"><span>SEU HP</span><span id="pv-own-hp-lbl">25/25</span></div>
+          <div class="hp-bar-wrap"><div class="hp-bar high" id="pv-own-hp-bar" style="width:100%">25</div></div>
+          <div class="shield-bar-wrap" id="pv-own-shield-wrap"><div class="shield-bar" id="pv-own-shield-bar" style="width:0%"></div></div>
+          <div class="stat-label"><span>ARMADURA</span><span id="pv-own-arm-lbl">0/0</span></div>
+          <div class="arm-bar-wrap"><div class="arm-bar" id="pv-own-arm-bar" style="width:0%"></div></div>
+          <div class="attrs-grid">
+            <div class="attr-box"><div class="attr-icon">⚔️</div><div><div class="attr-name">Ataque</div><div class="attr-val ac" id="pv-own-atq">0</div></div></div>
+            <div class="attr-box"><div class="attr-icon">🛡️</div><div><div class="attr-name">Defesa</div><div class="attr-val dc" id="pv-own-def">0</div></div></div>
+            <div class="attr-box"><div class="attr-icon">💨</div><div><div class="attr-name">Velocidade</div><div class="attr-val vc" id="pv-own-vel">0</div></div></div>
+            <div class="attr-box"><div class="attr-icon">⚡</div><div><div class="attr-name">Energia</div><div class="attr-val ec" id="pv-own-eng">0</div></div></div>
+          </div>
+          <div class="stat-label" style="margin-bottom:5px"><span>ENERGIA</span></div>
+          <div class="energy-row" id="pv-own-eng-dots"></div>
+          <div class="stat-label" style="margin-bottom:5px;margin-top:7px"><span>ESPÍRITO BLADER</span></div>
+          <div class="eb-row" id="pv-own-eb-dots"></div>
+          <div class="presas-tag" id="pv-own-presas">⭕ Presas do Coração — Inativo</div>
+        </div>
+      </div>
+
+      <!-- VS -->
+      <div style="text-align:center;font-size:22px;font-weight:900;color:var(--red);margin:10px 0">VS</div>
+
+      <!-- ENEMY BEY (hidden info) -->
+      <div class="bey-card" style="margin-bottom:16px;border-top-color:var(--bord)">
+        <div class="card-head">
+          <div>
+            <div class="blader-name">OPONENTE</div>
+            <div class="bey-name">??? ??? ???</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="stat-label"><span>VIDA ESTIMADA</span></div>
+          <div class="hp-bar-wrap"><div class="hp-bar high" id="pv-enemy-hp-bar" style="width:100%"></div></div>
+          <div style="text-align:center;color:var(--muted);font-size:12px;margin-top:8px">Tipo, atributos e energia do oponente são desconhecidos.</div>
+        </div>
+      </div>
+
+      <!-- TURN STATUS -->
+      <div id="pv-turn-status" style="text-align:center;background:var(--bg2);border:1px solid var(--cyan);border-radius:10px;padding:10px;margin-bottom:14px">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted)">Status do turno</div>
+        <div id="pv-turn-status-text" style="font-size:14px;font-weight:900;color:var(--cyan)">—</div>
+      </div>
+
+      <!-- YOUR ACTIONS -->
+      <div class="panel" style="margin-bottom:14px">
+        <div class="panel-title">Suas Ações & Reações</div>
+        <div id="pv-actions-list" style="display:flex;flex-direction:column;gap:6px"></div>
+      </div>
+
+      <!-- ABILITIES -->
+      <div class="panel" style="margin-bottom:14px">
+        <div class="panel-title">Suas Habilidades — <span id="pv-cls-name"></span></div>
+        <div id="pv-habs"></div>
+      </div>
+
+      <!-- MANOBRA -->
+      <div class="panel" style="margin-bottom:14px">
+        <div class="panel-title">Manobra Especial</div>
+        <div class="manobra-item">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+            <div class="manobra-name" id="pv-man-name"></div>
+            <button class="btn btn-gold btn-xs" id="pv-man-use-btn" onclick="usePlayerManobra()">Usar</button>
+          </div>
+          <div class="manobra-desc" id="pv-man-desc"></div>
+          <div class="manobra-uses" id="pv-man-uses"></div>
+        </div>
+      </div>
+
+      <!-- BATTLE LOG (read-only) -->
+      <div class="panel">
+        <div class="panel-title">Log de Dano</div>
+        <div class="log-list" id="pv-log"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLAYER REWARD RESOLUTION FLOW -->
+  <div id="playerRewardFlow" style="display:none;min-height:100vh;align-items:center;justify-content:center;padding:20px">
+    <div style="background:var(--bg2);border:1px solid var(--bord);border-top:3px solid var(--gold);border-radius:16px;padding:28px;width:100%;max-width:460px">
+      <div style="text-align:center;margin-bottom:18px">
+        <div style="font-size:40px;margin-bottom:6px">🏆</div>
+        <div style="font-size:18px;font-weight:900;color:var(--gold)" id="prf-title">Recompensa de Level Up</div>
+        <div style="font-size:12px;color:var(--muted)" id="prf-sub"></div>
+      </div>
+      <div id="prf-body"></div>
+      <button class="btn btn-gray" style="width:100%;margin-top:16px" onclick="closePlayerRewardFlow()">← Voltar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<nav>
+  <div class="logo">BEYBLADE <span>MR</span></div>
+  <div class="nav-tabs">
+    <div class="nav-tab active" onclick="goScreen('roster')">Roster</div>
+    <div class="nav-tab" onclick="goScreen('register')">Cadastrar</div>
+    <div class="nav-tab" onclick="goScreen('battle-select')">Duelo</div>
+    <div class="nav-tab" onclick="goScreen('pos-sessao')">📊 Pós-Sessão</div>
+    <div class="nav-tab" id="nav-battle" style="display:none" onclick="goScreen('battle')">⚔️ Em batalha</div>
+  </div>
+  <div class="nav-right">
+    <span class="save-status" id="saveStatus">Carregando...</span>
+    <button class="btn btn-gray btn-sm" onclick="exportBackup()" title="Baixa um arquivo JSON com todos os dados">⬇️ Backup</button>
+    <button class="btn btn-gray btn-sm" onclick="document.getElementById('importFile').click()" title="Restaura dados de um backup JSON">⬆️ Importar</button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importBackup(event)">
+    <button class="btn btn-gray btn-sm" onclick="openPlayerGate()">👤 Acesso Player</button>
+  </div>
+</nav>
+
+<!-- ROSTER -->
+<div class="screen active" id="screen-roster">
+  <div class="roster-header">
+    <h2>Roster de Bladers</h2>
+    <div class="roster-filter">
+      <div class="filter-btn active" onclick="filterRoster('all',this)">Todos</div>
+      <div class="filter-btn" onclick="filterRoster('player',this)">Players</div>
+      <div class="filter-btn" onclick="filterRoster('npc',this)">NPCs</div>
+      <div class="filter-btn" onclick="filterRoster('generico',this)">Genéricos</div>
+    </div>
+    <button class="btn btn-red" style="margin-left:auto" onclick="goScreen('register')">+ Cadastrar</button>
+  </div>
+  <div class="roster-grid" id="rosterGrid"><div class="empty-state"><div class="icon">🌀</div><p>Carregando...</p></div></div>
+</div>
+
+<!-- REGISTER -->
+<div class="screen" id="screen-register">
+  <div class="reg-layout">
+    <div class="reg-form">
+      <div class="reg-title" id="reg-title">Cadastrar Blader</div>
+      <div class="reg-sub" id="reg-sub">Preencha os dados do personagem e seu Bey</div>
+      <input type="hidden" id="edit-id">
+      <div class="form-row">
+        <label class="form-label">Categoria</label>
+        <div class="cat-sel">
+          <div class="cat-opt sel-player" id="co-player" onclick="selCat('player')">👤 Player</div>
+          <div class="cat-opt" id="co-npc" onclick="selCat('npc')">🎭 NPC</div>
+          <div class="cat-opt" id="co-generico" onclick="selCat('generico')">🤖 Genérico</div>
+        </div>
+        <input type="hidden" id="f-cat" value="player">
+      </div>
+      <div class="sep"></div>
+      <div class="sec-title">Identidade</div>
+      <div class="g2">
+        <div><label class="form-label">Nome do Blader</label><input class="form-input" id="f-blader" placeholder="Ex: Kael" oninput="updPrev()"></div>
+        <div><label class="form-label">Nome do Bey</label><input class="form-input" id="f-bey" placeholder="Ex: Storm Pegasus" oninput="updPrev()"></div>
+      </div>
+      <div class="g2">
+        <div><label class="form-label">Classe</label><select class="form-select" id="f-classe" onchange="updPrev()"><option value="marrento">Marrento</option><option value="nerdola">Nerdola</option><option value="determinado">Determinado</option><option value="famosinho">Famosinho</option></select></div>
+        <div><label class="form-label">Nível</label><input class="num-in" id="f-nivel" type="number" value="1" min="1" max="10" oninput="updPrev()"></div>
+      </div>
+      <div class="sep"></div>
+      <div class="sec-title">Bey</div>
+      <div class="form-row">
+        <label class="form-label">Tipo do Bey</label>
+        <div class="type-sel">
+          <div class="type-opt sel-atk" id="to-atk" onclick="selType('atk')">⚔️ Ataque</div>
+          <div class="type-opt" id="to-def" onclick="selType('def')">🛡️ Defesa</div>
+          <div class="type-opt" id="to-eq" onclick="selType('eq')">⚖️ Equilíbrio</div>
+          <div class="type-opt" id="to-res" onclick="selType('res')">🔄 Resistência</div>
+        </div>
+        <input type="hidden" id="f-type" value="atk">
+      </div>
+      <div class="g2">
+        <div><label class="form-label">Constelação</label><input class="form-input" id="f-constelacao" placeholder="Ex: Pégaso"></div>
+        <div><label class="form-label">Estação</label><select class="form-select" id="f-estacao"><option value="">Selecionar</option><option>Primavera</option><option>Verão</option><option>Outono</option><option>Inverno</option></select></div>
+      </div>
+      <div class="sep"></div>
+      <div class="sec-title">Atributos</div>
+      <div class="g4">
+        <div><label>ATQ</label><input class="num-in" id="f-atq" type="number" value="3" min="0" max="20" oninput="updPrev()"></div>
+        <div><label>DEF</label><input class="num-in" id="f-def" type="number" value="3" min="0" max="20" oninput="updPrev()"></div>
+        <div><label>VEL</label><input class="num-in" id="f-vel" type="number" value="3" min="0" max="20" oninput="updPrev()"></div>
+        <div><label>ENG</label><input class="num-in" id="f-eng" type="number" value="5" min="5" max="20" oninput="updPrev()"></div>
+      </div>
+      <div class="g2">
+        <div><label class="form-label">HP Máximo</label><input class="num-in" id="f-hp" type="number" value="25" min="1" max="100" oninput="updPrev()"></div>
+        <div><label class="form-label">EB Máximo</label><input class="num-in" id="f-eb" type="number" value="10" min="1" max="20"></div>
+      </div>
+      <div class="sep"></div>
+      <div class="sec-title">Manobra Especial</div>
+      <div class="g2">
+        <div><label class="form-label">Nome da Manobra</label><input class="form-input" id="f-manobra" placeholder="Ex: Pegasus Starblast"></div>
+        <div><label class="form-label">Usos por duelo</label><input class="num-in" id="f-man-usos" type="number" value="2" min="1" max="10"></div>
+      </div>
+      <div class="form-row"><label class="form-label">Descrição da Manobra</label><textarea class="form-input" id="f-man-desc" placeholder="Descreva o efeito..."></textarea></div>
+      <div class="sep"></div>
+      <div class="sec-title">Personalidade (opcional)</div>
+      <div class="g2">
+        <div><label class="form-label">Idade</label><input class="form-input" id="f-idade" type="number" placeholder="14" min="12" max="20"></div>
+        <div><label class="form-label">Ambição</label><input class="form-input" id="f-ambicao" placeholder="O que quer conquistar?"></div>
+      </div>
+      <div class="form-row"><label class="form-label">Personalidade</label><textarea class="form-input" id="f-personalidade" placeholder="Como é esse blader?"></textarea></div>
+      <button class="submit-btn" id="submit-btn" onclick="saveBlader()">💾 Salvar Blader</button>
+      <button class="btn btn-gray" id="cancel-btn" style="width:100%;margin-top:8px;display:none" onclick="cancelEdit()">✕ Cancelar edição</button>
+    </div>
+    <!-- PREVIEW -->
+    <div>
+      <div class="prev-card" id="prevCard">
+        <div class="prev-title">Pré-visualização</div>
+        <div style="font-size:19px;font-weight:900;margin-bottom:2px" id="prev-bey">—</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px" id="prev-blader">Blader</div>
+        <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap" id="prev-tags"></div>
+        <div class="rc-attrs" style="margin-bottom:8px">
+          <div class="rc-attr"><div class="rc-al">ATQ</div><div class="rc-av a" id="prev-atq">3</div></div>
+          <div class="rc-attr"><div class="rc-al">DEF</div><div class="rc-av d" id="prev-def">3</div></div>
+          <div class="rc-attr"><div class="rc-al">VEL</div><div class="rc-av v" id="prev-vel">3</div></div>
+          <div class="rc-attr"><div class="rc-al">ENG</div><div class="rc-av e" id="prev-eng">5</div></div>
+        </div>
+        <div class="rc-hp">
+          <span style="font-size:10px;color:var(--muted);min-width:22px">HP</span>
+          <div class="hp-bar-mini"><div class="hp-bar-mini-fill" style="width:100%"></div></div>
+          <span style="font-size:11px;color:var(--muted)" id="prev-hp">25</span>
+        </div>
+      </div>
+      <div class="panel" style="margin-top:12px">
+        <div class="panel-title">Habilidades — <span id="prev-cls-name">Marrento</span></div>
+        <div id="prev-habs"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BATTLE SELECT -->
+<div class="screen" id="screen-battle-select">
+  <div style="margin-bottom:16px;display:flex;align-items:center;gap:12px"><h2 style="font-size:18px;font-weight:800">Configurar Duelo</h2></div>
+  <div class="bs-layout">
+    <div>
+      <div class="sec-title" style="color:var(--blue);margin-bottom:8px">— Combatente 1</div>
+      <div class="slot-box" id="slot1-box"><div style="font-size:36px;color:var(--bord)">🌀</div><div style="font-size:13px;color:var(--muted)">Selecione da lista</div></div>
+    </div>
+    <div class="vs-center"><div class="vs-big">VS</div><button class="btn btn-gray btn-sm" onclick="clearSlots()">↺ Limpar</button></div>
+    <div>
+      <div class="sec-title" style="color:var(--red);margin-bottom:8px">— Combatente 2</div>
+      <div class="slot-box" id="slot2-box"><div style="font-size:36px;color:var(--bord)">🌀</div><div style="font-size:13px;color:var(--muted)">Selecione da lista</div></div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">
+    <div class="panel">
+      <div class="panel-title">Selecionar Blader</div>
+      <div class="bs-roster-list" id="bs-list"></div>
+    </div>
+    <div>
+      <div class="panel" style="margin-bottom:12px">
+        <div class="panel-title">Configurações</div>
+        <div class="form-row"><label class="form-label">Modo</label><select class="form-select" id="battle-mode"><option value="1v1">1v1 — Duelo</option><option value="torneio">Torneio</option></select></div>
+      </div>
+      <button class="start-btn" id="startBtn" onclick="startBattle()" disabled>⚡ LET IT RIP!</button>
+    </div>
+  </div>
+</div>
+
+<!-- BATTLE -->
+<div class="screen" id="screen-battle">
+  <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap">
+    <span class="cat-pill cat-player" id="b-mode-badge">1v1</span>
+    <span class="level-tag" id="b-turn-badge">Turno 1</span>
+    <button class="btn btn-blue btn-sm" onclick="openFichaModal()">📋 Fichas</button>
+    <button class="btn btn-gray btn-sm" onclick="goScreen('battle-select')">← Voltar</button>
+  </div>
+  <div class="battle-area">
+    <!-- P1 -->
+    <div id="card1" class="bey-card">
+      <div class="card-head" style="cursor:pointer" onclick="setActiveTurn(1)" title="Clique para marcar como turno ativo">
+        <div><div class="blader-name" id="h-blader1"></div><div class="bey-name" id="h-bey1"></div><div class="meta-row"><span class="tp" id="h-type1"></span><span style="font-size:11px;color:var(--muted)" id="h-classe1"></span></div></div>
+        <div class="level-tag" id="h-nivel1">Nv 1</div>
+      </div>
+      <div class="card-body">
+        <div class="stat-label"><span>VIDA</span><span id="hp1-lbl">25/25</span></div>
+        <div class="hp-bar-wrap"><div class="hp-bar high" id="hp1-bar" style="width:100%">25</div></div>
+        <div class="shield-bar-wrap" id="shield1-wrap"><div class="shield-bar" id="shield1-bar" style="width:0%"></div></div>
+        <div class="stat-label"><span>ARMADURA</span><span id="arm1-lbl">0/0</span></div>
+        <div class="arm-bar-wrap"><div class="arm-bar" id="arm1-bar" style="width:0%"></div></div>
+        <div class="attrs-grid">
+          <div class="attr-box"><div class="attr-icon">⚔️</div><div><div class="attr-name">Ataque</div><div class="attr-val ac" id="a1-atq">0</div></div></div>
+          <div class="attr-box"><div class="attr-icon">🛡️</div><div><div class="attr-name">Defesa</div><div class="attr-val dc" id="a1-def">0</div></div></div>
+          <div class="attr-box"><div class="attr-icon">💨</div><div><div class="attr-name">Velocidade</div><div class="attr-val vc" id="a1-vel">0</div></div></div>
+          <div class="attr-box"><div class="attr-icon">⚡</div><div><div class="attr-name">Energia</div><div class="attr-val ec" id="a1-eng">0</div></div></div>
+        </div>
+        <div class="stat-label" style="margin-bottom:5px"><span>ENERGIA</span></div>
+        <div class="energy-row" id="eng1-dots"></div>
+        <div class="stat-label" style="margin-bottom:5px;margin-top:7px"><span>ESPÍRITO BLADER</span></div>
+        <div class="eb-row" id="eb1-dots"></div>
+        <div class="presas-tag" id="presas1" onclick="togglePresas(1)">⭕ Presas do Coração — Inativo</div>
+      </div>
+      <div class="card-controls">
+        <input class="dmg-input" id="dmg1" type="number" value="0" min="0">
+        <button class="btn btn-red btn-sm" onclick="applyDmg(1)">💥 Dano</button>
+        <button class="btn btn-green btn-sm" onclick="applyHeal(1)">💚 Curar</button>
+        <button class="btn btn-blue btn-sm" onclick="rollArmor(1)">🎲 Armadura</button>
+        <button class="btn btn-gold btn-sm" onclick="applyRecarga(1)">🔋 Recarga</button>
+        <button class="btn btn-gray btn-sm" onclick="openStatusManual(1)">✨ Status</button>
+      </div>
+    </div>
+    <!-- VS -->
+    <div class="vs-col">
+      <div class="vs-text">VS</div>
+      <div class="arena-ctrls">
+        <div class="turn-sub">TURNO</div>
+        <div class="turn-num" id="turn-num">1</div>
+        <div id="active-turn-indicator" style="width:100%;text-align:center;background:var(--bg);border:1px solid var(--cyan);border-radius:8px;padding:7px 10px;margin:2px 0">
+          <div style="font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted)">Turno de</div>
+          <div id="active-turn-name" style="font-size:14px;font-weight:900;color:var(--cyan)">—</div>
+        </div>
+        <button class="btn btn-gray arena-btn btn-sm" onclick="passTurn()">⇄ Passar a vez</button>
+        <button class="btn btn-blue arena-btn btn-sm" onclick="nextTurn()">→ Próx. turno</button>
+        <hr style="width:100%;border:none;border-top:1px solid var(--bord)">
+        <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);align-self:flex-start">Iniciativa</div>
+        <div id="ir1" class="init-row"><span id="in1">P1</span><span id="iv1">—</span></div>
+        <div id="ir2" class="init-row"><span id="in2">P2</span><span id="iv2">—</span></div>
+        <button class="btn btn-blue arena-btn btn-sm" onclick="rollInit()">🎲 Iniciativa</button>
+      </div>
+    </div>
+    <!-- P2 -->
+    <div id="card2" class="bey-card">
+      <div class="card-head" style="cursor:pointer" onclick="setActiveTurn(2)" title="Clique para marcar como turno ativo">
+        <div><div class="blader-name" id="h-blader2"></div><div class="bey-name" id="h-bey2"></div><div class="meta-row"><span class="tp" id="h-type2"></span><span style="font-size:11px;color:var(--muted)" id="h-classe2"></span></div></div>
+        <div class="level-tag" id="h-nivel2">Nv 1</div>
+      </div>
+      <div class="card-body">
+        <div class="stat-label"><span>VIDA</span><span id="hp2-lbl">25/25</span></div>
+        <div class="hp-bar-wrap"><div class="hp-bar high" id="hp2-bar" style="width:100%">25</div></div>
+        <div class="shield-bar-wrap" id="shield2-wrap"><div class="shield-bar" id="shield2-bar" style="width:0%"></div></div>
+        <div class="stat-label"><span>ARMADURA</span><span id="arm2-lbl">0/0</span></div>
+        <div class="arm-bar-wrap"><div class="arm-bar" id="arm2-bar" style="width:0%"></div></div>
+        <div class="attrs-grid">
+          <div class="attr-box"><div class="attr-icon">⚔️</div><div><div class="attr-name">Ataque</div><div class="attr-val ac" id="a2-atq">0</div></div></div>
+          <div class="attr-box"><div class="attr-icon">🛡️</div><div><div class="attr-name">Defesa</div><div class="attr-val dc" id="a2-def">0</div></div></div>
+          <div class="attr-box"><div class="attr-icon">💨</div><div><div class="attr-name">Velocidade</div><div class="attr-val vc" id="a2-vel">0</div></div></div>
+          <div class="attr-box"><div class="attr-icon">⚡</div><div><div class="attr-name">Energia</div><div class="attr-val ec" id="a2-eng">0</div></div></div>
+        </div>
+        <div class="stat-label" style="margin-bottom:5px"><span>ENERGIA</span></div>
+        <div class="energy-row" id="eng2-dots"></div>
+        <div class="stat-label" style="margin-bottom:5px;margin-top:7px"><span>ESPÍRITO BLADER</span></div>
+        <div class="eb-row" id="eb2-dots"></div>
+        <div class="presas-tag" id="presas2" onclick="togglePresas(2)">⭕ Presas do Coração — Inativo</div>
+      </div>
+      <div class="card-controls">
+        <input class="dmg-input" id="dmg2" type="number" value="0" min="0">
+        <button class="btn btn-red btn-sm" onclick="applyDmg(2)">💥 Dano</button>
+        <button class="btn btn-green btn-sm" onclick="applyHeal(2)">💚 Curar</button>
+        <button class="btn btn-blue btn-sm" onclick="rollArmor(2)">🎲 Armadura</button>
+        <button class="btn btn-gold btn-sm" onclick="applyRecarga(2)">🔋 Recarga</button>
+        <button class="btn btn-gray btn-sm" onclick="openStatusManual(2)">✨ Status</button>
+      </div>
+    </div>
+  </div>
+  <div class="bottom-area">
+    <div>
+      <div class="panel" style="margin-bottom:12px">
+        <div class="panel-title">Rolador de Dados</div>
+        <div class="dice-grid">
+          <div class="dice-btn selected" id="d3-btn" onclick="selDice('d3')">d3</div>
+          <div class="dice-btn" id="d4-btn" onclick="selDice('d4')">d4</div>
+          <div class="dice-btn" id="d6-btn" onclick="selDice('d6')">d6</div>
+          <div class="dice-btn" id="d10-btn" onclick="selDice('d10')">d10</div>
+        </div>
+        <div class="dice-config">
+          <label>Qtd.</label><input class="num-in" id="dq" type="number" value="1" min="1" max="10" style="width:46px">
+          <label>+Mod</label><input class="num-in" id="dm" type="number" value="0" min="-20" max="20" style="width:52px">
+        </div>
+        <button class="roll-btn" onclick="rollDice()">⚄ ROLAR</button>
+        <div class="roll-result">
+          <div class="roll-expr" id="roll-expr">Aguardando...</div>
+          <div class="roll-number" id="roll-num">—</div>
+          <div class="roll-detail" id="roll-det"></div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;margin-top:9px;background:var(--bg);border:1px solid #FFD70044;border-radius:8px;padding:8px 10px">
+          <span style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--gold);white-space:nowrap">🎭 Narrativo</span>
+          <input class="num-in" id="override-val" type="number" placeholder="Valor" style="flex:1;min-width:0">
+          <button class="btn btn-gold btn-sm" onclick="applyOverride()">Trocar</button>
+        </div>
+      </div>
+      <div class="panel"><div class="panel-title">Ações de Combate</div><div class="actions-list" id="actions-list"></div></div>
+    </div>
+    <div class="panel"><div class="panel-title">Log de Combate</div><div class="log-list" id="combat-log"><div class="log-entry event"><div class="log-turn">Sistema</div><div class="log-text">Pronto!</div></div></div></div>
+  </div>
+</div>
+
+<!-- MODAL FICHAS -->
+<div class="modal-overlay" id="fichaModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeFichaModal()">✕</button>
+    <div class="modal-title">Fichas Completas</div>
+    <div class="ficha-tabs">
+      <button class="tab-btn active" onclick="switchTab('tab-p1',this)">Combatente 1</button>
+      <button class="tab-btn" onclick="switchTab('tab-p2',this)">Combatente 2</button>
+    </div>
+    <div class="tab-content active" id="tab-p1"><div id="ficha1"></div></div>
+    <div class="tab-content" id="tab-p2"><div id="ficha2"></div></div>
+  </div>
+</div>
+
+
+<!-- PÓS-SESSÃO -->
+<div class="screen" id="screen-pos-sessao">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+    <h2 style="font-size:18px;font-weight:800">Pós-Sessão — Distribuição de XP</h2>
+    <span style="font-size:13px;color:var(--muted)">Conceda XP e EB aos players após a sessão</span>
+  </div>
+
+  <!-- XP REFERENCE -->
+  <div class="panel" style="margin-bottom:16px">
+    <div class="panel-title">Tabela de Progressão</div>
+    <div style="overflow-x:auto">
+      <table id="xp-table" style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead>
+          <tr style="border-bottom:1px solid var(--bord)">
+            <th style="padding:7px 10px;text-align:left;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:1px;font-size:10px">Nível</th>
+            <th style="padding:7px 10px;text-align:center;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:1px;font-size:10px">XP p/ Upar</th>
+            <th style="padding:7px 10px;text-align:left;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:1px;font-size:10px">Recompensa ao Upar</th>
+          </tr>
+        </thead>
+        <tbody id="xp-table-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PLAYER CARDS -->
+  <div id="pos-players-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px"></div>
+</div>
+
+<!-- LEVEL UP MODAL -->
+<div class="modal-overlay" id="levelUpModal">
+  <div class="modal" style="text-align:center;border-top-color:var(--gold)">
+    <div style="font-size:48px;margin-bottom:8px">🏆</div>
+    <div style="font-size:22px;font-weight:900;color:var(--gold);margin-bottom:4px">LEVEL UP!</div>
+    <div style="font-size:16px;font-weight:700;margin-bottom:4px" id="lu-name"></div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:16px" id="lu-nivel"></div>
+    <div style="background:var(--bg3);border:1px solid var(--gold);border-radius:10px;padding:14px;margin-bottom:16px;text-align:left">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin-bottom:6px">Recompensa</div>
+      <div id="lu-prize" style="font-size:14px;line-height:1.6"></div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:14px" id="lu-note">O player poderá escolher essa recompensa ao entrar com o PIN, ou o mestre pode aplicar diretamente no Roster.</div>
+    <button class="btn btn-gold" style="width:100%;padding:11px;font-size:14px" onclick="closeLevelUp()">✓ Confirmar</button>
+  </div>
+</div>
+
+<!-- MASTER EVOLUTION MODAL -->
+<div class="modal-overlay" id="evolutionModal">
+  <div class="modal" style="max-width:560px;border-top-color:var(--gold)">
+    <button class="modal-close" onclick="closeEvolutionModal()">✕</button>
+    <div class="modal-title">Editar Evolução — <span id="evo-name" style="color:var(--gold)"></span></div>
+
+    <div class="sec-title">Atributos do Bey (edição livre)</div>
+    <div class="g4" style="margin-bottom:6px">
+      <div><label>ATQ</label><input class="num-in" id="evo-atq" type="number" min="0" max="30"></div>
+      <div><label>DEF</label><input class="num-in" id="evo-def" type="number" min="0" max="30"></div>
+      <div><label>VEL</label><input class="num-in" id="evo-vel" type="number" min="0" max="30"></div>
+      <div><label>ENG</label><input class="num-in" id="evo-eng" type="number" min="0" max="30"></div>
+    </div>
+    <div class="g2" style="margin-bottom:10px">
+      <div><label class="form-label">HP Máximo</label><input class="num-in" id="evo-hp" type="number" min="1" max="200"></div>
+      <div><label class="form-label">EB Máximo</label><input class="num-in" id="evo-eb" type="number" min="1" max="30"></div>
+    </div>
+    <button class="btn btn-blue btn-sm" style="width:100%;margin-bottom:14px" onclick="saveEvoAttrs()">💾 Salvar Atributos</button>
+
+    <div class="sep"></div>
+    <div class="sec-title">Habilidades da Classe — <span id="evo-cls-name"></span></div>
+    <div id="evo-habs-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px"></div>
+
+    <div class="sep"></div>
+    <div class="sec-title">Recompensas Pendentes</div>
+    <div id="evo-pending-list" style="display:flex;flex-direction:column;gap:8px"></div>
+
+    <div class="sep"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div class="sec-title" style="margin-bottom:0">Habilidades & Manobras do Bey</div>
+      <button class="btn btn-gold btn-xs" onclick="openAbilityEditor(null)">+ Nova</button>
+    </div>
+    <div id="evo-custom-abilities-list" style="display:flex;flex-direction:column;gap:8px"></div>
+  </div>
+</div>
+
+<!-- ABILITY EDITOR MODAL -->
+<div class="modal-overlay" id="abilityEditorModal">
+  <div class="modal" style="max-width:520px;border-top-color:var(--cyan)">
+    <button class="modal-close" onclick="closeAbilityEditor()">✕</button>
+    <div class="modal-title" id="ae-title">Nova Habilidade / Manobra</div>
+    <input type="hidden" id="ae-id">
+
+    <div class="form-row">
+      <label class="form-label">Tipo</label>
+      <div class="type-sel" style="grid-template-columns:1fr 1fr">
+        <div class="type-opt sel-def" id="ae-type-habilidade" onclick="aeSelectType('habilidade')">⚡ Habilidade</div>
+        <div class="type-opt" id="ae-type-manobra" onclick="aeSelectType('manobra')">🌀 Manobra Especial</div>
+      </div>
+      <input type="hidden" id="ae-tipo" value="habilidade">
+    </div>
+
+    <div class="form-row">
+      <label class="form-label">Nome</label>
+      <input class="form-input" id="ae-nome" placeholder="Ex: Explosão Glacial">
+    </div>
+    <div class="form-row">
+      <label class="form-label">Descrição</label>
+      <textarea class="form-input" id="ae-desc" placeholder="Descreva o que a habilidade faz narrativamente..."></textarea>
+    </div>
+
+    <div class="sep"></div>
+    <div class="sec-title">Dados (opcional)</div>
+    <div class="g2">
+      <div>
+        <label class="form-label">Finalidade</label>
+        <select class="form-select" id="ae-dado-tipo" onchange="aeToggleEscudoField()">
+          <option value="">Nenhum</option>
+          <option value="dano">Dano</option>
+          <option value="cura">Cura</option>
+          <option value="escudo">Escudo (vida extra temporária)</option>
+          <option value="outro">Outro (RNG genérico)</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Fórmula</label>
+        <input class="form-input" id="ae-dado-formula" placeholder="Ex: 2d6 + ATQ">
+      </div>
+    </div>
+    <div class="form-row" id="ae-escudo-duracao-row" style="display:none;margin-top:10px">
+      <label class="form-label">Duração do Escudo (turnos)</label>
+      <input class="num-in" id="ae-escudo-duracao" type="number" min="1" value="2" style="width:100%">
+      <div style="font-size:11px;color:var(--muted);margin-top:5px">O escudo absorve dano normalmente, mas desaparece sozinho ao fim destes turnos — mesmo que ainda tenha pontos restantes.</div>
+    </div>
+
+    <div class="sep"></div>
+    <div class="sec-title">Mudança de Status (opcional)</div>
+    <div class="g2">
+      <div>
+        <label class="form-label">Alvo</label>
+        <select class="form-select" id="ae-status-alvo">
+          <option value="proprio">Próprio Bey</option>
+          <option value="inimigo">Bey Inimigo</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Atributo Afetado</label>
+        <select class="form-select" id="ae-status-attr">
+          <option value="">Nenhum</option>
+          <option value="atq">Ataque</option>
+          <option value="def">Defesa</option>
+          <option value="vel">Velocidade</option>
+          <option value="eng">Energia</option>
+        </select>
+      </div>
+    </div>
+    <div class="g2">
+      <div>
+        <label class="form-label">Valor (+/-)</label>
+        <input class="num-in" id="ae-status-valor" type="number" placeholder="Ex: 3 ou -2">
+      </div>
+      <div>
+        <label class="form-label">Duração (turnos)</label>
+        <input class="num-in" id="ae-status-duracao" type="number" min="0" placeholder="Ex: 2">
+      </div>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Tag descritiva (opcional)</label>
+      <input class="form-input" id="ae-status-tag" placeholder="Ex: Atordoado, Queimando, Congelado">
+    </div>
+    <div class="form-row" style="display:flex;align-items:center;gap:8px">
+      <input type="checkbox" id="ae-status-perde-turno" style="accent-color:var(--cyan);width:16px;height:16px">
+      <label for="ae-status-perde-turno" style="font-size:12px;cursor:pointer">Esse efeito faz o alvo perder o turno</label>
+    </div>
+
+    <div class="sep"></div>
+    <div class="form-row" id="ae-energia-row">
+      <label class="form-label">Custo de Energia</label>
+      <input class="num-in" id="ae-energia" type="number" min="0" max="10" value="1">
+      <div style="font-size:11px;color:var(--muted);margin-top:5px">Manobras Especiais não gastam energia — esse campo é ignorado para esse tipo.</div>
+    </div>
+
+    <button class="submit-btn" onclick="saveCustomAbility()">💾 Salvar</button>
+  </div>
+</div>
+
+<!-- MANUAL STATUS EFFECT MODAL -->
+<div class="modal-overlay" id="statusManualModal">
+  <div class="modal" style="max-width:420px;border-top-color:var(--cyan)">
+    <button class="modal-close" onclick="closeStatusManual()">✕</button>
+    <div class="modal-title">Aplicar Status — <span id="sm-name" style="color:var(--cyan)"></span></div>
+    <input type="hidden" id="sm-slot">
+
+    <div class="g2">
+      <div>
+        <label class="form-label">Atributo Afetado</label>
+        <select class="form-select" id="sm-attr">
+          <option value="atq">Ataque</option>
+          <option value="def">Defesa</option>
+          <option value="vel">Velocidade</option>
+          <option value="eng">Energia</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Valor (+/-)</label>
+        <input class="num-in" id="sm-valor" type="number" value="0" placeholder="Ex: 3 ou -2">
+      </div>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Duração (turnos, 0 = permanente até remover)</label>
+      <input class="num-in" id="sm-duracao" type="number" min="0" value="2">
+    </div>
+    <div class="form-row">
+      <label class="form-label">Tag descritiva</label>
+      <input class="form-input" id="sm-tag" placeholder="Ex: Atordoado, Queimando, Empolgado">
+    </div>
+    <div class="form-row" style="display:flex;align-items:center;gap:8px">
+      <input type="checkbox" id="sm-perde-turno" style="accent-color:var(--cyan);width:16px;height:16px">
+      <label for="sm-perde-turno" style="font-size:12px;cursor:pointer">Esse bey perde o turno agora</label>
+    </div>
+    <button class="submit-btn" onclick="applyManualStatus()">✨ Aplicar</button>
+  </div>
+</div>
+<!-- KO -->
+<div class="ko-overlay" id="koOverlay">
+  <div class="ko-text">K.O.!</div>
+  <div class="ko-sub" id="ko-sub"></div>
+  <button class="ko-btn" onclick="document.getElementById('koOverlay').className='ko-overlay'">Continuar</button>
+</div>
+
+<script>
+const CLASSES={
+  marrento:{nome:"Marrento",habilidades:[
+    {nome:"Força de Aço (Passiva)",desc:"Primeiro ataque causa +3 de dano."},
+    {nome:"Grito do Predador",desc:"Intimida inimigo: próximas 2 ações em desvantagem. Pode ser usado em combate de outro jogador."},
+    {nome:"Casco Blindado",desc:"Resistência total a provocações e golpes físicos."},
+    {nome:"Vândalo em Potencial",desc:"Facilidade em entrar em lugares proibidos e ignorar regras."},
+    {nome:"Fúria Iminente",desc:"Se acertar próximo ataque, rola 1d6: resultado 4+ empurra inimigo 3 unidades."},
+    {nome:"Resistência de Touro",desc:"Usar antes do combate para ter +5 HP extra."},
+  ]},
+  nerdola:{nome:"Nerdola",habilidades:[
+    {nome:"Sabe Muito (Passiva)",desc:"Identifica o tipo do bey inimigo no início do combate e analisa situação de todos beys na arena."},
+    {nome:"Plano Perfeito",desc:"Após 2 turnos, rola 1d6 extra em esquivas."},
+    {nome:"Assistente de Mecânico",desc:"Repara beys ou instala peças novas com facilidade."},
+    {nome:"Meu Bey Minhas Regras",desc:"+1 no atributo de proficiência do bey durante todo combate."},
+    {nome:"Olhos de Falcão",desc:"Percebe detalhes ocultos — habilidades especiais, funcionamentos e detalhes fora de combate."},
+  ]},
+  determinado:{nome:"Determinado",habilidades:[
+    {nome:"Não Vou Perder (Passiva)",desc:"Se HP chegar a zero, ainda realiza sua última ação podendo vencer o duelo."},
+    {nome:"Eu Aguento",desc:"Recebe o dano de um ataque pelo seu bey (personagem pode desmaiar)."},
+    {nome:"Cheguei Longe Demais",desc:"Em final de torneio ou duelo importante, com 5 HP: todos ataques dão +1d6 de dano."},
+    {nome:"Oponente Digno",desc:"Após 3 turnos, se diferença de vida ≤5: ganha +5 de armadura até fim do duelo."},
+    {nome:"Alma em Combustão",desc:"Recebe 2 pontos de EB. (Não gasta EB)"},
+    {nome:"Sentimento Bey",desc:"Sente e entende beys — pode achá-los ou entender o que ocorre entre bey e blader."},
+  ]},
+  famosinho:{nome:"Famosinho",habilidades:[
+    {nome:"VIP (Passiva)",desc:"Entra em lugares com facilidade — festas, eventos, torneios. Pode ameaçar fazer barraco."},
+    {nome:"Meus Fãs Clamam",desc:"Plateia inspira: pode rolar novamente três ações durante todo o duelo."},
+    {nome:"Eu Conheço um Cara",desc:"Conhece famosos e especialistas de todos os tipos."},
+    {nome:"Patrocinadores",desc:"Ao acertar ataque, diz que foi oferecimento de patrocinador. Rola iniciativa; se vencer, ataca novamente."},
+    {nome:"Ego Alimentado",desc:"Bey recupera 5 de HP."},
+    {nome:"Esnobada Tática",desc:"Ignora a armadura do oponente no próximo ataque. Pode ser usado em combate de outro jogador."},
+  ]},
+};
+const ACTIONS=[
+  {id:"investida",nome:"Investida Básica",formula:"1d6+ATQ",cost:0,efeito:"dano",categoria:"acao",desc:"Ataque padrão de turno."},
+  {id:"rapidos",nome:"Ataques Rápidos",formula:"1d3+ATQ",cost:0,efeito:"dano",categoria:"acao",desc:"Apenas se VEL > VEL inimigo."},
+  {id:"rigida",nome:"Investida Rígida",formula:"1d10+ATQ",cost:0,efeito:"dano",categoria:"acao",desc:"Investida mais forte que o normal."},
+  {id:"recarga",nome:"Recarga",formula:null,cost:0,efeito:"recarga",categoria:"acao",desc:"Recupera 3 de Energia. Resistência: +4 HP."},
+  {id:"fuga",nome:"Fuga",formula:"1d6+VEL",cost:0,efeito:"contestado",categoria:"acao",desc:"Vence: ação extra. Perde: perde turno."},
+  {id:"esquiva",nome:"Esquiva",formula:"1d6+VEL",cost:1,efeito:"contestado",categoria:"reacao",desc:"Fora do turno. Se maior que ataque do inimigo, esquiva."},
+  {id:"bloqueio",nome:"Bloqueio",formula:"1d4+DEF",cost:1,efeito:"armadura",categoria:"reacao",desc:"Fora do turno. Adiciona à armadura atual."},
+  {id:"dupla",nome:"Ataque em Dupla",formula:"1d6",cost:1,efeito:"rng",categoria:"reacao",desc:"No turno do aliado: diferença ≤2 = +1d6+ATK no dano dele."},
+  {id:"contra",nome:"Contra-ataque",formula:"1d6+ATQ",cost:2,efeito:"dano",categoria:"reacao",desc:"Fora do turno. Subtrai do dano recebido."},
+  {id:"carregar",nome:"Carregar Ataque",formula:"1d6+ATQ",cost:2,efeito:"dano",categoria:"acao",desc:"Antes de atacar: dano reforçado."},
+];
+const TM={atk:"Ataque",def:"Defesa",eq:"Equilíbrio",res:"Resistência"};
+const TC={atk:"tp-atk",def:"tp-def",eq:"tp-eq",res:"tp-res"};
+const CC={atk:"type-atk",def:"type-def",eq:"type-eq",res:"type-res"};
+const TCOL={atk:"var(--red)",def:"var(--blue)",eq:"var(--eq)",res:"var(--res)"};
+
+// STORAGE — usa Supabase como banco online (sincroniza entre qualquer navegador/computador).
+// Cai para localStorage automaticamente se o Supabase não estiver configurado ou a rede falhar.
+const SUPABASE_URL = 'https://tesrrrqswrtckgnzgkir.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlc3JycnFzd3J0Y2tnbnpna2lyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTk1NDksImV4cCI6MjA5NzI3NTU0OX0.WhxZIxDjD2aTpULexxI3DAoiRU7cEnQwuQlKH8WzNyw';
+const HAS_SUPABASE = !!(SUPABASE_URL && SUPABASE_KEY);
+const LS_PREFIX = 'beyblade_mr::';
+
+// Routes a storage key like "blader:abc123" or "battle:xyz" to the right Supabase table.
+function sbTableForKey(k){
+  if(k.startsWith('blader:'))return 'bladers';
+  if(k.startsWith('battle:'))return 'battles';
+  return 'bladers'; // default fallback table
+}
+
+async function sbRequest(path, options={}){
+  const res=await fetch(`${SUPABASE_URL}/rest/v1/${path}`,{
+    ...options,
+    headers:{
+      'apikey':SUPABASE_KEY,
+      'Authorization':`Bearer ${SUPABASE_KEY}`,
+      'Content-Type':'application/json',
+      'Prefer':options.prefer||'return=representation',
+      ...(options.headers||{}),
+    },
+  });
+  if(!res.ok){
+    const text=await res.text().catch(()=>'');
+    throw new Error(`Supabase ${res.status}: ${text}`);
+  }
+  if(res.status===204)return null;
+  return res.json();
+}
+
+function lsGetAllKeys(prefix){
+  const out=[];
+  for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i);
+    if(k && k.startsWith(LS_PREFIX) ){
+      const realKey=k.slice(LS_PREFIX.length);
+      if(!prefix || realKey.startsWith(prefix)) out.push(realKey);
+    }
+  }
+  return out;
+}
+
+let supabaseHealthy=HAS_SUPABASE; // flips false if a request fails, so we degrade gracefully mid-session
+
+async function dbGet(k){
+  if(supabaseHealthy){
+    try{
+      const table=sbTableForKey(k);
+      const rows=await sbRequest(`${table}?id=eq.${encodeURIComponent(k)}&select=data`);
+      return (rows && rows[0]) ? rows[0].data : null;
+    }catch(e){
+      console.error('Supabase get failed, falling back to localStorage:',e);
+      supabaseHealthy=false;
+    }
+  }
+  try{
+    const raw=localStorage.getItem(LS_PREFIX+k);
+    return raw?JSON.parse(raw):null;
+  }catch{return null}
+}
+async function dbSet(k,v){
+  if(supabaseHealthy){
+    try{
+      const table=sbTableForKey(k);
+      await sbRequest(`${table}`,{
+        method:'POST',
+        headers:{'Prefer':'resolution=merge-duplicates,return=minimal'},
+        body:JSON.stringify({id:k,data:v,updated_at:new Date().toISOString()}),
+      });
+      // Always mirror to localStorage too, so things still work if network drops mid-session
+      try{localStorage.setItem(LS_PREFIX+k, JSON.stringify(v));}catch{}
+      return true;
+    }catch(e){
+      console.error('Supabase set failed, falling back to localStorage:',e);
+      supabaseHealthy=false;
+    }
+  }
+  try{
+    localStorage.setItem(LS_PREFIX+k, JSON.stringify(v));
+    return true;
+  }catch(e){
+    console.error('localStorage save failed:', e);
+    return false;
+  }
+}
+async function dbDel(k){
+  if(supabaseHealthy){
+    try{
+      const table=sbTableForKey(k);
+      await sbRequest(`${table}?id=eq.${encodeURIComponent(k)}`,{method:'DELETE',prefer:'return=minimal'});
+      try{localStorage.removeItem(LS_PREFIX+k);}catch{}
+      return true;
+    }catch(e){
+      console.error('Supabase delete failed, falling back to localStorage:',e);
+      supabaseHealthy=false;
+    }
+  }
+  try{localStorage.removeItem(LS_PREFIX+k);return true}catch{return false}
+}
+async function dbList(p){
+  if(supabaseHealthy){
+    try{
+      const table=sbTableForKey(p||'blader:');
+      const rows=await sbRequest(`${table}?select=id${p?`&id=like.${encodeURIComponent(p)}*`:''}`);
+      return rows ? rows.map(r=>r.id) : [];
+    }catch(e){
+      console.error('Supabase list failed, falling back to localStorage:',e);
+      supabaseHealthy=false;
+    }
+  }
+  try{return lsGetAllKeys(p);}catch{return[]}
+}
+
+// BLADER CRUD
+async function loadAll(){
+  const keys=await dbList('blader:');
+  const arr=[];
+  for(const k of keys){const b=await dbGet(k);if(b)arr.push(b);}
+  return arr.sort((a,b)=>{const o={player:0,npc:1,generico:2};return(o[a.cat]??3)-(o[b.cat]??3);});
+}
+
+// ===== BACKUP: EXPORT / IMPORT JSON =====
+async function exportBackup(){
+  const all=await loadAll();
+  const payload={
+    app:'beyblade_metal_rio',
+    exportedAt:new Date().toISOString(),
+    bladers:all,
+  };
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const dateStr=new Date().toISOString().slice(0,10);
+  a.href=url;
+  a.download=`beyblade_backup_${dateStr}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Backup baixado com sucesso!','ok');
+}
+
+function importBackup(event){
+  const file=event.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=async(e)=>{
+    try{
+      const payload=JSON.parse(e.target.result);
+      const bladers=payload.bladers || payload; // accept raw array too
+      if(!Array.isArray(bladers)){showToast('Arquivo de backup inválido.','err');return;}
+      const merge=confirm(`Encontrados ${bladers.length} blader(s) no backup.\n\nOK = Mesclar com os dados atuais\nCancelar = Substituir tudo (apaga os dados atuais primeiro)`);
+      if(!merge){
+        const existingKeys=await dbList('blader:');
+        for(const k of existingKeys) await dbDel(k);
+      }
+      let count=0;
+      for(const b of bladers){
+        if(b && b.id){await dbSet('blader:'+b.id, b);count++;}
+      }
+      showToast(`${count} blader(s) importado(s) com sucesso!`,'ok');
+      renderRoster();
+    }catch(err){
+      console.error(err);
+      showToast('Erro ao ler o arquivo de backup.','err');
+    }
+    event.target.value='';
+  };
+  reader.readAsText(file);
+}
+
+function genPin(){return Math.floor(1000+Math.random()*9000).toString();}
+
+async function saveBlader(){
+  const id=document.getElementById('edit-id').value||('b'+Date.now());
+  const existing = document.getElementById('edit-id').value ? await dbGet('blader:'+id) : null;
+  const cat = document.getElementById('f-cat').value||'player';
+  const obj={
+    id,cat,
+    blader:document.getElementById('f-blader').value.trim()||'Blader',
+    bey:document.getElementById('f-bey').value.trim()||'Bey',
+    classe:document.getElementById('f-classe').value,
+    nivel:parseInt(document.getElementById('f-nivel').value)||1,
+    type:document.getElementById('f-type').value||'atk',
+    constelacao:document.getElementById('f-constelacao').value.trim(),
+    estacao:document.getElementById('f-estacao').value,
+    atq:parseInt(document.getElementById('f-atq').value)||0,
+    def:parseInt(document.getElementById('f-def').value)||0,
+    vel:parseInt(document.getElementById('f-vel').value)||0,
+    engMax:parseInt(document.getElementById('f-eng').value)||5,
+    hpMax:parseInt(document.getElementById('f-hp').value)||25,
+    ebMax:parseInt(document.getElementById('f-eb').value)||10,
+    manobra:document.getElementById('f-manobra').value.trim()||'Manobra Especial',
+    manobraUsos:parseInt(document.getElementById('f-man-usos').value)||2,
+    manobraDesc:document.getElementById('f-man-desc').value.trim(),
+    idade:document.getElementById('f-idade').value,
+    ambicao:document.getElementById('f-ambicao').value.trim(),
+    personalidade:document.getElementById('f-personalidade').value.trim(),
+    xp: existing?.xp || 0,
+    eb: existing?.eb || 1,
+    habilidades: existing?.habilidades || (CLASSES[document.getElementById('f-classe').value]?.habilidades[0]?.nome ? [CLASSES[document.getElementById('f-classe').value].habilidades[0].nome] : []),
+    pendingRewards: existing?.pendingRewards || [],
+    pin: existing?.pin || (cat==='player' ? genPin() : null),
+  };
+  const ok=await dbSet('blader:'+id,obj);
+  if(ok){
+    showToast(cat==='player' && !existing ? `Blader salvo! PIN: ${obj.pin}` : 'Blader salvo!','ok');
+    cancelEdit();renderRoster();
+  }
+  else showToast('Erro ao salvar.','err');
+}
+
+async function delBlader(id){
+  if(!confirm('Excluir este blader?'))return;
+  await dbDel('blader:'+id);
+  showToast('Excluído.','ok');renderRoster();
+}
+
+function editBlader(b){
+  document.getElementById('edit-id').value=b.id;
+  document.getElementById('reg-title').textContent='Editar Blader';
+  document.getElementById('reg-sub').textContent='Atualize os dados do personagem';
+  document.getElementById('submit-btn').textContent='💾 Atualizar';
+  document.getElementById('cancel-btn').style.display='block';
+  selCat(b.cat);
+  document.getElementById('f-blader').value=b.blader;
+  document.getElementById('f-bey').value=b.bey;
+  document.getElementById('f-classe').value=b.classe;
+  document.getElementById('f-nivel').value=b.nivel;
+  selType(b.type);
+  document.getElementById('f-constelacao').value=b.constelacao||'';
+  document.getElementById('f-estacao').value=b.estacao||'';
+  document.getElementById('f-atq').value=b.atq;
+  document.getElementById('f-def').value=b.def;
+  document.getElementById('f-vel').value=b.vel;
+  document.getElementById('f-eng').value=b.engMax;
+  document.getElementById('f-hp').value=b.hpMax;
+  document.getElementById('f-eb').value=b.ebMax;
+  document.getElementById('f-manobra').value=b.manobra||'';
+  document.getElementById('f-man-usos').value=b.manobraUsos||2;
+  document.getElementById('f-man-desc').value=b.manobraDesc||'';
+  document.getElementById('f-idade').value=b.idade||'';
+  document.getElementById('f-ambicao').value=b.ambicao||'';
+  document.getElementById('f-personalidade').value=b.personalidade||'';
+  updPrev();goScreen('register');
+}
+
+function cancelEdit(){
+  document.getElementById('edit-id').value='';
+  document.getElementById('reg-title').textContent='Cadastrar Blader';
+  document.getElementById('reg-sub').textContent='Preencha os dados do personagem e seu Bey';
+  document.getElementById('submit-btn').textContent='💾 Salvar Blader';
+  document.getElementById('cancel-btn').style.display='none';
+  ['f-blader','f-bey','f-constelacao','f-manobra','f-man-desc','f-ambicao','f-personalidade','f-idade'].forEach(id=>document.getElementById(id).value='');
+  ['f-nivel','f-atq','f-def','f-vel'].forEach(id=>document.getElementById(id).value=3);
+  document.getElementById('f-nivel').value=1;
+  document.getElementById('f-eng').value=5;document.getElementById('f-hp').value=25;
+  document.getElementById('f-eb').value=10;document.getElementById('f-man-usos').value=2;
+  selCat('player');selType('atk');updPrev();
+}
+
+// ROSTER
+let rFilter='all';
+async function renderRoster(){
+  const all=await loadAll();
+  const storageLabel=supabaseHealthy?' · ☁️ online (Supabase)':' · 💾 salvo neste navegador';
+  document.getElementById('saveStatus').textContent=`${all.length} blader${all.length!==1?'s':''} cadastrado${all.length!==1?'s':''}${storageLabel}`;
+  document.getElementById('saveStatus').className='save-status ok';
+  const filt=rFilter==='all'?all:all.filter(b=>b.cat===rFilter);
+  const grid=document.getElementById('rosterGrid');
+  if(!filt.length){grid.innerHTML=`<div class="empty-state"><div class="icon">🌀</div><p>Nenhum blader nessa categoria.</p></div>`;buildBsList(all);return;}
+  grid.innerHTML=filt.map(b=>`
+    <div class="roster-card rc-${b.type}">
+      <div class="rc-head">
+        <div class="rc-names"><div class="blader">${b.blader}</div><div class="bey">${b.bey}</div></div>
+        <div class="rc-badges"><span class="level-tag">Nv ${b.nivel}</span><span class="cat-pill cat-${b.cat}">${b.cat==='player'?'Player':b.cat==='npc'?'NPC':'Genérico'}</span></div>
+      </div>
+      <div class="rc-body">
+        <div style="display:flex;gap:5px;margin-bottom:7px;flex-wrap:wrap">
+          <span class="tp ${TC[b.type]}">${TM[b.type]}</span>
+          <span style="font-size:11px;color:var(--muted)">${CLASSES[b.classe]?.nome||b.classe}</span>
+          ${b.constelacao?`<span style="font-size:11px;color:var(--muted)">· ${b.constelacao}</span>`:''}
+        </div>
+        <div class="rc-attrs">
+          <div class="rc-attr"><div class="rc-al">ATQ</div><div class="rc-av a">${b.atq}</div></div>
+          <div class="rc-attr"><div class="rc-al">DEF</div><div class="rc-av d">${b.def}</div></div>
+          <div class="rc-attr"><div class="rc-al">VEL</div><div class="rc-av v">${b.vel}</div></div>
+          <div class="rc-attr"><div class="rc-al">ENG</div><div class="rc-av e">${b.engMax}</div></div>
+        </div>
+        <div class="rc-hp">
+          <span style="font-size:10px;color:var(--muted);min-width:22px">HP</span>
+          <div class="hp-bar-mini"><div class="hp-bar-mini-fill" style="width:100%"></div></div>
+          <span style="font-size:11px;color:var(--muted)">${b.hpMax}</span>
+        </div>
+        ${b.manobra?`<div class="rc-manobra">⚡ <span style="color:var(--muted)">${b.manobra}</span> · ${b.manobraUsos}x</div>`:''}
+        ${b.cat==='player'&&b.pin?`<div style="margin-top:6px;background:var(--bg);border:1px dashed var(--gold);border-radius:6px;padding:5px 8px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">PIN do Player</span><span style="font-family:monospace;font-weight:900;font-size:15px;color:var(--gold);letter-spacing:2px">${b.pin}</span></div>`:''}
+        ${(b.pendingRewards||[]).filter(r=>!r.resolved).length?`<div style="margin-top:6px;background:#FFD70015;border:1px solid var(--gold);border-radius:6px;padding:5px 8px;font-size:11px;color:var(--gold);font-weight:700">🎁 ${(b.pendingRewards||[]).filter(r=>!r.resolved).length} recompensa(s) pendente(s)</div>`:''}
+      </div>
+      <div class="rc-foot">
+        <button class="btn btn-blue btn-xs" onclick='addToSlot(${esc(b)})'>+ Duelo</button>
+        <button class="btn btn-gold btn-xs" onclick='openEvolutionModal(${esc(b)})'>🔼 Evolução</button>
+        <button class="btn btn-gray btn-xs" onclick='editBlader(${esc(b)})'>✏️ Editar</button>
+        <button class="btn btn-red btn-xs" onclick="delBlader('${b.id}')">🗑️</button>
+      </div>
+    </div>`).join('');
+  buildBsList(all);
+}
+
+function esc(b){return JSON.stringify(b).replace(/'/g,"&#39;")}
+
+function filterRoster(cat,el){
+  rFilter=cat;
+  document.querySelectorAll('.filter-btn').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');renderRoster();
+}
+
+// BATTLE SELECT
+const slots={1:null,2:null};
+
+function buildBsList(bladers){
+  const list=document.getElementById('bs-list');
+  const cats=[['player','👤 Players'],['npc','🎭 NPCs'],['generico','🤖 Genéricos']];
+  let html='';
+  cats.forEach(([cat,label])=>{
+    const items=bladers.filter(b=>b.cat===cat);if(!items.length)return;
+    html+=`<div class="bs-sec">${label}</div>`;
+    items.forEach(b=>{html+=`<div class="bs-item"><div><div class="bs-iname">${b.bey}</div><div class="bs-isub">${b.blader} · ${TM[b.type]} · Nv${b.nivel}</div></div><div class="ass-btns"><button class="ass-btn ass-1" onclick='assignSlot(1,${esc(b)})'>P1</button><button class="ass-btn ass-2" onclick='assignSlot(2,${esc(b)})'>P2</button></div></div>`;});
+  });
+  if(!html)html='<div style="color:var(--muted);font-size:13px;padding:10px">Nenhum blader cadastrado.</div>';
+  list.innerHTML=html;
+}
+
+function addToSlot(b){
+  if(!slots[1]){assignSlot(1,b);goScreen('battle-select');}
+  else if(!slots[2]){assignSlot(2,b);goScreen('battle-select');}
+  else showToast('Slots já preenchidos.','err');
+}
+
+function assignSlot(n,b){
+  slots[n]=b;renderSlot(n);
+  document.getElementById('startBtn').disabled=!(slots[1]&&slots[2]);
+}
+
+function renderSlot(n){
+  const box=document.getElementById(`slot${n}-box`);
+  const b=slots[n];
+  if(!b){box.className='slot-box';box.innerHTML=`<div style="font-size:36px;color:var(--bord)">🌀</div><div style="font-size:13px;color:var(--muted)">Selecione da lista</div>`;return;}
+  box.className='slot-box filled';
+  box.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:flex-start;width:100%;margin-bottom:8px"><div><div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)">${b.blader}</div><div style="font-size:17px;font-weight:900">${b.bey}</div></div><button class="btn btn-gray btn-xs" onclick="clearSlot(${n})">✕</button></div><div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px"><span class="tp ${TC[b.type]}">${TM[b.type]}</span><span class="cat-pill cat-${b.cat}">${b.cat==='player'?'Player':b.cat==='npc'?'NPC':'Genérico'}</span><span class="level-tag">Nv ${b.nivel}</span></div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;width:100%"><div class="rc-attr"><div class="rc-al">ATQ</div><div class="rc-av a" style="font-size:13px">${b.atq}</div></div><div class="rc-attr"><div class="rc-al">DEF</div><div class="rc-av d" style="font-size:13px">${b.def}</div></div><div class="rc-attr"><div class="rc-al">VEL</div><div class="rc-av v" style="font-size:13px">${b.vel}</div></div><div class="rc-attr"><div class="rc-al">HP</div><div class="rc-av" style="font-size:13px;color:var(--cyan)">${b.hpMax}</div></div></div>`;
+}
+function clearSlot(n){slots[n]=null;renderSlot(n);document.getElementById('startBtn').disabled=true;}
+function clearSlots(){clearSlot(1);clearSlot(2);}
+
+// BATTLE STATE
+const bt={turn:1,pl:[null,null],activeSlot:null};
+const BATTLE_KEY='battle:current';
+function p(n){return bt.pl[n-1]}
+
+// Persist the live battle state (HP, energy, turn, log, etc.) so a player on another computer can see it.
+let battleSyncTimer=null;
+function syncBattleToCloud(){
+  if(battleSyncTimer)clearTimeout(battleSyncTimer);
+  battleSyncTimer=setTimeout(async()=>{
+    if(!bt.pl[0] && !bt.pl[1])return; // nothing to sync yet
+    const logHtml=document.getElementById('combat-log')?document.getElementById('combat-log').innerHTML:'';
+    await dbSet(BATTLE_KEY,{turn:bt.turn,activeSlot:bt.activeSlot,pl:bt.pl,logHtml});
+  },400);
+}
+
+function startBattle(){
+  if(!slots[1]||!slots[2]){showToast('Selecione dois combatentes.','err');return;}
+  function live(b){return{...b,hp:b.hpMax,armor:0,armorMax:0,eng:b.engMax,eb:1,manUsosLeft:b.manobraUsos,presas:false};}
+  bt.pl[0]=live(slots[1]);bt.pl[1]=live(slots[2]);bt.turn=1;bt.activeSlot=null;
+  document.getElementById('nav-battle').style.display='block';
+  goScreen('battle');renderBattle();buildActions();
+  addLog(`Duelo: ${p(1).blader} vs ${p(2).blader}`,'event');
+  document.getElementById('b-mode-badge').textContent=document.getElementById('battle-mode').value==='1v1'?'1v1':'Torneio';
+
+  // Auto-roll armor for both combatants and resolve initiative right away,
+  // so both the master and any connected player immediately see who goes first.
+  rollArmor(1);
+  rollArmor(2);
+  rollInitUntilResolved();
+  buildActions();
+  syncBattleToCloud();
+}
+
+// Rolls initiative repeatedly until there's a clear winner (ties re-roll automatically on battle start).
+function rollInitUntilResolved(){
+  rollInit();
+  if(bt.activeSlot===null||bt.activeSlot===undefined){
+    rollInitUntilResolved();
+  }
+}
+
+function renderBattle(){renderC(1);renderC(2);document.getElementById('turn-num').textContent=bt.turn;document.getElementById('b-turn-badge').textContent=`Turno ${bt.turn}`;updateActiveTurnIndicator();}
+
+function renderC(n){
+  const b=p(n);if(!b)return;
+  syncBattleToCloud();
+  document.getElementById(`h-blader${n}`).textContent=b.blader.toUpperCase();
+  document.getElementById(`h-bey${n}`).textContent=b.bey;
+  const tel=document.getElementById(`h-type${n}`);tel.textContent=TM[b.type];tel.className=`tp ${TC[b.type]}`;
+  document.getElementById(`h-classe${n}`).textContent=CLASSES[b.classe]?.nome||b.classe;
+  document.getElementById(`h-nivel${n}`).textContent=`Nv ${b.nivel}`;
+  document.getElementById(`card${n}`).className=`bey-card ${CC[b.type]}`;
+  document.getElementById(`a${n}-atq`).textContent=b.atq;
+  document.getElementById(`a${n}-def`).textContent=b.def;
+  document.getElementById(`a${n}-vel`).textContent=b.vel;
+  document.getElementById(`a${n}-eng`).textContent=b.eng;
+  const pct=Math.max(0,b.hp/b.hpMax*100);
+  const bar=document.getElementById(`hp${n}-bar`);
+  bar.style.width=pct+'%';bar.textContent=Math.max(0,b.hp);
+  bar.className='hp-bar '+(pct>60?'high':pct>30?'mid':'low');
+  document.getElementById(`hp${n}-lbl`).textContent=`${Math.max(0,b.hp)}/${b.hpMax}`;
+  // Shield bar — independent layer, only visible when active
+  const shieldWrap=document.getElementById(`shield${n}-wrap`);
+  const shieldBar=document.getElementById(`shield${n}-bar`);
+  if(b.shield>0){
+    shieldWrap.className='shield-bar-wrap active';
+    const shieldMax=b._shieldPeak=Math.max(b._shieldPeak||0,b.shield);
+    shieldBar.style.width=Math.min(100,(b.shield/shieldMax)*100)+'%';
+    shieldBar.textContent=`🛡️ ${b.shield}${b.shieldTurnosRestantes?` (${b.shieldTurnosRestantes}t)`:''}`;
+  } else {
+    shieldWrap.className='shield-bar-wrap';
+    b._shieldPeak=0;
+  }
+  const ab=document.getElementById(`arm${n}-bar`);
+  ab.style.width=(b.armorMax>0?b.armor/b.armorMax*100:0)+'%';
+  document.getElementById(`arm${n}-lbl`).textContent=`${b.armor}/${b.armorMax}`;
+  rdots(`eng${n}-dots`,b.eng,b.engMax,'energy-dot');
+  rdots(`eb${n}-dots`,b.eb,b.ebMax,'eb-dot');
+  const pe=document.getElementById(`presas${n}`);
+  pe.className='presas-tag'+(b.presas?' active':'');
+  pe.textContent=b.presas?'🔥 Presas do Coração — ATIVO':'⭕ Presas do Coração — Inativo';
+  // Status effect tags
+  const existingTags=document.getElementById(`status${n}-tags`);
+  if(existingTags)existingTags.remove();
+  if((b.statusEffects||[]).length){
+    const tagsHtml=`<div id="status${n}-tags" style="display:flex;gap:5px;flex-wrap:wrap;margin-top:8px">${b.statusEffects.map((eff,ei)=>
+      `<span class="cat-pill ${eff.valor<0?'cat-npc':'cat-player'}" style="cursor:pointer" onclick="removeStatusEffect(${n},${ei})" title="Clique para remover">${eff.tag||eff.attr.toUpperCase()} ${eff.valor>0?'+':''}${eff.valor}${eff.turnosRestantes?` (${eff.turnosRestantes}t)`:''} ✕</span>`
+    ).join('')}</div>`;
+    document.getElementById(`presas${n}`).insertAdjacentHTML('afterend',tagsHtml);
+  }
+}
+function rdots(cid,cur,max,cls){const c=document.getElementById(cid);c.innerHTML='';for(let i=1;i<=max;i++){const d=document.createElement('div');d.className=cls+(i<=cur?' filled':'');c.appendChild(d);}}
+
+// COMBAT
+function applyDmg(n){
+  const b=p(n);let raw=parseInt(document.getElementById(`dmg${n}`).value)||0;if(raw<=0)return;
+  let shieldAbs=0;
+  if(b.shield>0){
+    shieldAbs=Math.min(b.shield,raw);
+    b.shield-=shieldAbs;
+    raw-=shieldAbs;
+    if(b.shield<=0){b.shield=0;b.shieldTurnosRestantes=0;}
+  }
+  const abs=Math.min(b.armor,raw);b.armor=Math.max(0,b.armor-abs);b.hp=Math.max(0,b.hp-(raw-abs));
+  document.getElementById(`dmg${n}`).value=0;
+  const shieldTxt=shieldAbs>0?` (${shieldAbs} absorvido pelo Escudo)`:'';
+  addLog(`${b.bey} recebe <span class="lv red">${shieldAbs+abs+(raw-abs)}</span> de dano${shieldTxt} (${abs} absorvido pela armadura). HP: <span class="lv">${b.hp}/${b.hpMax}</span>`,'dmg');
+  renderC(n);if(b.hp<=0)showKO(n);
+}
+function applyHeal(n){
+  const b=p(n);let v=parseInt(document.getElementById(`dmg${n}`).value)||3;
+  b.hp=Math.min(b.hpMax,b.hp+v);document.getElementById(`dmg${n}`).value=0;
+  addLog(`${b.bey} recupera <span class="lv green">${v}</span> HP. HP: <span class="lv">${b.hp}/${b.hpMax}</span>`,'heal');renderC(n);
+}
+function rollArmor(n){
+  const b=p(n);const roll=Math.floor(Math.random()*4)+1;const total=roll+b.def;
+  b.armor=total;b.armorMax=total;
+  addLog(`${b.bey} armadura: 1d4(${roll})+DEF(${b.def})=<span class="lv cyan">${total}</span>`,'roll');renderC(n);
+}
+function applyRecarga(n){
+  const b=p(n);b.eng=Math.min(b.engMax,b.eng+3);
+  addLog(`${b.bey} +<span class="lv gold">3</span> Energia. Energia: ${b.eng}/${b.engMax}`,'heal');
+  if(b.type==='res'){b.hp=Math.min(b.hpMax,b.hp+4);addLog(`${b.bey} (Resistência) +<span class="lv green">4</span> HP`,'heal');}
+  renderC(n);
+}
+function togglePresas(n){
+  const b=p(n);b.presas=!b.presas;
+  addLog(b.presas?`🔥 PRESAS DO CORAÇÃO — ${b.blader}! Armadura restaurada!`:`Presas desativadas — ${b.blader}.`,'event');
+  renderC(n);
+}
+function nextTurn(){
+  bt.turn++;
+  bt.pl.forEach(b=>{
+    if(!b)return;
+    if(bt.turn>3&&b.type!=='res'&&b.armor>0){b.armor=Math.max(0,b.armor-1);addLog(`Armadura de ${b.bey} decai → ${b.armor}`,'event');}
+    // Decay status effects
+    if(b.statusEffects && b.statusEffects.length){
+      const expired=[];
+      b.statusEffects=b.statusEffects.filter(eff=>{
+        if(eff.turnosRestantes>0){
+          eff.turnosRestantes--;
+          if(eff.turnosRestantes<=0){expired.push(eff);return false;}
+          return true;
+        }
+        return true; // duracao 0 = permanente até remoção manual
+      });
+      expired.forEach(eff=>addLog(`Efeito <b>${eff.tag||eff.attr.toUpperCase()}</b> em ${b.bey} expirou.`,'event'));
+      if(expired.length)applyStatusEffects(b);
+    }
+    // Decay shield duration
+    if(b.shield>0 && b.shieldTurnosRestantes>0){
+      b.shieldTurnosRestantes--;
+      if(b.shieldTurnosRestantes<=0){
+        addLog(`🛡️ Escudo de ${b.bey} se dissipou (${b.shield} ponto(s) restante(s) perdidos).`,'event');
+        b.shield=0;
+        b.shieldTurnosRestantes=0;
+      }
+    }
+  });
+  renderBattle();addLog(`─── Turno ${bt.turn} ───`,'event');
+}
+function removeStatusEffect(n,idx){
+  const b=p(n);if(!b||!b.statusEffects)return;
+  const eff=b.statusEffects[idx];
+  b.statusEffects.splice(idx,1);
+  applyStatusEffects(b);
+  addLog(`Efeito <b>${eff.tag||eff.attr.toUpperCase()}</b> removido manualmente de ${b.bey}.`,'event');
+  renderC(n);
+}
+
+// Master applies a status effect manually, without needing a pre-built ability
+function openStatusManual(n){
+  const b=p(n);if(!b)return;
+  document.getElementById('sm-slot').value=n;
+  document.getElementById('sm-name').textContent=`${b.blader} — ${b.bey}`;
+  document.getElementById('sm-attr').value='atq';
+  document.getElementById('sm-valor').value=0;
+  document.getElementById('sm-duracao').value=2;
+  document.getElementById('sm-tag').value='';
+  document.getElementById('sm-perde-turno').checked=false;
+  document.getElementById('statusManualModal').className='modal-overlay open';
+}
+function closeStatusManual(){
+  document.getElementById('statusManualModal').className='modal-overlay';
+}
+function applyManualStatus(){
+  const n=parseInt(document.getElementById('sm-slot').value);
+  const b=p(n);if(!b)return;
+  const attr=document.getElementById('sm-attr').value;
+  const valor=parseInt(document.getElementById('sm-valor').value)||0;
+  const duracao=parseInt(document.getElementById('sm-duracao').value)||0;
+  const tag=document.getElementById('sm-tag').value.trim();
+  const perdeTurno=document.getElementById('sm-perde-turno').checked;
+
+  if(!b.statusEffects)b.statusEffects=[];
+  b.statusEffects.push({attr,valor,turnosRestantes:duracao,tag,perdeTurno,origem:'Manual'});
+  applyStatusEffects(b);
+
+  addLog(`✨ ${b.blader} recebe efeito <b>${tag||attr.toUpperCase()}</b> (${valor>0?'+':''}${valor} ${attr.toUpperCase()})${duracao?` por ${duracao} turno(s)`:' permanente'}${perdeTurno?' — perde o turno!':''}`,'event');
+  closeStatusManual();
+  renderC(n);
+}
+
+function rollInit(){
+  const b1=p(1),b2=p(2);
+  const r1=Math.floor(Math.random()*6)+1+Math.floor(Math.random()*6)+1+b1.vel;
+  const r2=Math.floor(Math.random()*6)+1+Math.floor(Math.random()*6)+1+b2.vel;
+  document.getElementById('in1').textContent=b1.blader;document.getElementById('iv1').textContent=r1;
+  document.getElementById('in2').textContent=b2.blader;document.getElementById('iv2').textContent=r2;
+  const r1e=document.getElementById('ir1'),r2e=document.getElementById('ir2');
+  if(r1>r2){r1e.className='init-row active';r2e.className='init-row';bt.activeSlot=1;addLog(`Iniciativa: ${b1.blader}(${r1}) vs ${b2.blader}(${r2}). <b>${b1.blader}</b> age primeiro!`,'roll');}
+  else if(r2>r1){r2e.className='init-row active';r1e.className='init-row';bt.activeSlot=2;addLog(`Iniciativa: ${b1.blader}(${r1}) vs ${b2.blader}(${r2}). <b>${b2.blader}</b> age primeiro!`,'roll');}
+  else{r1e.className='init-row';r2e.className='init-row';addLog(`Empate (${r1} vs ${r2}) — Rolar novamente.`,'roll');}
+  updateActiveTurnIndicator();
+}
+
+function setActiveTurn(n){
+  bt.activeSlot=n;
+  updateActiveTurnIndicator();
+}
+
+function passTurn(){
+  if(!bt.activeSlot)return;
+  bt.activeSlot=bt.activeSlot===1?2:1;
+  updateActiveTurnIndicator();
+  addLog(`Passa a vez para <b>${p(bt.activeSlot).blader}</b>.`,'event');
+}
+
+function updateActiveTurnIndicator(){
+  const nameEl=document.getElementById('active-turn-name');
+  const card1=document.getElementById('card1'),card2=document.getElementById('card2');
+  if(!bt.activeSlot || !p(bt.activeSlot)){
+    nameEl.textContent='—';
+    if(card1)card1.style.boxShadow='';
+    if(card2)card2.style.boxShadow='';
+    return;
+  }
+  const active=p(bt.activeSlot);
+  nameEl.textContent=`${active.blader} (P${bt.activeSlot})`;
+  nameEl.style.color=bt.activeSlot===1?'var(--blue)':'var(--red)';
+  if(card1)card1.style.boxShadow=bt.activeSlot===1?'0 0 0 2px var(--blue)':'';
+  if(card2)card2.style.boxShadow=bt.activeSlot===2?'0 0 0 2px var(--red)':'';
+}
+
+let curDice='d3';
+let lastRollExpr='';
+function selDice(d){curDice=d;['d3','d4','d6','d10'].forEach(x=>document.getElementById(x+'-btn').className='dice-btn'+(x===d?' selected':''));}
+function rollDice(){
+  const qty=parseInt(document.getElementById('dq').value)||1;
+  const mod=parseInt(document.getElementById('dm').value)||0;
+  const f=parseInt(curDice.replace('d',''));
+  const rolls=[];for(let i=0;i<qty;i++)rolls.push(Math.floor(Math.random()*f)+1);
+  const sum=rolls.reduce((a,b)=>a+b,0)+mod;
+  const expr=`${qty}${curDice}${mod!==0?(mod>0?'+'+mod:mod):''}`;
+  lastRollExpr=expr;
+  const el=document.getElementById('roll-num');el.textContent=sum;el.className='roll-number rolling';setTimeout(()=>el.className='roll-number',350);
+  document.getElementById('roll-expr').textContent=expr;
+  document.getElementById('roll-det').textContent=`[${rolls.join(', ')}]${mod?` + ${mod}`:''}`;
+  document.getElementById('override-val').value=sum;
+  addLog(`🎲 ${expr} → [${rolls.join(', ')}]${mod?` + ${mod}`:''}=<span class="lv cyan">${sum}</span>`,'roll');
+}
+function applyOverride(){
+  const val=document.getElementById('override-val').value;
+  if(val===''||isNaN(val)){showToast('Informe um valor numérico.','err');return;}
+  const el=document.getElementById('roll-num');
+  el.textContent=val;el.className='roll-number rolling';setTimeout(()=>el.className='roll-number',350);
+  document.getElementById('roll-expr').textContent=lastRollExpr||'Narrativo';
+  document.getElementById('roll-det').textContent='Resultado ajustado pelo mestre';
+  addLog(`🎭 Resultado ajustado pelo mestre (fins narrativos): <span class="lv gold">${val}</span>`,'event');
+}
+// Decides whether combatant n can currently use a given action, based on whose turn it is.
+// "acao" (Investida, Recarga, etc.) only on your own active turn. "reacao" (Esquiva, Bloqueio, etc.)
+// only when it's NOT your turn — i.e. reacting to the opponent's action.
+function isActionAllowed(n, action, activeSlot){
+  if(action.categoria==='acao')return activeSlot===n;
+  if(action.categoria==='reacao')return activeSlot!==null && activeSlot!==undefined && activeSlot!==n;
+  return true;
+}
+
+function buildActions(){
+  const list=document.getElementById('actions-list');list.innerHTML='';
+  [1,2].forEach(n=>{
+    const b=p(n);if(!b)return;
+    const isActive=bt.activeSlot===n;
+    const group=document.createElement('div');
+    group.style.marginBottom='10px';
+    group.style.cssText+=isActive?'background:#00B4D80c;border:1px solid #00B4D855;border-radius:8px;padding:8px':'';
+    const header=document.createElement('div');
+    header.style.cssText='font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:'+(n===1?'var(--blue)':'var(--red)')+';margin-bottom:6px;display:flex;align-items:center;gap:6px';
+    header.innerHTML=`<span style="width:8px;height:8px;border-radius:50%;background:${n===1?'var(--blue)':'var(--red)'}"></span> ${b.blader} — ${b.bey}${isActive?' <span style="color:var(--cyan);margin-left:auto;font-size:10px">● AGINDO</span>':''}`;
+    if(isActive)header.style.justifyContent='flex-start';
+    group.appendChild(header);
+
+    ACTIONS.forEach(a=>{
+      const costLabel=a.cost===0?'Livre':`${a.cost}E`;
+      const cc=a.cost===0?'cost-free':a.cost===1?'cost-1e':'cost-2e';
+      const catLabel=a.categoria==='reacao'?'Reação':'Ação';
+      const catColor=a.categoria==='reacao'?'var(--gold)':'var(--cyan)';
+      const turnOk=isActionAllowed(n,a,bt.activeSlot);
+      const canAfford=b.eng>=a.cost;
+      const usable=canAfford&&turnOk;
+      const div=document.createElement('div');
+      div.className='action-item';
+      div.style.cursor=usable?'pointer':'not-allowed';
+      div.style.opacity=usable?'1':'0.4';
+      div.innerHTML=`<div class="action-cost ${cc}">${costLabel}</div><div style="flex:1"><div class="action-name">${a.nome} <span style="font-size:9px;color:${catColor};text-transform:uppercase;letter-spacing:.5px">· ${catLabel}</span></div>${a.formula?`<div class="action-roll">${a.formula}</div>`:''}<div class="action-desc">${a.desc}</div>${!turnOk?`<div style="font-size:10px;color:var(--red);margin-top:2px">${a.categoria==='reacao'?'Disponível só fora do seu turno':'Disponível só no seu turno'}</div>`:''}</div>`;
+      if(usable)div.onclick=()=>executeAction(n,a);
+      group.appendChild(div);
+    });
+    list.appendChild(group);
+  });
+}
+
+// Executes a combat action for combatant n: rolls the dice automatically, applies the effect, logs the result.
+function executeAction(n,action){
+  const b=p(n);if(!b)return;
+  const targetN=n===1?2:1; // only 2 combatants supported today; future multi-target picker hooks in here
+  const target=p(targetN);
+
+  if(b.eng<action.cost){showToast('Energia insuficiente.','err');return;}
+  if(action.cost>0)b.eng-=action.cost;
+
+  let rollResult=null;
+  if(action.formula){
+    rollResult=parseRollFormula(action.formula,b);
+  }
+
+  const actorTag=n===1?'P1':'P2';
+  let logMsg=`<b>${b.blader}</b> (${actorTag}) usa <b>${action.nome}</b>`;
+
+  if(rollResult){
+    logMsg+=` → [${rollResult.rolls.join(', ')}]${rollResult.mod?` +${rollResult.mod}`:''} = <span class="lv cyan">${rollResult.total}</span>`;
+  }
+
+  if(action.efeito==='dano' && rollResult && target){
+    let dmgLeft=rollResult.total;
+    let shieldAbs=0;
+    if(target.shield>0){
+      shieldAbs=Math.min(target.shield,dmgLeft);
+      target.shield-=shieldAbs;
+      dmgLeft-=shieldAbs;
+      if(target.shield<=0){target.shield=0;target.shieldTurnosRestantes=0;}
+    }
+    const armAbs=Math.min(target.armor,dmgLeft);
+    target.armor=Math.max(0,target.armor-armAbs);
+    target.hp=Math.max(0,target.hp-(dmgLeft-armAbs));
+    logMsg+=` em ${target.bey}${shieldAbs>0?` (${shieldAbs} no Escudo,`:' ('}${armAbs} na armadura)`;
+    renderC(targetN);
+    if(target.hp<=0){addLog(logMsg,'dmg');renderC(n);buildActions();showKO(targetN);return;}
+  } else if(action.efeito==='armadura' && rollResult){
+    b.armor+=rollResult.total;
+    b.armorMax=Math.max(b.armorMax,b.armor);
+    logMsg+=` — Armadura: ${b.armor}/${b.armorMax}`;
+  } else if(action.efeito==='recarga'){
+    b.eng=Math.min(b.engMax,b.eng+3);
+    logMsg=`<b>${b.blader}</b> (${actorTag}) usa <b>Recarga</b> — Energia: ${b.eng}/${b.engMax}`;
+    if(b.type==='res'){
+      b.hp=Math.min(b.hpMax,b.hp+4);
+      logMsg+=` · +4 HP (Resistência)`;
+    }
+  } else if(action.efeito==='contestado' && rollResult && target){
+    logMsg+=` (use o resultado para comparar manualmente com a ação do oponente)`;
+  }
+
+  addLog(logMsg, action.efeito==='dano'?'dmg':action.efeito==='recarga'?'heal':'roll');
+  renderC(n);
+  buildActions();
+}
+
+function addLog(text,type){const log=document.getElementById('combat-log');const e=document.createElement('div');e.className=`log-entry ${type||''}`;e.innerHTML=`<div class="log-turn">Turno ${bt.turn}</div><div class="log-text">${text}</div>`;log.insertBefore(e,log.firstChild);}
+function showKO(n){const w=p(n===1?2:1);document.getElementById('ko-sub').textContent=`${w.blader} e ${w.bey} vencem!`;document.getElementById('koOverlay').className='ko-overlay open';}
+function openFichaModal(){renderFicha(1);renderFicha(2);document.getElementById('fichaModal').className='modal-overlay open';}
+function closeFichaModal(){document.getElementById('fichaModal').className='modal-overlay';}
+function renderFicha(n){
+  const b=p(n);if(!b)return;
+  const cls=CLASSES[b.classe]||{nome:b.classe,habilidades:[]};
+  const dots=Array.from({length:b.manobraUsos},(_,i)=>`<span class="man-dot${i>=b.manUsosLeft?' used':''}" onclick="useMan(${n},${i})"></span>`).join('');
+  const customAbs=b.customAbilities||[];
+  document.getElementById(`ficha${n}`).innerHTML=`
+    <div class="g2" style="margin-bottom:10px">
+      <div><div class="sec-title">Blader</div><div style="font-size:15px;font-weight:800">${b.blader}</div></div>
+      <div><div class="sec-title">Bey</div><div style="font-size:15px;font-weight:800">${b.bey}</div></div>
+      <div><div class="sec-title">Classe</div>${cls.nome}</div>
+      <div><div class="sec-title">Nível</div>${b.nivel}</div>
+      ${b.constelacao?`<div><div class="sec-title">Constelação</div>${b.constelacao}</div>`:''}
+      ${b.estacao?`<div><div class="sec-title">Estação</div>${b.estacao}</div>`:''}
+      ${b.ambicao?`<div style="grid-column:1/-1"><div class="sec-title">Ambição</div>${b.ambicao}</div>`:''}
+    </div>
+    <div class="sep"></div>
+    <div class="sec-title">Manobra Especial</div>
+    <div class="manobra-item"><div class="manobra-name">${b.manobra}</div>${b.manobraDesc?`<div class="manobra-desc">${b.manobraDesc}</div>`:''}<div class="manobra-uses">Usos: ${b.manUsosLeft}/${b.manobraUsos}</div><div>${dots}</div></div>
+    <div class="sep"></div>
+    <div class="sec-title">Habilidades — ${cls.nome}</div>
+    ${cls.habilidades.map(h=>`<div class="hab-item"><div class="hab-name">${h.nome}</div><div class="hab-desc">${h.desc}</div></div>`).join('')}
+    ${customAbs.length?`
+    <div class="sep"></div>
+    <div class="sec-title">Habilidades & Manobras Customizadas</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      ${customAbs.map((a,idx)=>{
+        const isManobra=a.tipo==='manobra';
+        const canUse = isManobra ? true : (b.eng>=(a.energia||0));
+        const dadoTxt=a.dadoTipo?`${a.dadoFormula||''} (${a.dadoTipo})`:'';
+        const statusTxt=a.statusAttr?`${a.statusValor>0?'+':''}${a.statusValor} ${a.statusAttr.toUpperCase()} em ${a.statusAlvo==='proprio'?'si mesmo':'inimigo'}${a.statusDuracao?` por ${a.statusDuracao}t`:''}${a.statusTag?` [${a.statusTag}]`:''}${a.statusPerdeTurno?' (perde turno)':''}`:'';
+        return `<div class="manobra-item">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+            <div class="manobra-name" style="color:${isManobra?'var(--gold)':'var(--cyan)'}">${isManobra?'🌀':'⚡'} ${a.nome}</div>
+            <button class="btn btn-xs ${canUse?'btn-blue':'btn-gray'}" ${canUse?'':'disabled'} onclick="useCustomAbility(${n},${idx})">Usar</button>
+          </div>
+          ${a.desc?`<div class="manobra-desc">${a.desc}</div>`:''}
+          ${dadoTxt?`<div class="manobra-uses">🎲 ${dadoTxt}</div>`:''}
+          ${statusTxt?`<div class="manobra-uses">✨ ${statusTxt}</div>`:''}
+          <div class="manobra-uses">⚡ ${isManobra?'Gratuito':`Custo: ${a.energia||0} Energia`}</div>
+        </div>`;
+      }).join('')}
+    </div>` : ''}
+  `;
+}
+function useMan(n,i){const b=p(n);if(b.manUsosLeft<=0)return;b.manUsosLeft--;addLog(`${b.blader} usa <span class="lv gold">${b.manobra}</span>! Usos: ${b.manUsosLeft}`,'event');renderFicha(n);}
+
+// Use a custom ability/manobra during battle: rolls dice if configured, applies status effect, logs everything
+function useCustomAbility(n,idx){
+  const b=p(n);if(!b)return;
+  const a=(b.customAbilities||[])[idx];if(!a)return;
+  const isManobra=a.tipo==='manobra';
+  const cost=isManobra?0:(a.energia||0);
+  if(!isManobra && b.eng<cost){showToast('Energia insuficiente.','err');return;}
+
+  let rollTxt='';
+  if(a.dadoTipo && a.dadoFormula){
+    const parsed=parseRollFormula(a.dadoFormula, b);
+    if(parsed){
+      rollTxt=` → [${parsed.rolls.join(', ')}]${parsed.mod?` +${parsed.mod}`:''} = <span class="lv cyan">${parsed.total}</span>`;
+      if(a.dadoTipo==='dano'){
+        const target=p(n===1?2:1);
+        let dmgLeft=parsed.total;
+        let shieldAbs=0;
+        if(target.shield>0){
+          shieldAbs=Math.min(target.shield,dmgLeft);
+          target.shield-=shieldAbs;
+          dmgLeft-=shieldAbs;
+          if(target.shield<=0){target.shield=0;target.shieldTurnosRestantes=0;}
+        }
+        const abs=Math.min(target.armor,dmgLeft);
+        target.armor=Math.max(0,target.armor-abs);
+        target.hp=Math.max(0,target.hp-(dmgLeft-abs));
+        rollTxt+=` de dano em ${target.bey} (${shieldAbs>0?`${shieldAbs} no Escudo, `:''}${abs} na armadura)`;
+        renderC(n===1?2:1);
+      } else if(a.dadoTipo==='cura'){
+        b.hp=Math.min(b.hpMax,b.hp+parsed.total);
+        rollTxt+=` de cura`;
+      } else if(a.dadoTipo==='escudo'){
+        b.shield=(b.shield||0)+parsed.total;
+        b.shieldTurnosRestantes=a.escudoDuracao||2;
+        rollTxt+=` de Escudo (dura ${b.shieldTurnosRestantes} turno(s))`;
+      }
+    }
+  }
+
+  if(!isManobra)b.eng-=cost;
+
+  // Apply status effect
+  if(a.statusAttr && a.statusValor!==null){
+    const target = a.statusAlvo==='proprio' ? b : p(n===1?2:1);
+    if(!target.statusEffects)target.statusEffects=[];
+    target.statusEffects.push({
+      attr:a.statusAttr, valor:a.statusValor, turnosRestantes:a.statusDuracao||0,
+      tag:a.statusTag||'', perdeTurno:a.statusPerdeTurno||false, origem:a.nome
+    });
+    applyStatusEffects(target);
+  }
+
+  // Shield abilities log as 'event' (visible to player when it's their own bey) instead of 'roll' (hidden)
+  const logType = (a.dadoTipo==='escudo') ? 'event' : (isManobra?'event':'roll');
+  addLog(`${isManobra?'🌀':'⚡'} ${b.blader} usa <b>${a.nome}</b>${rollTxt}`, logType);
+  renderC(n);
+  renderFicha(n);
+}
+
+// Recalculate effective attributes based on active status effects
+function applyStatusEffects(target){
+  const base = target._baseAttrs || (target._baseAttrs = {atq:target.atq,def:target.def,vel:target.vel,eng:target.engMax});
+  let atq=base.atq, def=base.def, vel=base.vel, engMax=base.eng;
+  (target.statusEffects||[]).forEach(eff=>{
+    if(eff.attr==='atq')atq+=eff.valor;
+    if(eff.attr==='def')def+=eff.valor;
+    if(eff.attr==='vel')vel+=eff.valor;
+    if(eff.attr==='eng')engMax+=eff.valor;
+  });
+  target.atq=Math.max(0,atq);target.def=Math.max(0,def);target.vel=Math.max(0,vel);target.engMax=Math.max(1,engMax);
+}
+
+// Parse a dice formula like "2d6 + ATQ" or "1d4+3" using the bey's live attributes
+function parseRollFormula(formula, bey){
+  const m=formula.toLowerCase().match(/(\d+)d(\d+)\s*([+-]\s*\w+)?/);
+  if(!m)return null;
+  const qty=parseInt(m[1]), faces=parseInt(m[2]);
+  let mod=0;
+  if(m[3]){
+    const modStr=m[3].replace(/\s/g,'');
+    const sign=modStr[0]==='-'?-1:1;
+    const rest=modStr.slice(1).toLowerCase();
+    const attrMap={atq:bey.atq,def:bey.def,vel:bey.vel,eng:bey.eng};
+    mod = attrMap[rest]!==undefined ? sign*attrMap[rest] : sign*(parseInt(rest)||0);
+  }
+  const rolls=[];for(let i=0;i<qty;i++)rolls.push(Math.floor(Math.random()*faces)+1);
+  const total=rolls.reduce((a,c)=>a+c,0)+mod;
+  return {rolls,mod,total};
+}
+
+function switchTab(tabId,el){document.querySelectorAll('.tab-content').forEach(t=>t.className='tab-content');document.querySelectorAll('.tab-btn').forEach(b=>b.className='tab-btn');document.getElementById(tabId).className='tab-content active';el.className='tab-btn active';}
+
+// FORM HELPERS
+function selCat(cat){
+  document.getElementById('f-cat').value=cat;
+  ['player','npc','generico'].forEach(c=>{const el=document.getElementById('co-'+c);el.className='cat-opt'+(c===cat?' sel-'+c:'');});
+}
+function selType(t){
+  document.getElementById('f-type').value=t;
+  ['atk','def','eq','res'].forEach(x=>{const el=document.getElementById('to-'+x);el.className='type-opt'+(x===t?' sel-'+x:'');});
+  updPrev();
+}
+function updPrev(){
+  const bey=document.getElementById('f-bey').value||'—';
+  const blader=document.getElementById('f-blader').value||'Blader';
+  const type=document.getElementById('f-type').value||'atk';
+  const cat=document.getElementById('f-cat').value||'player';
+  const classe=document.getElementById('f-classe').value||'marrento';
+  const nivel=document.getElementById('f-nivel').value||1;
+  document.getElementById('prev-bey').textContent=bey;
+  document.getElementById('prev-blader').textContent=blader;
+  document.getElementById('prev-atq').textContent=document.getElementById('f-atq').value||3;
+  document.getElementById('prev-def').textContent=document.getElementById('f-def').value||3;
+  document.getElementById('prev-vel').textContent=document.getElementById('f-vel').value||3;
+  document.getElementById('prev-eng').textContent=document.getElementById('f-eng').value||5;
+  document.getElementById('prev-hp').textContent=document.getElementById('f-hp').value||25;
+  document.getElementById('prev-tags').innerHTML=`<span class="tp ${TC[type]}">${TM[type]}</span><span class="cat-pill cat-${cat}">${cat==='player'?'Player':cat==='npc'?'NPC':'Genérico'}</span><span class="level-tag">Nv ${nivel}</span>`;
+  document.getElementById('prevCard').style.borderTopColor=TCOL[type]||'var(--bord)';
+  const cls=CLASSES[classe]||{nome:classe,habilidades:[]};
+  document.getElementById('prev-cls-name').textContent=cls.nome;
+  document.getElementById('prev-habs').innerHTML=cls.habilidades.map(h=>`<div class="hab-item"><div class="hab-name">${h.nome}</div><div class="hab-desc">${h.desc}</div></div>`).join('');
+}
+
+// NAV
+function goScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.className='screen');
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('screen-'+id).className='screen active';
+  const map={roster:0,register:1,'battle-select':2,'pos-sessao':3,battle:4};
+  const tabs=document.querySelectorAll('.nav-tab');
+  if(map[id]!==undefined&&tabs[map[id]])tabs[map[id]].classList.add('active');
+  if(id==='roster'||id==='battle-select')renderRoster();
+  if(id==='pos-sessao')renderPosSessao();
+  if(id==='battle')startMasterBattlePoll();
+  else stopMasterBattlePoll();
+}
+
+// Master polls the cloud while viewing the battle screen, so actions taken by a player
+// on their own computer (e.g. using their own custom ability) show up here too.
+let masterBattlePollInterval=null;
+function startMasterBattlePoll(){
+  if(masterBattlePollInterval)return;
+  masterBattlePollInterval=setInterval(async()=>{
+    if(!bt.pl[0] && !bt.pl[1])return;
+    const remote=await dbGet(BATTLE_KEY);
+    if(!remote)return;
+    // Merge remote pl[] data into local bt — remote wins for fields the player could have changed,
+    // but we keep rendering through the normal local functions so the master's DOM stays in sync.
+    let changed=false;
+    [0,1].forEach(i=>{
+      if(remote.pl[i] && bt.pl[i] && JSON.stringify(remote.pl[i])!==JSON.stringify(bt.pl[i])){
+        bt.pl[i]=remote.pl[i];
+        changed=true;
+      }
+    });
+    if(remote.logHtml && remote.logHtml!==document.getElementById('combat-log').innerHTML){
+      document.getElementById('combat-log').innerHTML=remote.logHtml;
+      changed=true;
+    }
+    if(changed){renderC(1);renderC(2);buildActions();}
+  },3000);
+}
+function stopMasterBattlePoll(){
+  if(masterBattlePollInterval){clearInterval(masterBattlePollInterval);masterBattlePollInterval=null;}
+}
+
+// TOAST
+function showToast(msg,type){
+  const t=document.getElementById('toast');t.textContent=msg;t.className=`toast ${type||''} show`;setTimeout(()=>t.className='toast',2800);
+}
+
+
+
+// ===== TABELA DE PROGRESSÃO =====
+const PROG_TABLE = [
+  {nivel:1, xp:2, premio:"1 Ponto de Atributo para o Bey", attrPts:1, habs:0, evoPers:false, hpBonus:0},
+  {nivel:2, xp:3, premio:"1 Habilidade da Classe", attrPts:0, habs:1, evoPers:false, hpBonus:0},
+  {nivel:3, xp:3, premio:"2 Pontos de Atributo para o Bey", attrPts:2, habs:0, evoPers:false, hpBonus:0},
+  {nivel:4, xp:3, premio:"1 Habilidade da Classe + 1 Ponto de Atributo", attrPts:1, habs:1, evoPers:false, hpBonus:0},
+  {nivel:5, xp:4, premio:"Evolução Personalizada + 1 Ponto de Atributo", attrPts:1, habs:0, evoPers:true, hpBonus:0},
+  {nivel:6, xp:4, premio:"2 Pontos de Atributo para o Bey", attrPts:2, habs:0, evoPers:false, hpBonus:0},
+  {nivel:7, xp:4, premio:"1 Habilidade da Classe", attrPts:0, habs:1, evoPers:false, hpBonus:0},
+  {nivel:8, xp:4, premio:"3 Pontos de Atributo para o Bey", attrPts:3, habs:0, evoPers:false, hpBonus:0},
+  {nivel:9, xp:5, premio:"1 Ponto de Atributo + 1 Habilidade da Classe", attrPts:1, habs:1, evoPers:false, hpBonus:0},
+  {nivel:10, xp:5, premio:"Evolução Personalizada + 5 de HP", attrPts:0, habs:0, evoPers:true, hpBonus:5},
+];
+
+function getProg(nivel) {
+  return PROG_TABLE[Math.min(nivel-1, PROG_TABLE.length-1)] || PROG_TABLE[PROG_TABLE.length-1];
+}
+function getNextProg(nivel) {
+  return PROG_TABLE[Math.min(nivel, PROG_TABLE.length-1)] || null;
+}
+
+// Build XP table display
+function buildXpTable() {
+  const tbody = document.getElementById('xp-table-body');
+  tbody.innerHTML = PROG_TABLE.map((row,i) => `
+    <tr style="border-bottom:1px solid #1E3A8A44;${i%2===0?'background:#0d1b4b55':''}">
+      <td style="padding:7px 10px"><span style="font-family:monospace;font-weight:900;font-size:14px;color:var(--gold)">Nv ${row.nivel}</span></td>
+      <td style="padding:7px 10px;text-align:center"><span style="font-family:monospace;font-weight:700;color:var(--cyan)">${row.xp} XP</span></td>
+      <td style="padding:7px 10px;color:var(--text)">${row.premio}</td>
+    </tr>
+  `).join('');
+}
+
+// ===== PÓS-SESSÃO =====
+async function renderPosSessao() {
+  buildXpTable();
+  const all = await loadAll();
+  const players = all.filter(b => b.cat === 'player');
+  const grid = document.getElementById('pos-players-grid');
+
+  if (!players.length) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="icon">👤</div><p>Nenhum player cadastrado ainda.<br>Cadastre players na aba <b>Cadastrar</b>.</p></div>';
+    return;
+  }
+
+  grid.innerHTML = players.map(b => {
+    const xp = b.xp || 0;
+    const nivel = b.nivel || 1;
+    const eb = b.eb || 1;
+    const ebMax = b.ebMax || 10;
+    const nextProg = getNextProg(nivel);
+    const xpNeeded = nextProg ? nextProg.xp : '—';
+    const xpPct = nextProg ? Math.min(100, (xp / nextProg.xp) * 100) : 100;
+    const habs = (b.habilidades || []);
+    const cls = CLASSES[b.classe] || {nome:b.classe, habilidades:[]};
+    const maxHabs = cls.habilidades.length;
+
+    return `
+    <div class="panel" style="border-top:3px solid ${TCOL[b.type]||'var(--bord)'}">
+      <!-- HEADER -->
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+        <div>
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted)">${b.blader}</div>
+          <div style="font-size:17px;font-weight:900">${b.bey}</div>
+          <div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap">
+            <span class="tp ${TC[b.type]}">${TM[b.type]}</span>
+            <span class="cat-pill cat-player">Player</span>
+            <span class="level-tag">Nível ${nivel}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- XP BAR -->
+      <div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:4px">
+          <span>XP</span>
+          <span>${xp}${nextProg?' / '+xpNeeded:' (Max)'}</span>
+        </div>
+        <div style="background:#0a1540;border-radius:6px;height:14px;overflow:hidden;border:1px solid var(--bord)">
+          <div style="height:100%;border-radius:6px;background:linear-gradient(90deg,#9B1C22,var(--gold));width:${xpPct}%;transition:width .5s"></div>
+        </div>
+      </div>
+
+      <!-- EB -->
+      <div style="margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:5px">
+          <span>Espírito Blader</span><span>${eb}/${ebMax}</span>
+        </div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap" id="ps-eb-${b.id}">
+          ${Array.from({length:ebMax},(_,i)=>`<div class="eb-dot${i<eb?' filled':''}" onclick="toggleEbPs('${b.id}',${i+1})"></div>`).join('')}
+        </div>
+      </div>
+
+      <!-- HABILIDADES DESBLOQUEADAS -->
+      <div style="margin-bottom:12px">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:6px">Habilidades Desbloqueadas (${habs.length}/${maxHabs})</div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          ${cls.habilidades.map((h,i) => {
+            const unlocked = habs.includes(h.nome) || i === 0;
+            return `<div style="background:var(--bg);border:1px solid ${unlocked?'var(--cyan)':'var(--bord)'};border-radius:6px;padding:6px 10px;opacity:${unlocked?1:0.45}">
+              <div style="font-size:11px;font-weight:700;color:${unlocked?'var(--cyan)':'var(--muted)'}">${unlocked?'✓':' '} ${h.nome}</div>
+              ${unlocked?`<div style="font-size:10px;color:var(--muted);margin-top:2px">${h.desc}</div>`:''}
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+
+      <div class="sep"></div>
+
+      <!-- XP ACTIONS -->
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px">Conceder XP</div>
+      <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px">
+        <button class="btn btn-gold" style="text-align:left;padding:10px 12px;font-size:12px;font-weight:700;text-transform:none;letter-spacing:0;display:flex;justify-content:space-between;align-items:center" onclick="grantXp('${b.id}','boss')">
+          <span>👑 Derrotou um Boss / Jogador sério</span>
+          <span style="font-size:11px;background:#FFD70033;border-radius:4px;padding:2px 7px">+1 XP</span>
+        </button>
+        <button class="btn btn-blue" style="text-align:left;padding:10px 12px;font-size:12px;font-weight:700;text-transform:none;letter-spacing:0;display:flex;justify-content:space-between;align-items:center" onclick="grantXp('${b.id}','genericos')">
+          <span>⚙️ Derrotou 5 Beys Genéricos</span>
+          <span style="font-size:11px;background:#1E90FF33;border-radius:4px;padding:2px 7px">+1 XP</span>
+        </button>
+        <button class="btn btn-green" style="text-align:left;padding:10px 12px;font-size:12px;font-weight:700;text-transform:none;letter-spacing:0;display:flex;justify-content:space-between;align-items:center" onclick="grantXp('${b.id}','desafio')">
+          <span>⭐ Superou Desafio / Evolução Pessoal</span>
+          <span style="font-size:11px;background:#27AE6033;border-radius:4px;padding:2px 7px">+1 XP</span>
+        </button>
+      </div>
+
+      <!-- EB ACTIONS -->
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px">Ações de EB</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn btn-blue btn-sm" onclick="grantEb('${b.id}', 1)">+1 EB</button>
+        <button class="btn btn-blue btn-sm" onclick="grantEb('${b.id}', 2)">+2 EB</button>
+        <button class="btn btn-blue btn-sm" onclick="grantEb('${b.id}', 3)">+3 EB</button>
+        <button class="btn btn-gray btn-sm" onclick="resetEb('${b.id}')">↺ Reset EB</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Toggle EB dots in pós-sessão
+async function toggleEbPs(id, val) {
+  const b = await dbGet('blader:'+id);
+  if (!b) return;
+  b.eb = val;
+  await dbSet('blader:'+id, b);
+  renderPosSessao();
+}
+
+// Grant EB
+async function grantEb(id, amount) {
+  const b = await dbGet('blader:'+id);
+  if (!b) return;
+  b.eb = Math.min(b.ebMax, (b.eb||1) + amount);
+  await dbSet('blader:'+id, b);
+  showToast(`+${amount} EB para ${b.blader}!`, 'ok');
+  renderPosSessao();
+}
+
+async function resetEb(id) {
+  const b = await dbGet('blader:'+id);
+  if (!b) return;
+  b.eb = 1;
+  await dbSet('blader:'+id, b);
+  showToast(`EB de ${b.blader} resetado para 1.`, 'ok');
+  renderPosSessao();
+}
+
+// Grant XP + level up check
+async function grantXp(id, tipo) {
+  const b = await dbGet('blader:'+id);
+  if (!b) return;
+  b.xp = (b.xp || 0) + 1;
+  const labels = {boss:'Boss derrotado',genericos:'5 Genéricos derrotados',desafio:'Desafio superado'};
+  showToast(`+1 XP — ${b.blader} (${labels[tipo]})`, 'ok');
+
+  // Check level up
+  const nivelAtual = b.nivel || 1;
+  const nextProg = getNextProg(nivelAtual);
+  if (nextProg && b.xp >= nextProg.xp && nivelAtual < 10) {
+    b.xp = b.xp - nextProg.xp; // carry over
+    b.nivel = nivelAtual + 1;
+    if (!b.habilidades) b.habilidades = [];
+    if (!b.pendingRewards) b.pendingRewards = [];
+    // Apply HP bonus immediately (no choice needed)
+    if (nextProg.hpBonus) {
+      b.hpMax = (b.hpMax||25) + nextProg.hpBonus;
+    }
+    // Queue choices that need resolution (by player or master)
+    if (nextProg.attrPts > 0 || nextProg.habs > 0 || nextProg.evoPers) {
+      b.pendingRewards.push({
+        nivel: nivelAtual + 1,
+        attrPts: nextProg.attrPts || 0,
+        habs: nextProg.habs || 0,
+        evoPers: nextProg.evoPers || false,
+        premio: nextProg.premio,
+        resolved: false,
+      });
+    }
+    await dbSet('blader:'+id, b);
+    showLevelUp(b, nivelAtual + 1, nextProg.premio);
+  } else {
+    await dbSet('blader:'+id, b);
+  }
+  renderPosSessao();
+}
+
+// Level Up modal
+function showLevelUp(b, novoNivel, premio) {
+  document.getElementById('lu-name').textContent = `${b.blader} — ${b.bey}`;
+  document.getElementById('lu-nivel').textContent = `Nível ${novoNivel - 1} → Nível ${novoNivel}`;
+  document.getElementById('lu-prize').innerHTML = `<span style="color:var(--gold);font-weight:700">${premio}</span>`;
+  document.getElementById('levelUpModal').className = 'modal-overlay open';
+}
+function closeLevelUp() {
+  document.getElementById('levelUpModal').className = 'modal-overlay';
+}
+
+// ===== MASTER EVOLUTION MODAL (anytime edit) =====
+let evoCurrentId=null;
+
+function openEvolutionModal(b){
+  evoCurrentId=b.id;
+  document.getElementById('evo-name').textContent=`${b.blader} — ${b.bey}`;
+  document.getElementById('evo-atq').value=b.atq;
+  document.getElementById('evo-def').value=b.def;
+  document.getElementById('evo-vel').value=b.vel;
+  document.getElementById('evo-eng').value=b.engMax;
+  document.getElementById('evo-hp').value=b.hpMax;
+  document.getElementById('evo-eb').value=b.ebMax;
+
+  const cls=CLASSES[b.classe]||{nome:b.classe,habilidades:[]};
+  document.getElementById('evo-cls-name').textContent=cls.nome;
+  const habs=b.habilidades||[];
+  document.getElementById('evo-habs-list').innerHTML=cls.habilidades.map((h,i)=>{
+    const unlocked=habs.includes(h.nome);
+    const isPassive=i===0;
+    return `<div class="hab-item" style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+      <div style="flex:1">
+        <div class="hab-name">${h.nome}${isPassive?' <span style="color:var(--muted);font-size:10px">(passiva)</span>':''}</div>
+        <div class="hab-desc">${h.desc}</div>
+      </div>
+      <label style="display:flex;align-items:center;gap:5px;cursor:pointer;flex-shrink:0">
+        <input type="checkbox" ${unlocked?'checked':''} ${isPassive?'disabled':''} onchange="toggleHabMaster('${b.id}','${h.nome.replace(/'/g,"&#39;")}',this.checked)" style="accent-color:var(--cyan);width:16px;height:16px">
+      </label>
+    </div>`;
+  }).join('');
+
+  const pending=(b.pendingRewards||[]).filter(r=>!r.resolved);
+  const pList=document.getElementById('evo-pending-list');
+  if(!pending.length){
+    pList.innerHTML='<div style="font-size:12px;color:var(--muted)">Nenhuma recompensa pendente.</div>';
+  } else {
+    pList.innerHTML=pending.map((r,idx)=>`
+      <div style="background:#FFD70011;border:1px solid var(--gold);border-radius:8px;padding:10px 12px">
+        <div style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:6px">Nível ${r.nivel} — ${r.premio}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          ${r.attrPts>0?`<button class="btn btn-blue btn-xs" onclick="resolvePendingMaster('${b.id}',${idx},'attr')">Distribuir ${r.attrPts} pt(s) de Atributo</button>`:''}
+          ${r.habs>0?`<button class="btn btn-blue btn-xs" onclick="resolvePendingMaster('${b.id}',${idx},'hab')">Escolher ${r.habs} Habilidade</button>`:''}
+          ${r.evoPers?`<button class="btn btn-blue btn-xs" onclick="resolvePendingMaster('${b.id}',${idx},'evo')">Marcar Evolução Personalizada como resolvida</button>`:''}
+        </div>
+      </div>`).join('');
+  }
+
+  renderCustomAbilitiesList(b);
+
+  document.getElementById('evolutionModal').className='modal-overlay open';
+}
+function closeEvolutionModal(){
+  document.getElementById('evolutionModal').className='modal-overlay';
+  evoCurrentId=null;
+  renderRoster();
+}
+
+function renderCustomAbilitiesList(b){
+  const list=document.getElementById('evo-custom-abilities-list');
+  const abilities=b.customAbilities||[];
+  if(!abilities.length){
+    list.innerHTML='<div style="font-size:12px;color:var(--muted)">Nenhuma habilidade ou manobra customizada ainda.</div>';
+    return;
+  }
+  list.innerHTML=abilities.map((a,idx)=>{
+    const dadoTxt=a.dadoTipo?`<span class="lv cyan">${a.dadoFormula||'—'}</span> <span style="color:var(--muted)">(${a.dadoTipo})</span>`:'';
+    const statusTxt=a.statusAttr?`<span style="color:${a.statusValor<0?'var(--red)':'var(--res)'}">${a.statusValor>0?'+':''}${a.statusValor} ${a.statusAttr.toUpperCase()}</span> em <b>${a.statusAlvo==='proprio'?'si mesmo':'inimigo'}</b>${a.statusDuracao?` por ${a.statusDuracao} turno(s)`:''}${a.statusTag?` <span class="cat-pill cat-npc" style="margin-left:4px">${a.statusTag}</span>`:''}${a.statusPerdeTurno?' <span style="color:var(--red);font-weight:700">(perde o turno)</span>':''}`:'';
+    return `
+    <div style="background:var(--bg);border:1px solid var(--bord);border-radius:8px;padding:10px 12px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:4px">
+        <div style="font-size:13px;font-weight:700;color:${a.tipo==='manobra'?'var(--gold)':'var(--cyan)'}">${a.tipo==='manobra'?'🌀':'⚡'} ${a.nome}</div>
+        <div style="display:flex;gap:4px;flex-shrink:0">
+          <button class="btn btn-gray btn-xs" onclick='openAbilityEditor(${JSON.stringify({...a,_idx:idx}).replace(/'/g,"&#39;")})'>✏️</button>
+          <button class="btn btn-red btn-xs" onclick="deleteCustomAbility('${b.id}',${idx})">🗑️</button>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px">${a.desc||''}</div>
+      <div style="display:flex;flex-direction:column;gap:3px;font-size:11px">
+        ${dadoTxt?`<div>🎲 ${dadoTxt}</div>`:''}
+        ${statusTxt?`<div>✨ ${statusTxt}</div>`:''}
+        <div>⚡ Custo: ${a.tipo==='manobra'?'<span style="color:var(--res)">Gratuito (Manobra Especial)</span>':`<span style="color:var(--gold)">${a.energia||0} de Energia</span>`}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function saveEvoAttrs(){
+  if(!evoCurrentId)return;
+  const b=await dbGet('blader:'+evoCurrentId);
+  if(!b)return;
+  b.atq=parseInt(document.getElementById('evo-atq').value)||0;
+  b.def=parseInt(document.getElementById('evo-def').value)||0;
+  b.vel=parseInt(document.getElementById('evo-vel').value)||0;
+  b.engMax=parseInt(document.getElementById('evo-eng').value)||5;
+  b.hpMax=parseInt(document.getElementById('evo-hp').value)||25;
+  b.ebMax=parseInt(document.getElementById('evo-eb').value)||10;
+  await dbSet('blader:'+evoCurrentId,b);
+  showToast('Atributos atualizados!','ok');
+  renderRoster();
+}
+
+async function toggleHabMaster(id,habNome,checked){
+  const b=await dbGet('blader:'+id);
+  if(!b)return;
+  if(!b.habilidades)b.habilidades=[];
+  if(checked && !b.habilidades.includes(habNome)){
+    b.habilidades.push(habNome);
+  } else if(!checked){
+    b.habilidades=b.habilidades.filter(h=>h!==habNome);
+  }
+  await dbSet('blader:'+id,b);
+  showToast(checked?`Habilidade desbloqueada: ${habNome}`:`Habilidade bloqueada: ${habNome}`,'ok');
+}
+
+// Master resolving a pending reward directly (quick-resolve, marks as done)
+async function resolvePendingMaster(id,idx,kind){
+  const b=await dbGet('blader:'+id);
+  if(!b||!b.pendingRewards||!b.pendingRewards[idx])return;
+  const reward=b.pendingRewards[idx];
+
+  if(kind==='attr'){
+    const cur=`ATQ:${b.atq} DEF:${b.def} VEL:${b.vel} ENG:${b.engMax}`;
+    const choice=prompt(`Distribuir ${reward.attrPts} ponto(s) de atributo.\nAtuais — ${cur}\n\nDigite no formato: atq,def,vel,eng (ex: 2,0,0,0)`,'0,0,0,0');
+    if(choice===null)return;
+    const parts=choice.split(',').map(x=>parseInt(x.trim())||0);
+    const total=parts.reduce((a,c)=>a+c,0);
+    if(total!==reward.attrPts){showToast(`Total deve somar exatamente ${reward.attrPts}.`,'err');return;}
+    b.atq+=parts[0]||0;b.def+=parts[1]||0;b.vel+=parts[2]||0;b.engMax+=parts[3]||0;
+    reward.resolved=true;
+    await dbSet('blader:'+id,b);
+    showToast('Atributos distribuídos!','ok');
+    openEvolutionModal(b);
+  } else if(kind==='hab'){
+    const cls=CLASSES[b.classe];
+    if(!cls)return;
+    const locked=cls.habilidades.filter(h=>!(b.habilidades||[]).includes(h.nome));
+    if(!locked.length){showToast('Todas as habilidades já estão desbloqueadas.','err');return;}
+    const opts=locked.map((h,i)=>`${i+1}. ${h.nome}`).join('\n');
+    const choice=prompt(`Escolha a habilidade a desbloquear:\n${opts}`,'1');
+    if(choice===null)return;
+    const i=parseInt(choice)-1;
+    if(i<0||i>=locked.length){showToast('Opção inválida.','err');return;}
+    if(!b.habilidades)b.habilidades=[];
+    b.habilidades.push(locked[i].nome);
+    reward.resolved=true;
+    await dbSet('blader:'+id,b);
+    showToast(`Habilidade desbloqueada: ${locked[i].nome}`,'ok');
+    openEvolutionModal(b);
+  } else if(kind==='evo'){
+    reward.resolved=true;
+    await dbSet('blader:'+id,b);
+    showToast('Evolução Personalizada marcada como resolvida.','ok');
+    openEvolutionModal(b);
+  }
+  renderRoster();
+}
+
+
+// ============ PLAYER MODE ============
+let playerSession = null; // {bladerId, slotNum}
+let playerPollInterval = null;
+
+function openPlayerGate(){
+  document.getElementById('playerOverlay').style.display='block';
+  document.getElementById('playerGate').style.display='flex';
+  document.getElementById('playerView').style.display='none';
+  document.getElementById('pin-input').value='';
+  document.getElementById('pin-error').style.display='none';
+  document.getElementById('pin-input').focus();
+}
+function closePlayerOverlay(){
+  document.getElementById('playerOverlay').style.display='none';
+  if(playerPollInterval){clearInterval(playerPollInterval);playerPollInterval=null;}
+}
+
+async function playerLogin(){
+  const pin=document.getElementById('pin-input').value.trim();
+  const all=await loadAll();
+  const found=all.find(b=>b.cat==='player' && b.pin===pin);
+  if(!found){
+    document.getElementById('pin-error').style.display='block';
+    return;
+  }
+  playerSession={bladerId:found.id};
+  document.getElementById('playerGate').style.display='none';
+  document.getElementById('playerView').style.display='block';
+  await checkPlayerPendingRewards();
+  renderPlayerView();
+  if(playerPollInterval)clearInterval(playerPollInterval);
+  playerPollInterval=setInterval(renderPlayerView,2000);
+}
+
+function playerLogout(){
+  playerSession=null;
+  if(playerPollInterval){clearInterval(playerPollInterval);playerPollInterval=null;}
+  openPlayerGate();
+}
+
+async function renderPlayerView(){
+  if(!playerSession)return;
+  checkPlayerPendingRewards();
+
+  // Player reads the battle state from the cloud — their own `bt` is always empty,
+  // since only the master's browser ever calls startBattle().
+  const remoteBattle=await dbGet(BATTLE_KEY);
+  if(!remoteBattle || (!remoteBattle.pl[0] && !remoteBattle.pl[1])){
+    document.getElementById('player-no-battle').style.display='block';
+    document.getElementById('player-battle-content').style.display='none';
+    return;
+  }
+  const turn=remoteBattle.turn;
+  const b1=remoteBattle.pl[0], b2=remoteBattle.pl[1];
+  let me=null, enemy=null;
+  if(b1 && b1.id===playerSession.bladerId){me=b1;enemy=b2;}
+  else if(b2 && b2.id===playerSession.bladerId){me=b2;enemy=b1;}
+
+  if(!me || !enemy){
+    document.getElementById('player-no-battle').style.display='block';
+    document.getElementById('player-battle-content').style.display='none';
+    return;
+  }
+  document.getElementById('player-no-battle').style.display='none';
+  document.getElementById('player-battle-content').style.display='block';
+
+  document.getElementById('pv-turn').textContent=`Turno ${turn}`;
+
+  // OWN BEY - full info
+  document.getElementById('pv-own-blader').textContent=me.blader.toUpperCase();
+  document.getElementById('pv-own-bey').textContent=me.bey;
+  const tEl=document.getElementById('pv-own-type');tEl.textContent=TM[me.type];tEl.className=`tp ${TC[me.type]}`;
+  document.getElementById('pv-own-classe').textContent=CLASSES[me.classe]?.nome||me.classe;
+  document.getElementById('pv-own-nivel').textContent=`Nv ${me.nivel}`;
+  document.getElementById('pv-own-card').className=`bey-card ${CC[me.type]}`;
+  document.getElementById('pv-own-atq').textContent=me.atq;
+  document.getElementById('pv-own-def').textContent=me.def;
+  document.getElementById('pv-own-vel').textContent=me.vel;
+  document.getElementById('pv-own-eng').textContent=me.eng;
+  const pct=Math.max(0,me.hp/me.hpMax*100);
+  const hbar=document.getElementById('pv-own-hp-bar');
+  hbar.style.width=pct+'%';hbar.textContent=Math.max(0,me.hp);
+  hbar.className='hp-bar '+(pct>60?'high':pct>30?'mid':'low');
+  document.getElementById('pv-own-hp-lbl').textContent=`${Math.max(0,me.hp)}/${me.hpMax}`;
+  const pvShieldWrap=document.getElementById('pv-own-shield-wrap');
+  const pvShieldBar=document.getElementById('pv-own-shield-bar');
+  if(me.shield>0){
+    pvShieldWrap.className='shield-bar-wrap active';
+    const shieldMax=me._shieldPeak=Math.max(me._shieldPeak||0,me.shield);
+    pvShieldBar.style.width=Math.min(100,(me.shield/shieldMax)*100)+'%';
+    pvShieldBar.textContent=`🛡️ ${me.shield}${me.shieldTurnosRestantes?` (${me.shieldTurnosRestantes}t)`:''}`;
+  } else {
+    pvShieldWrap.className='shield-bar-wrap';
+    me._shieldPeak=0;
+  }
+  const abar=document.getElementById('pv-own-arm-bar');
+  abar.style.width=(me.armorMax>0?me.armor/me.armorMax*100:0)+'%';
+  document.getElementById('pv-own-arm-lbl').textContent=`${me.armor}/${me.armorMax}`;
+  rdots('pv-own-eng-dots',me.eng,me.engMax,'energy-dot');
+  rdots('pv-own-eb-dots',me.eb,me.ebMax,'eb-dot');
+  const pe=document.getElementById('pv-own-presas');
+  pe.className='presas-tag'+(me.presas?' active':'');
+  pe.textContent=me.presas?'🔥 Presas do Coração — ATIVO':'⭕ Presas do Coração — Inativo';
+
+  // ENEMY - only HP bar as vague indicator, no numbers, no type
+  const epct=Math.max(0,enemy.hp/enemy.hpMax*100);
+  const ebar=document.getElementById('pv-enemy-hp-bar');
+  ebar.style.width=epct+'%';
+  ebar.className='hp-bar '+(epct>60?'high':epct>30?'mid':'low');
+  ebar.textContent='';
+
+  // ABILITIES
+  const cls=CLASSES[me.classe]||{nome:me.classe,habilidades:[]};
+  document.getElementById('pv-cls-name').textContent=cls.nome;
+  const habs=me.habilidades||[];
+  document.getElementById('pv-habs').innerHTML=cls.habilidades.map((h,i)=>{
+    const unlocked=habs.includes(h.nome)||i===0;
+    return `<div class="hab-item" style="opacity:${unlocked?1:0.4}"><div class="hab-name">${unlocked?'✓ ':'🔒 '}${h.nome}</div>${unlocked?`<div class="hab-desc">${h.desc}</div>`:''}</div>`;
+  }).join('');
+
+  // CUSTOM ABILITIES / MANOBRAS — player can use them too if energy allows
+  const customAbs=me.customAbilities||[];
+  let pvCustomHtml='';
+  if(customAbs.length){
+    pvCustomHtml='<div class="panel" style="margin-bottom:14px"><div class="panel-title">Habilidades & Manobras Especiais</div><div style="display:flex;flex-direction:column;gap:8px">'+
+      customAbs.map((a,idx)=>{
+        const isManobra=a.tipo==='manobra';
+        const canUse=isManobra?true:(me.eng>=(a.energia||0));
+        const dadoTxt=a.dadoTipo?`${a.dadoFormula||''} (${a.dadoTipo})`:'';
+        return `<div class="manobra-item">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+            <div class="manobra-name" style="color:${isManobra?'var(--gold)':'var(--cyan)'}">${isManobra?'🌀':'⚡'} ${a.nome}</div>
+            <button class="btn btn-xs ${canUse?'btn-blue':'btn-gray'}" ${canUse?'':'disabled'} onclick="usePlayerCustomAbility(${idx})">Usar</button>
+          </div>
+          ${a.desc?`<div class="manobra-desc">${a.desc}</div>`:''}
+          ${dadoTxt?`<div class="manobra-uses">🎲 ${dadoTxt}</div>`:''}
+          <div class="manobra-uses">⚡ ${isManobra?'Gratuito':`Custo: ${a.energia||0} Energia`}</div>
+        </div>`;
+      }).join('')+'</div></div>';
+  }
+  const existingCustomPanel=document.getElementById('pv-custom-abilities-panel');
+  if(existingCustomPanel)existingCustomPanel.remove();
+  if(pvCustomHtml){
+    const wrapper=document.createElement('div');
+    wrapper.id='pv-custom-abilities-panel';
+    wrapper.innerHTML=pvCustomHtml;
+    document.getElementById('pv-own-card').insertAdjacentElement('afterend',wrapper);
+  }
+
+  // ACTIVE STATUS EFFECTS on own bey
+  const statusEffects=me.statusEffects||[];
+  const existingStatusPanel=document.getElementById('pv-status-panel');
+  if(existingStatusPanel)existingStatusPanel.remove();
+  if(statusEffects.length){
+    const statusHtml=`<div id="pv-status-panel" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">${statusEffects.map(eff=>
+      `<span class="cat-pill ${eff.valor<0?'cat-npc':'cat-player'}">${eff.tag||eff.attr.toUpperCase()} ${eff.valor>0?'+':''}${eff.valor} ${eff.attr.toUpperCase()}${eff.turnosRestantes?` (${eff.turnosRestantes}t)`:''}</span>`
+    ).join('')}</div>`;
+    document.getElementById('pv-own-card').insertAdjacentHTML('beforebegin',statusHtml);
+  }
+
+  // TURN STATUS — tells the player clearly whether it's their turn or the opponent's
+  const mySlot = (b1 && b1.id===playerSession.bladerId) ? 1 : 2;
+  const isMyTurn = remoteBattle.activeSlot===mySlot;
+  const turnStatusEl=document.getElementById('pv-turn-status-text');
+  const turnStatusBox=document.getElementById('pv-turn-status');
+  if(remoteBattle.activeSlot===null||remoteBattle.activeSlot===undefined){
+    turnStatusEl.textContent='Aguardando o mestre definir quem age';
+    turnStatusBox.style.borderColor='var(--bord)';
+    turnStatusEl.style.color='var(--muted)';
+  } else if(isMyTurn){
+    turnStatusEl.textContent='🟢 É o seu turno — use uma Ação';
+    turnStatusBox.style.borderColor='var(--res)';
+    turnStatusEl.style.color='var(--res)';
+  } else {
+    turnStatusEl.textContent='🟡 Turno do oponente — você só pode Reagir';
+    turnStatusBox.style.borderColor='var(--gold)';
+    turnStatusEl.style.color='var(--gold)';
+  }
+
+  // ACTION / REACTION BUTTONS
+  const pvActionsList=document.getElementById('pv-actions-list');
+  pvActionsList.innerHTML=ACTIONS.map(a=>{
+    const costLabel=a.cost===0?'Livre':`${a.cost}E`;
+    const cc=a.cost===0?'cost-free':a.cost===1?'cost-1e':'cost-2e';
+    const catLabel=a.categoria==='reacao'?'Reação':'Ação';
+    const catColor=a.categoria==='reacao'?'var(--gold)':'var(--cyan)';
+    const turnOk=isActionAllowed(mySlot,a,remoteBattle.activeSlot);
+    const canAfford=me.eng>=a.cost;
+    const usable=canAfford&&turnOk;
+    return `<div class="action-item" style="cursor:${usable?'pointer':'not-allowed'};opacity:${usable?1:0.4}" ${usable?`onclick="executePlayerAction('${a.id}')"`:''}>
+      <div class="action-cost ${cc}">${costLabel}</div>
+      <div style="flex:1">
+        <div class="action-name">${a.nome} <span style="font-size:9px;color:${catColor};text-transform:uppercase;letter-spacing:.5px">· ${catLabel}</span></div>
+        ${a.formula?`<div class="action-roll">${a.formula}</div>`:''}
+        <div class="action-desc">${a.desc}</div>
+        ${!turnOk?`<div style="font-size:10px;color:var(--red);margin-top:2px">${a.categoria==='reacao'?'Disponível só fora do seu turno':'Disponível só no seu turno'}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+
+  // MANOBRA
+  document.getElementById('pv-man-name').textContent=me.manobra;
+  document.getElementById('pv-man-desc').textContent=me.manobraDesc||'';
+  document.getElementById('pv-man-uses').textContent=`Usos restantes: ${me.manUsosLeft}/${me.manobraUsos}`;
+  const manBtn=document.getElementById('pv-man-use-btn');
+  manBtn.disabled=me.manUsosLeft<=0;
+  manBtn.className=me.manUsosLeft>0?'btn btn-gold btn-xs':'btn btn-gray btn-xs';
+
+  // LOG - player only sees: damage dealt/received involving their own bey, plus generic turn/event markers.
+  // Everything about the enemy's rolls, armor, energy, recharge etc is fully hidden.
+  // Reads from remoteBattle.logHtml (synced from the master's browser) since the player has no local copy of the master's log DOM.
+  const tempLogContainer=document.createElement('div');
+  tempLogContainer.innerHTML=remoteBattle.logHtml||'';
+  const myName=me.bey, enemyName=enemy.bey;
+  const logEntries=Array.from(tempLogContainer.children).slice().reverse(); // oldest to newest for clean re-render, then reverse back
+  const filtered=[];
+  logEntries.forEach(entry=>{
+    const turnEl=entry.querySelector('.log-turn');
+    const textEl=entry.querySelector('.log-text');
+    if(!textEl)return;
+    const isDmg=entry.classList.contains('dmg');
+    const isHeal=entry.classList.contains('heal');
+    const isEvent=entry.classList.contains('event');
+    let txt=textEl.textContent; // plain text, no spans, to avoid leaking exact numbers styling
+
+    if(isDmg){
+      // Only show damage lines that involve the player's own bey (received) — hide damage dealt detail to enemy beyond a simple notice
+      if(txt.includes(myName)){
+        filtered.push({turn:turnEl?turnEl.textContent:'',text:txt,cls:'dmg'});
+      } else if(txt.includes(enemyName)){
+        // Player caused damage — tell them generically without revealing enemy HP/armor numbers
+        filtered.push({turn:turnEl?turnEl.textContent:'',text:'Você acertou um golpe no oponente!',cls:'dmg'});
+      }
+    } else if(isHeal){
+      if(txt.includes(myName)){
+        filtered.push({turn:turnEl?turnEl.textContent:'',text:txt,cls:'heal'});
+      }
+      // heals/recharges on enemy are fully hidden
+    } else if(txt.startsWith('Iniciativa:')){
+      // Initiative result: reveal who goes first, but strip the exact numeric rolls of both sides
+      const safe=txt.replace(/\(\d+\)/g,'');
+      filtered.push({turn:turnEl?turnEl.textContent:'',text:safe,cls:'roll'});
+    } else if(isEvent){
+      // Keep generic narrative markers (turn separators, KO, presas, expulsão) but strip any enemy-specific numbers
+      if(/^─── Turno/.test(txt) || txt.includes('expulso da arena') || txt.includes('Duelo:') || txt.includes('PRESAS DO CORAÇÃO') || txt.includes('Iniciativa')){
+        let safe=txt;
+        if(!txt.includes(myName)){
+          // generic event mentioning enemy — strip specifics, just note it happened
+          safe=safe.replace(/\(\d+ vs \d+\)/g,'').replace(/\d+\/\d+/g,'');
+        }
+        filtered.push({turn:turnEl?turnEl.textContent:'',text:safe,cls:'event'});
+      } else if(txt.includes('Escudo') && txt.includes(myName)){
+        // Shield gained/dissipated on own bey — fully visible
+        filtered.push({turn:turnEl?turnEl.textContent:'',text:txt,cls:'event'});
+      } else if(txt.includes('Escudo') && txt.includes(enemyName)){
+        // Enemy shield activity — only a vague notice, no numbers
+        filtered.push({turn:turnEl?turnEl.textContent:'',text:'O oponente parece estar protegido por algo.',cls:'event'});
+      }
+    }
+    // roll-type entries are never shown to the player
+  });
+  document.getElementById('pv-log').innerHTML=filtered.slice().reverse().map(e=>
+    `<div class="log-entry ${e.cls}"><div class="log-turn">${e.turn}</div><div class="log-text">${e.text}</div></div>`
+  ).join('') || '<div class="log-entry event"><div class="log-turn">—</div><div class="log-text">Nenhum evento ainda.</div></div>';
+}
+
+// ===== PLAYER REWARD RESOLUTION FLOW =====
+async function checkPlayerPendingRewards(){
+  if(!playerSession)return;
+  const b=await dbGet('blader:'+playerSession.bladerId);
+  if(!b)return;
+  const pending=(b.pendingRewards||[]).filter(r=>!r.resolved);
+  document.getElementById('pv-reward-banner').style.display=pending.length?'block':'none';
+}
+
+async function openPlayerRewardFlow(){
+  const b=await dbGet('blader:'+playerSession.bladerId);
+  if(!b)return;
+  const pending=(b.pendingRewards||[]).filter(r=>!r.resolved);
+  if(!pending.length){closePlayerRewardFlow();return;}
+  const reward=pending[0];
+  const idx=(b.pendingRewards||[]).indexOf(reward);
+
+  document.getElementById('playerGate').style.display='none';
+  document.getElementById('playerView').style.display='none';
+  document.getElementById('playerRewardFlow').style.display='flex';
+
+  document.getElementById('prf-sub').textContent=`Nível ${reward.nivel} — ${reward.premio}`;
+  const body=document.getElementById('prf-body');
+
+  let html='';
+
+  if(reward.attrPts>0){
+    html+=`
+      <div style="margin-bottom:16px">
+        <div class="sec-title">Distribua ${reward.attrPts} ponto(s) de atributo</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:10px">Atuais — ATQ ${b.atq} · DEF ${b.def} · VEL ${b.vel} · ENG ${b.engMax}</div>
+        <div class="g4">
+          <div><label>ATQ</label><input class="num-in prf-attr" id="prf-atq" type="number" value="0" min="0" max="${reward.attrPts}"></div>
+          <div><label>DEF</label><input class="num-in prf-attr" id="prf-def" type="number" value="0" min="0" max="${reward.attrPts}"></div>
+          <div><label>VEL</label><input class="num-in prf-attr" id="prf-vel" type="number" value="0" min="0" max="${reward.attrPts}"></div>
+          <div><label>ENG</label><input class="num-in prf-attr" id="prf-eng" type="number" value="0" min="0" max="${reward.attrPts}"></div>
+        </div>
+        <div style="font-size:11px;color:var(--gold);margin-top:6px" id="prf-attr-total">Total distribuído: 0 / ${reward.attrPts}</div>
+      </div>`;
+  }
+
+  if(reward.habs>0){
+    const cls=CLASSES[b.classe]||{habilidades:[]};
+    const locked=cls.habilidades.filter(h=>!(b.habilidades||[]).includes(h.nome));
+    html+=`
+      <div style="margin-bottom:16px">
+        <div class="sec-title">Escolha ${reward.habs} habilidade(s) para desbloquear</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          ${locked.map((h,i)=>`
+            <label class="hab-item" style="display:flex;gap:10px;align-items:flex-start;cursor:pointer;margin-bottom:0">
+              <input type="checkbox" class="prf-hab-check" value="${h.nome.replace(/"/g,'&quot;')}" style="accent-color:var(--cyan);width:16px;height:16px;margin-top:2px">
+              <div><div class="hab-name">${h.nome}</div><div class="hab-desc">${h.desc}</div></div>
+            </label>`).join('')}
+        </div>
+        <div style="font-size:11px;color:var(--gold);margin-top:6px" id="prf-hab-total">Selecionadas: 0 / ${reward.habs}</div>
+      </div>`;
+  }
+
+  if(reward.evoPers){
+    html+=`
+      <div style="margin-bottom:16px">
+        <div class="sec-title">Evolução Personalizada</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Combine com o mestre uma transformação do seu bey, nova manobra especial, ou evolução da manobra atual. Descreva sua ideia abaixo — o mestre vai revisar e aprovar.</div>
+        <textarea class="form-input" id="prf-evo-desc" placeholder="Descreva a evolução personalizada desejada..."></textarea>
+      </div>`;
+  }
+
+  body.innerHTML=html;
+
+  // Live total counters
+  document.querySelectorAll('.prf-attr').forEach(el=>el.addEventListener('input',()=>{
+    const total=Array.from(document.querySelectorAll('.prf-attr')).reduce((s,e)=>s+(parseInt(e.value)||0),0);
+    const counter=document.getElementById('prf-attr-total');
+    if(counter)counter.textContent=`Total distribuído: ${total} / ${reward.attrPts}`;
+  }));
+  document.querySelectorAll('.prf-hab-check').forEach(el=>el.addEventListener('change',()=>{
+    const checked=document.querySelectorAll('.prf-hab-check:checked').length;
+    const counter=document.getElementById('prf-hab-total');
+    if(counter)counter.textContent=`Selecionadas: ${checked} / ${reward.habs}`;
+  }));
+
+  // Confirm button
+  const confirmBtn=document.createElement('button');
+  confirmBtn.className='btn btn-gold';
+  confirmBtn.style.width='100%';
+  confirmBtn.style.marginTop='6px';
+  confirmBtn.textContent='✓ Confirmar Escolha';
+  confirmBtn.onclick=()=>confirmPlayerReward(idx,reward);
+  body.appendChild(confirmBtn);
+}
+
+async function confirmPlayerReward(idx,reward){
+  const b=await dbGet('blader:'+playerSession.bladerId);
+  if(!b)return;
+
+  if(reward.attrPts>0){
+    const atq=parseInt(document.getElementById('prf-atq').value)||0;
+    const def=parseInt(document.getElementById('prf-def').value)||0;
+    const vel=parseInt(document.getElementById('prf-vel').value)||0;
+    const eng=parseInt(document.getElementById('prf-eng').value)||0;
+    const total=atq+def+vel+eng;
+    if(total!==reward.attrPts){
+      showToast(`Distribua exatamente ${reward.attrPts} ponto(s).`,'err');
+      return;
+    }
+    b.atq+=atq;b.def+=def;b.vel+=vel;b.engMax+=eng;
+  }
+
+  if(reward.habs>0){
+    const checked=Array.from(document.querySelectorAll('.prf-hab-check:checked')).map(el=>el.value);
+    if(checked.length!==reward.habs){
+      showToast(`Escolha exatamente ${reward.habs} habilidade(s).`,'err');
+      return;
+    }
+    if(!b.habilidades)b.habilidades=[];
+    checked.forEach(h=>{if(!b.habilidades.includes(h))b.habilidades.push(h);});
+  }
+
+  if(reward.evoPers){
+    const desc=document.getElementById('prf-evo-desc').value.trim();
+    if(!desc){
+      showToast('Descreva sua ideia de evolução personalizada.','err');
+      return;
+    }
+    if(!b.evoPersNotes)b.evoPersNotes=[];
+    b.evoPersNotes.push({nivel:reward.nivel,desc,aprovado:false});
+  }
+
+  b.pendingRewards[idx].resolved=true;
+  await dbSet('blader:'+playerSession.bladerId,b);
+  showToast('Recompensa aplicada com sucesso!','ok');
+  closePlayerRewardFlow();
+  renderPlayerView();
+}
+
+function closePlayerRewardFlow(){
+  document.getElementById('playerRewardFlow').style.display='none';
+  document.getElementById('playerView').style.display='block';
+}
+
+// Player uses their own custom ability/manobra during an active battle (mirrors useCustomAbility but driven from player session)
+// Player uses one of their own custom abilities/manobras from their own computer.
+// Operates directly on the remote battle state (no access to the master's DOM/log elements),
+// then writes the result back to Supabase so the master's screen picks it up on its next poll.
+// Player executes one of the standard combat actions (Investida, Esquiva, Recarga, etc.)
+// from their own computer. Mirrors the master's executeAction logic but works on the
+// remote battle state directly, since the player has no access to the master's bt/DOM.
+async function executePlayerAction(actionId){
+  if(!playerSession)return;
+  const action=ACTIONS.find(a=>a.id===actionId);
+  if(!action)return;
+
+  const remoteBattle=await dbGet(BATTLE_KEY);
+  if(!remoteBattle)return;
+  const b1=remoteBattle.pl[0], b2=remoteBattle.pl[1];
+  let n=null;
+  if(b1 && b1.id===playerSession.bladerId)n=1;
+  else if(b2 && b2.id===playerSession.bladerId)n=2;
+  if(!n)return;
+
+  if(!isActionAllowed(n,action,remoteBattle.activeSlot)){
+    showToast(action.categoria==='reacao'?'Só disponível fora do seu turno.':'Só disponível no seu turno.','err');
+    return;
+  }
+
+  const me=remoteBattle.pl[n-1];
+  const target=remoteBattle.pl[n===1?1:0];
+
+  if(me.eng<action.cost){showToast('Energia insuficiente.','err');return;}
+  if(action.cost>0)me.eng-=action.cost;
+
+  let rollResult=null;
+  if(action.formula)rollResult=parseRollFormula(action.formula,me);
+
+  const actorTag=`P${n}`;
+  let logMsg=`<b>${me.blader}</b> (${actorTag}) usa <b>${action.nome}</b>`;
+  if(rollResult)logMsg+=` → [${rollResult.rolls.join(', ')}]${rollResult.mod?` +${rollResult.mod}`:''} = ${rollResult.total}`;
+
+  if(action.efeito==='dano' && rollResult && target){
+    let dmgLeft=rollResult.total, shieldAbs=0;
+    if(target.shield>0){
+      shieldAbs=Math.min(target.shield,dmgLeft);
+      target.shield-=shieldAbs;dmgLeft-=shieldAbs;
+      if(target.shield<=0){target.shield=0;target.shieldTurnosRestantes=0;}
+    }
+    const armAbs=Math.min(target.armor,dmgLeft);
+    target.armor=Math.max(0,target.armor-armAbs);
+    target.hp=Math.max(0,target.hp-(dmgLeft-armAbs));
+    logMsg+=` em ${target.bey}`;
+  } else if(action.efeito==='armadura' && rollResult){
+    me.armor+=rollResult.total;
+    me.armorMax=Math.max(me.armorMax,me.armor);
+  } else if(action.efeito==='recarga'){
+    me.eng=Math.min(me.engMax,me.eng+3);
+    logMsg=`<b>${me.blader}</b> (${actorTag}) usa <b>Recarga</b>`;
+    if(me.type==='res')me.hp=Math.min(me.hpMax,me.hp+4);
+  }
+
+  const logType=action.efeito==='dano'?'dmg':action.efeito==='recarga'?'heal':'roll';
+  const logEntryHtml=`<div class="log-entry ${logType}"><div class="log-turn">Turno ${remoteBattle.turn}</div><div class="log-text">${logMsg}</div></div>`;
+  remoteBattle.logHtml=logEntryHtml+(remoteBattle.logHtml||'');
+
+  await dbSet(BATTLE_KEY,remoteBattle);
+  showToast(`${action.nome} usada!`,'ok');
+  renderPlayerView();
+}
+
+// Player uses their special manobra from their own computer.
+async function usePlayerManobra(){
+  if(!playerSession)return;
+  const remoteBattle=await dbGet(BATTLE_KEY);
+  if(!remoteBattle)return;
+  const b1=remoteBattle.pl[0], b2=remoteBattle.pl[1];
+  let n=null;
+  if(b1 && b1.id===playerSession.bladerId)n=1;
+  else if(b2 && b2.id===playerSession.bladerId)n=2;
+  if(!n)return;
+
+  const me=remoteBattle.pl[n-1];
+  if(me.manUsosLeft<=0){showToast('Sem usos restantes dessa manobra.','err');return;}
+  me.manUsosLeft--;
+
+  const logEntryHtml=`<div class="log-entry event"><div class="log-turn">Turno ${remoteBattle.turn}</div><div class="log-text"><b>${me.blader}</b> usa a manobra especial <b>${me.manobra}</b>! Usos restantes: ${me.manUsosLeft}/${me.manobraUsos}</div></div>`;
+  remoteBattle.logHtml=logEntryHtml+(remoteBattle.logHtml||'');
+
+  await dbSet(BATTLE_KEY,remoteBattle);
+  showToast('Manobra especial usada!','ok');
+  renderPlayerView();
+}
+
+async function usePlayerCustomAbility(idx){
+  if(!playerSession)return;
+  const remoteBattle=await dbGet(BATTLE_KEY);
+  if(!remoteBattle)return;
+  const b1=remoteBattle.pl[0], b2=remoteBattle.pl[1];
+  let n=null;
+  if(b1 && b1.id===playerSession.bladerId)n=1;
+  else if(b2 && b2.id===playerSession.bladerId)n=2;
+  if(!n)return;
+
+  const me=remoteBattle.pl[n-1];
+  const target=remoteBattle.pl[n===1?1:0];
+  const a=(me.customAbilities||[])[idx];
+  if(!a)return;
+
+  const isManobra=a.tipo==='manobra';
+  const cost=isManobra?0:(a.energia||0);
+  if(!isManobra && me.eng<cost){showToast('Energia insuficiente.','err');return;}
+
+  let rollTxt='';
+  if(a.dadoTipo && a.dadoFormula){
+    const parsed=parseRollFormula(a.dadoFormula, me);
+    if(parsed){
+      rollTxt=` → [${parsed.rolls.join(', ')}]${parsed.mod?` +${parsed.mod}`:''} = ${parsed.total}`;
+      if(a.dadoTipo==='dano'){
+        let dmgLeft=parsed.total, shieldAbs=0;
+        if(target.shield>0){
+          shieldAbs=Math.min(target.shield,dmgLeft);
+          target.shield-=shieldAbs;dmgLeft-=shieldAbs;
+          if(target.shield<=0){target.shield=0;target.shieldTurnosRestantes=0;}
+        }
+        const armAbs=Math.min(target.armor,dmgLeft);
+        target.armor=Math.max(0,target.armor-armAbs);
+        target.hp=Math.max(0,target.hp-(dmgLeft-armAbs));
+        rollTxt+=` de dano em ${target.bey}`;
+      } else if(a.dadoTipo==='cura'){
+        me.hp=Math.min(me.hpMax,me.hp+parsed.total);
+        rollTxt+=` de cura`;
+      } else if(a.dadoTipo==='escudo'){
+        me.shield=(me.shield||0)+parsed.total;
+        me.shieldTurnosRestantes=a.escudoDuracao||2;
+        rollTxt+=` de Escudo (dura ${me.shieldTurnosRestantes} turno(s))`;
+      }
+    }
+  }
+
+  if(!isManobra)me.eng-=cost;
+
+  if(a.statusAttr && a.statusValor!==null){
+    const statusTarget = a.statusAlvo==='proprio' ? me : target;
+    if(!statusTarget.statusEffects)statusTarget.statusEffects=[];
+    statusTarget.statusEffects.push({
+      attr:a.statusAttr, valor:a.statusValor, turnosRestantes:a.statusDuracao||0,
+      tag:a.statusTag||'', perdeTurno:a.statusPerdeTurno||false, origem:a.nome
+    });
+    applyStatusEffects(statusTarget);
+  }
+
+  const logType=(a.dadoTipo==='escudo')?'event':(isManobra?'event':'roll');
+  const logEntryHtml=`<div class="log-entry ${logType}"><div class="log-turn">Turno ${remoteBattle.turn}</div><div class="log-text">${isManobra?'🌀':'⚡'} ${me.blader} usa <b>${a.nome}</b>${rollTxt}</div></div>`;
+  remoteBattle.logHtml=logEntryHtml+(remoteBattle.logHtml||'');
+
+  await dbSet(BATTLE_KEY,remoteBattle);
+  showToast('Habilidade usada!','ok');
+  renderPlayerView();
+}
+
+// ===== CUSTOM ABILITY / MANOBRA EDITOR =====
+let aeCurrentBladerId=null;
+let aeEditIndex=null; // null = new, number = editing existing at this index
+
+function aeSelectType(tipo){
+  document.getElementById('ae-tipo').value=tipo;
+  document.getElementById('ae-type-habilidade').className='type-opt'+(tipo==='habilidade'?' sel-def':'');
+  document.getElementById('ae-type-manobra').className='type-opt'+(tipo==='manobra'?' sel-eq':'');
+  document.getElementById('ae-energia-row').style.opacity=tipo==='manobra'?'0.4':'1';
+  document.getElementById('ae-energia').disabled=(tipo==='manobra');
+}
+
+function aeToggleEscudoField(){
+  const isEscudo=document.getElementById('ae-dado-tipo').value==='escudo';
+  document.getElementById('ae-escudo-duracao-row').style.display=isEscudo?'block':'none';
+}
+
+function openAbilityEditor(ability){
+  aeCurrentBladerId=evoCurrentId;
+  document.getElementById('ae-title').textContent=ability?'Editar Habilidade / Manobra':'Nova Habilidade / Manobra';
+  document.getElementById('ae-id').value=ability?ability.id:'';
+  aeEditIndex=ability?ability._idx:null;
+
+  document.getElementById('ae-nome').value=ability?.nome||'';
+  document.getElementById('ae-desc').value=ability?.desc||'';
+  document.getElementById('ae-dado-tipo').value=ability?.dadoTipo||'';
+  document.getElementById('ae-dado-formula').value=ability?.dadoFormula||'';
+  document.getElementById('ae-escudo-duracao').value=ability?.escudoDuracao??2;
+  aeToggleEscudoField();
+  document.getElementById('ae-status-alvo').value=ability?.statusAlvo||'proprio';
+  document.getElementById('ae-status-attr').value=ability?.statusAttr||'';
+  document.getElementById('ae-status-valor').value=ability?.statusValor??'';
+  document.getElementById('ae-status-duracao').value=ability?.statusDuracao??'';
+  document.getElementById('ae-status-tag').value=ability?.statusTag||'';
+  document.getElementById('ae-status-perde-turno').checked=!!ability?.statusPerdeTurno;
+  document.getElementById('ae-energia').value=ability?.energia??1;
+
+  aeSelectType(ability?.tipo||'habilidade');
+
+  document.getElementById('evolutionModal').className='modal-overlay';
+  document.getElementById('abilityEditorModal').className='modal-overlay open';
+}
+
+function closeAbilityEditor(){
+  document.getElementById('abilityEditorModal').className='modal-overlay';
+  document.getElementById('evolutionModal').className='modal-overlay open';
+}
+
+async function saveCustomAbility(){
+  if(!aeCurrentBladerId)return;
+  const nome=document.getElementById('ae-nome').value.trim();
+  if(!nome){showToast('Dê um nome para a habilidade/manobra.','err');return;}
+
+  const obj={
+    id: document.getElementById('ae-id').value || ('ab'+Date.now()),
+    tipo: document.getElementById('ae-tipo').value,
+    nome,
+    desc: document.getElementById('ae-desc').value.trim(),
+    dadoTipo: document.getElementById('ae-dado-tipo').value,
+    dadoFormula: document.getElementById('ae-dado-formula').value.trim(),
+    escudoDuracao: document.getElementById('ae-dado-tipo').value==='escudo' ? (parseInt(document.getElementById('ae-escudo-duracao').value)||2) : null,
+    statusAlvo: document.getElementById('ae-status-alvo').value,
+    statusAttr: document.getElementById('ae-status-attr').value,
+    statusValor: document.getElementById('ae-status-valor').value!==''?parseInt(document.getElementById('ae-status-valor').value):null,
+    statusDuracao: document.getElementById('ae-status-duracao').value!==''?parseInt(document.getElementById('ae-status-duracao').value):null,
+    statusTag: document.getElementById('ae-status-tag').value.trim(),
+    statusPerdeTurno: document.getElementById('ae-status-perde-turno').checked,
+    energia: document.getElementById('ae-tipo').value==='manobra' ? 0 : (parseInt(document.getElementById('ae-energia').value)||0),
+  };
+
+  const b=await dbGet('blader:'+aeCurrentBladerId);
+  if(!b)return;
+  if(!b.customAbilities)b.customAbilities=[];
+
+  if(aeEditIndex!==null && aeEditIndex!==undefined){
+    b.customAbilities[aeEditIndex]=obj;
+  } else {
+    b.customAbilities.push(obj);
+  }
+
+  await dbSet('blader:'+aeCurrentBladerId,b);
+  showToast('Habilidade salva!','ok');
+  closeAbilityEditor();
+  renderCustomAbilitiesList(b);
+  renderRoster();
+}
+
+async function deleteCustomAbility(bladerId,idx){
+  if(!confirm('Excluir esta habilidade/manobra?'))return;
+  const b=await dbGet('blader:'+bladerId);
+  if(!b||!b.customAbilities)return;
+  b.customAbilities.splice(idx,1);
+  await dbSet('blader:'+bladerId,b);
+  showToast('Excluída.','ok');
+  renderCustomAbilitiesList(b);
+  renderRoster();
+}
+
+// Test Supabase connectivity on startup so we know immediately if it's working
+(async()=>{
+  try{
+    const res=await fetch(`${SUPABASE_URL}/rest/v1/bladers?select=id&limit=1`,{
+      headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`}
+    });
+    if(res.ok){
+      console.log('%c✅ Supabase conectado!','color:green;font-weight:bold');
+      supabaseHealthy=true;
+    } else {
+      const txt=await res.text();
+      console.warn('⚠️ Supabase respondeu com erro:',res.status,txt);
+      supabaseHealthy=false;
+    }
+  }catch(e){
+    console.warn('⚠️ Supabase inacessível, usando localStorage:',e.message);
+    supabaseHealthy=false;
+  }
+  renderRoster();
+})();
+
+selCat('player');selType('atk');updPrev();buildActions();
+
+</script>
+</body>
+</html>
