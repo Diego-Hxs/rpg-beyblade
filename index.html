@@ -975,14 +975,15 @@ function sbTableForKey(k){
 }
 
 async function sbRequest(path, options={}){
+  const prefer=options.prefer||'return=minimal';
   const res=await fetch(`${SUPABASE_URL}/rest/v1/${path}`,{
-    ...options,
+    method:options.method||'GET',
+    body:options.body||undefined,
     headers:{
       'apikey':SUPABASE_KEY,
       'Authorization':`Bearer ${SUPABASE_KEY}`,
       'Content-Type':'application/json',
-      'Prefer':options.prefer||'return=representation',
-      ...(options.headers||{}),
+      'Prefer':prefer,
     },
   });
   if(!res.ok){
@@ -990,7 +991,9 @@ async function sbRequest(path, options={}){
     throw new Error(`Supabase ${res.status}: ${text}`);
   }
   if(res.status===204)return null;
-  return res.json();
+  const text=await res.text();
+  if(!text||!text.trim())return null;
+  return JSON.parse(text);
 }
 
 function lsGetAllKeys(prefix){
@@ -1029,24 +1032,18 @@ async function dbSet(k,v){
       const table=sbTableForKey(k);
       await sbRequest(`${table}`,{
         method:'POST',
-        headers:{'Prefer':'resolution=merge-duplicates,return=minimal'},
+        prefer:'resolution=merge-duplicates,return=minimal',
         body:JSON.stringify({id:k,data:v,updated_at:new Date().toISOString()}),
       });
-      // Always mirror to localStorage too, so things still work if network drops mid-session
-      try{localStorage.setItem(LS_PREFIX+k, JSON.stringify(v));}catch{}
+      try{localStorage.setItem(LS_PREFIX+k,JSON.stringify(v));}catch{}
       return true;
     }catch(e){
       console.error('Supabase set failed, falling back to localStorage:',e);
       supabaseHealthy=false;
     }
   }
-  try{
-    localStorage.setItem(LS_PREFIX+k, JSON.stringify(v));
-    return true;
-  }catch(e){
-    console.error('localStorage save failed:', e);
-    return false;
-  }
+  try{localStorage.setItem(LS_PREFIX+k,JSON.stringify(v));return true;}
+  catch(e){console.error('localStorage save failed:',e);return false;}
 }
 async function dbDel(k){
   if(supabaseHealthy){
@@ -1135,6 +1132,16 @@ function importBackup(event){
 }
 
 function genPin(){return Math.floor(1000+Math.random()*9000).toString();}
+
+async function regenPin(id){
+  const b=await dbGet('blader:'+id);
+  if(!b)return;
+  const newPin=genPin();
+  b.pin=newPin;
+  await dbSet('blader:'+id,b);
+  showToast(`Novo PIN de ${b.blader}: ${newPin}`,'ok');
+  renderRoster();
+}
 
 async function saveBlader(){
   const id=document.getElementById('edit-id').value||('b'+Date.now());
@@ -1265,6 +1272,7 @@ async function renderRoster(){
         <button class="btn btn-blue btn-xs" onclick='addToSlot(${esc(b)})'>+ Duelo</button>
         <button class="btn btn-gold btn-xs" onclick='openEvolutionModal(${esc(b)})'>🔼 Evolução</button>
         <button class="btn btn-gray btn-xs" onclick='editBlader(${esc(b)})'>✏️ Editar</button>
+        ${b.cat==='player'?`<button class="btn btn-gray btn-xs" onclick="regenPin('${b.id}')" title="Gerar novo PIN">🔄 PIN</button>`:''}
         <button class="btn btn-red btn-xs" onclick="delBlader('${b.id}')">🗑️</button>
       </div>
     </div>`).join('');
@@ -2300,9 +2308,11 @@ function closePlayerOverlay(){
 }
 
 async function playerLogin(){
-  const pin=document.getElementById('pin-input').value.trim();
+  const pin=document.getElementById('pin-input').value.trim().replace(/\D/g,'');
+  if(pin.length!==4){document.getElementById('pin-error').style.display='block';return;}
   const all=await loadAll();
-  const found=all.find(b=>b.cat==='player' && b.pin===pin);
+  // Normalize: compare as string, trimmed, digits only — handles pins saved as number vs string
+  const found=all.find(b=>b.cat==='player' && b.pin && String(b.pin).trim()===pin);
   if(!found){
     document.getElementById('pin-error').style.display='block';
     return;
