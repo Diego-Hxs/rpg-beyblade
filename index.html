@@ -239,6 +239,93 @@ textarea.form-input{resize:vertical;min-height:60px}
 ::-webkit-scrollbar-track{background:var(--bg)}
 ::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:3px}
 @media(max-width:760px){.battle-area,.bs-layout,.reg-layout{grid-template-columns:1fr}.bottom-area{grid-template-columns:1fr}}
+
+/* ── DICE ROLL ANIMATION OVERLAY ─────────────────── */
+.dice-overlay{
+  position:fixed;inset:0;background:#00000099;z-index:600;
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:16px;
+  pointer-events:none;opacity:0;transition:opacity .2s;
+}
+.dice-overlay.show{opacity:1;pointer-events:none;}
+.dice-face{
+  width:100px;height:100px;background:var(--bg2);border:3px solid var(--cyan);
+  border-radius:16px;display:flex;align-items:center;justify-content:center;
+  font-size:52px;font-weight:900;font-family:monospace;color:var(--cyan);
+  box-shadow:0 0 40px #00B4D855;
+  animation:dice-spin .5s ease;
+}
+@keyframes dice-spin{
+  0%{transform:rotateY(0deg) scale(.4);opacity:0}
+  60%{transform:rotateY(360deg) scale(1.1);opacity:1}
+  100%{transform:rotateY(360deg) scale(1)}
+}
+.dice-label{font-size:14px;color:var(--muted);text-transform:uppercase;letter-spacing:2px}
+.dice-result-big{
+  font-size:80px;font-weight:900;font-family:monospace;color:var(--cyan);
+  text-shadow:0 0 40px #00B4D888;
+  animation:result-pop .4s cubic-bezier(.175,.885,.32,1.275);
+}
+@keyframes result-pop{
+  0%{transform:scale(0);opacity:0}
+  70%{transform:scale(1.2);opacity:1}
+  100%{transform:scale(1)}
+}
+.dice-detail{font-size:13px;color:var(--muted)}
+
+/* ── BATTLE START SEQUENCE ────────────────────────── */
+.battle-start-overlay{
+  position:fixed;inset:0;background:var(--bg);z-index:700;
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:0;
+  transition:opacity .5s;
+}
+.battle-start-overlay.hidden{opacity:0;pointer-events:none;}
+.bso-content{text-align:center;width:100%;max-width:480px;padding:24px;}
+.bso-vs{font-size:40px;font-weight:900;color:var(--red);letter-spacing:4px;margin-bottom:4px;text-shadow:0 0 30px #E6394666;}
+.bso-names{font-size:18px;font-weight:700;color:var(--text);margin-bottom:28px}
+.bso-card{background:var(--bg2);border:1px solid var(--bord);border-radius:14px;padding:18px;margin-bottom:16px;opacity:0;transform:translateY(20px);transition:all .5s;}
+.bso-card.reveal{opacity:1;transform:translateY(0)}
+.bso-card-title{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:10px}
+.bso-armor-val{font-size:48px;font-weight:900;font-family:monospace;color:var(--blue);text-shadow:0 0 20px #1E90FF66}
+.bso-initiative-box{background:var(--bg2);border:2px solid var(--gold);border-radius:14px;padding:18px;margin-bottom:24px;opacity:0;transform:scale(.9);transition:all .5s .3s;}
+.bso-initiative-box.reveal{opacity:1;transform:scale(1)}
+.bso-first{font-size:22px;font-weight:900;color:var(--gold);margin-top:6px;text-shadow:0 0 20px #FFD70066}
+
+/* ── LET IT RIP WAITING SCREEN ───────────────────── */
+.lir-waiting{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:100vh;padding:24px;text-align:center;
+}
+.lir-title{font-size:28px;font-weight:900;letter-spacing:2px;margin-bottom:8px}
+.lir-title span{color:var(--red)}
+.lir-sub{font-size:14px;color:var(--muted);margin-bottom:32px}
+.lir-btn{
+  padding:18px 48px;font-size:22px;font-weight:900;text-transform:uppercase;
+  letter-spacing:3px;border:none;border-radius:16px;cursor:pointer;
+  background:linear-gradient(135deg,var(--red),#9B1C22);color:#fff;
+  box-shadow:0 0 40px #E6394666;
+  animation:lir-pulse 2s ease-in-out infinite;
+  transition:transform .15s;
+}
+.lir-btn:hover{transform:scale(1.05)}
+.lir-btn:active{transform:scale(.96)}
+@keyframes lir-pulse{
+  0%,100%{box-shadow:0 0 30px #E6394655}
+  50%{box-shadow:0 0 60px #E6394699,0 0 100px #E6394633}
+}
+.lir-vs-preview{
+  background:var(--bg2);border:1px solid var(--bord);border-radius:12px;
+  padding:16px 24px;margin-bottom:32px;
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:center;
+}
+.lir-bey-name{font-size:16px;font-weight:800}
+.lir-bey-sub{font-size:11px;color:var(--muted)}
+.lir-vs-sep{font-size:20px;font-weight:900;color:var(--red)}
+.lir-players-ready{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:16px}
+.ready-badge{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px}
+.ready-badge.yes{background:#27AE6022;color:var(--res);border:1px solid var(--res)}
+.ready-badge.no{background:#7A9ACA22;color:var(--muted);border:1px solid var(--muted)}
 </style>
 </head>
 <body>
@@ -270,9 +357,20 @@ textarea.form-input{resize:vertical;min-height:60px}
       <div style="font-size:13px;font-weight:900;color:var(--gold);display:flex;align-items:center;gap:8px">🎁 Você tem uma recompensa de level up para escolher! <span style="margin-left:auto;font-size:11px">Toque aqui →</span></div>
     </div>
 
-    <div id="player-no-battle" style="text-align:center;padding:60px 20px;color:var(--muted)">
+    <div id="player-no-battle" style="display:none;text-align:center;padding:60px 20px;color:var(--muted)">
       <div style="font-size:48px;margin-bottom:12px">🌀</div>
-      <p>Nenhum duelo em andamento.<br>Aguarde o mestre iniciar a batalha.</p>
+      <p>Nenhum duelo em andamento.<br>Aguarde o mestre montar a batalha.</p>
+    </div>
+
+    <!-- LET IT RIP WAITING SCREEN -->
+    <div id="player-lir-screen" style="display:none">
+      <div class="lir-waiting">
+        <div class="lir-title">BEYBLADE <span>METAL RIO</span></div>
+        <div class="lir-sub" id="lir-sub">Um duelo foi montado. Confirme para começar!</div>
+        <div class="lir-vs-preview" id="lir-vs-preview"></div>
+        <div class="lir-players-ready" id="lir-players-ready"></div>
+        <button class="lir-btn" onclick="playerClickLetItRip()">⚡ LET IT RIP!</button>
+      </div>
     </div>
 
     <div id="player-battle-content" style="display:none">
@@ -295,8 +393,8 @@ textarea.form-input{resize:vertical;min-height:60px}
           <div class="stat-label"><span>SEU HP</span><span id="pv-own-hp-lbl">25/25</span></div>
           <div class="hp-bar-wrap"><div class="hp-bar high" id="pv-own-hp-bar" style="width:100%">25</div></div>
           <div class="shield-bar-wrap" id="pv-own-shield-wrap"><div class="shield-bar" id="pv-own-shield-bar" style="width:0%"></div></div>
-          <div class="stat-label"><span>ARMADURA</span><span id="pv-own-arm-lbl">0/0</span></div>
-          <div class="arm-bar-wrap"><div class="arm-bar" id="pv-own-arm-bar" style="width:0%"></div></div>
+          <div class="stat-label"><span>🛡️ REDUÇÃO DE DANO</span><span id="pv-own-arm-lbl" style="color:var(--blue);font-weight:700">0</span></div>
+          <div style="height:4px;background:var(--bg3);border-radius:2px;margin-bottom:11px"></div>
           <div class="attrs-grid">
             <div class="attr-box"><div class="attr-icon">⚔️</div><div><div class="attr-name">Ataque</div><div class="attr-val ac" id="pv-own-atq">0</div></div></div>
             <div class="attr-box"><div class="attr-icon">🛡️</div><div><div class="attr-name">Defesa</div><div class="attr-val dc" id="pv-own-def">0</div></div></div>
@@ -548,6 +646,8 @@ textarea.form-input{resize:vertical;min-height:60px}
   <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap">
     <span class="cat-pill cat-player" id="b-mode-badge">1v1</span>
     <span class="level-tag" id="b-turn-badge">Turno 1</span>
+    <button class="btn btn-red btn-sm" id="master-lir-btn" onclick="masterLetItRip()" style="display:none">⚡ LET IT RIP!</button>
+    <div id="ready-status-badges" style="display:flex;gap:6px;flex-wrap:wrap"></div>
     <button class="btn btn-blue btn-sm" onclick="openFichaModal()">📋 Fichas</button>
     <button class="btn btn-gray btn-sm" onclick="goScreen('battle-select')">← Voltar</button>
   </div>
@@ -562,8 +662,8 @@ textarea.form-input{resize:vertical;min-height:60px}
         <div class="stat-label"><span>VIDA</span><span id="hp1-lbl">25/25</span></div>
         <div class="hp-bar-wrap"><div class="hp-bar high" id="hp1-bar" style="width:100%">25</div></div>
         <div class="shield-bar-wrap" id="shield1-wrap"><div class="shield-bar" id="shield1-bar" style="width:0%"></div></div>
-        <div class="stat-label"><span>ARMADURA</span><span id="arm1-lbl">0/0</span></div>
-        <div class="arm-bar-wrap"><div class="arm-bar" id="arm1-bar" style="width:0%"></div></div>
+        <div class="stat-label"><span>🛡️ REDUÇÃO DE DANO</span><span id="arm1-lbl" style="color:var(--blue);font-weight:700">0</span></div>
+        <div style="height:4px;background:var(--bg3);border-radius:2px;margin-bottom:11px"></div>
         <div class="attrs-grid">
           <div class="attr-box"><div class="attr-icon">⚔️</div><div><div class="attr-name">Ataque</div><div class="attr-val ac" id="a1-atq">0</div></div></div>
           <div class="attr-box"><div class="attr-icon">🛡️</div><div><div class="attr-name">Defesa</div><div class="attr-val dc" id="a1-def">0</div></div></div>
@@ -614,8 +714,8 @@ textarea.form-input{resize:vertical;min-height:60px}
         <div class="stat-label"><span>VIDA</span><span id="hp2-lbl">25/25</span></div>
         <div class="hp-bar-wrap"><div class="hp-bar high" id="hp2-bar" style="width:100%">25</div></div>
         <div class="shield-bar-wrap" id="shield2-wrap"><div class="shield-bar" id="shield2-bar" style="width:0%"></div></div>
-        <div class="stat-label"><span>ARMADURA</span><span id="arm2-lbl">0/0</span></div>
-        <div class="arm-bar-wrap"><div class="arm-bar" id="arm2-bar" style="width:0%"></div></div>
+        <div class="stat-label"><span>🛡️ REDUÇÃO DE DANO</span><span id="arm2-lbl" style="color:var(--blue);font-weight:700">0</span></div>
+        <div style="height:4px;background:var(--bg3);border-radius:2px;margin-bottom:11px"></div>
         <div class="attrs-grid">
           <div class="attr-box"><div class="attr-icon">⚔️</div><div><div class="attr-name">Ataque</div><div class="attr-val ac" id="a2-atq">0</div></div></div>
           <div class="attr-box"><div class="attr-icon">🛡️</div><div><div class="attr-name">Defesa</div><div class="attr-val dc" id="a2-def">0</div></div></div>
@@ -902,6 +1002,34 @@ textarea.form-input{resize:vertical;min-height:60px}
     <button class="submit-btn" onclick="applyManualStatus()">✨ Aplicar</button>
   </div>
 </div>
+<!-- DICE ROLL OVERLAY -->
+<div class="dice-overlay" id="diceOverlay">
+  <div class="dice-label" id="diceOverlayLabel">Rolando...</div>
+  <div class="dice-face" id="diceOverlayFace">?</div>
+  <div class="dice-result-big" id="diceOverlayResult" style="display:none"></div>
+  <div class="dice-detail" id="diceOverlayDetail"></div>
+</div>
+
+<!-- BATTLE START SEQUENCE OVERLAY -->
+<div class="battle-start-overlay" id="battleStartOverlay" style="display:none">
+  <div class="bso-content">
+    <div class="bso-vs">⚡ DUELO ⚡</div>
+    <div class="bso-names" id="bso-names"></div>
+    <div class="bso-card" id="bso-armor-card">
+      <div class="bso-card-title">🛡️ Sua Armadura</div>
+      <div class="bso-armor-val" id="bso-armor-val">—</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px" id="bso-armor-detail"></div>
+    </div>
+    <div class="bso-initiative-box" id="bso-init-box">
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:4px">⚡ Iniciativa</div>
+      <div id="bso-init-detail" style="font-size:13px;color:var(--muted);margin-bottom:6px"></div>
+      <div class="bso-first" id="bso-first-name"></div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px">age primeiro!</div>
+    </div>
+    <button class="btn btn-blue" style="width:100%;padding:12px;font-size:14px;font-weight:700" onclick="closeBattleStartOverlay()">⚔️ Começar</button>
+  </div>
+</div>
+
 <!-- KO -->
 <div class="ko-overlay" id="koOverlay">
   <div class="ko-text">K.O.!</div>
@@ -943,6 +1071,47 @@ const CLASSES={
     {nome:"Esnobada Tática",desc:"Ignora a armadura do oponente no próximo ataque. Pode ser usado em combate de outro jogador."},
   ]},
 };
+
+// ── DAMAGE CALCULATION ─────────────────────────────────────────────────────
+// Armadura = redução fixa permanente (não drena). Todo ataque que chegar é
+// reduzido pelo valor da armadura; o excedente vai pro HP. A armadura nunca
+// diminui por dano — só muda se o mestre ajustar manualmente.
+// Escudo = camada de HP extra temporária que drena antes de chegar na armadura/HP.
+// Ordem: Escudo absorve → Armadura reduz o restante → HP recebe o excedente.
+//
+// Retorna { shieldAbs, armorRed, hpDmg, totalIn } e já aplica no objeto `b`.
+function calcDamage(b, raw){
+  let remaining=raw;
+  let shieldAbs=0;
+
+  // 1. Escudo absorve primeiro (drena)
+  if((b.shield||0)>0){
+    shieldAbs=Math.min(b.shield,remaining);
+    b.shield-=shieldAbs;
+    remaining-=shieldAbs;
+    if(b.shield<=0){b.shield=0;b.shieldTurnosRestantes=0;}
+  }
+
+  // 2. Armadura reduz (fixa, não drena)
+  const armorRed=Math.max(0,Math.min(remaining, b.armor||0));
+  const hpDmg=Math.max(0,remaining-armorRed);
+
+  // 3. Aplica no HP
+  b.hp=Math.max(0,(b.hp||0)-hpDmg);
+
+  return {shieldAbs, armorRed, hpDmg, totalIn:raw};
+}
+
+// Builds a readable damage log message from a calcDamage result.
+function dmgLogText(bey, result){
+  const parts=[];
+  if(result.shieldAbs>0)parts.push(`${result.shieldAbs} no Escudo`);
+  if(result.armorRed>0)parts.push(`${result.armorRed} reduzido pela Armadura`);
+  const detail=parts.length?` (${parts.join(', ')})`:'';
+  return `${bey.bey} recebe <span class="lv red">${result.totalIn}</span> de dano${detail}. HP: <span class="lv">${bey.hp}/${bey.hpMax}</span>`;
+}
+// ──────────────────────────────────────────────────────────────────────────
+
 const ACTIONS=[
   {id:"investida",nome:"Investida Básica",formula:"1d6+ATQ",cost:0,efeito:"dano",categoria:"acao",desc:"Ataque padrão de turno."},
   {id:"rapidos",nome:"Ataques Rápidos",formula:"1d3+ATQ",cost:0,efeito:"dano",categoria:"acao",desc:"Apenas se VEL > VEL inimigo."},
@@ -1343,27 +1512,100 @@ function syncBattleToCloud(){
 function startBattle(){
   if(!slots[1]||!slots[2]){showToast('Selecione dois combatentes.','err');return;}
   function live(b){return{...b,hp:b.hpMax,armor:0,armorMax:0,eng:b.engMax,eb:1,manUsosLeft:b.manobraUsos,presas:false};}
-  bt.pl[0]=live(slots[1]);bt.pl[1]=live(slots[2]);bt.turn=1;bt.activeSlot=null;
+  bt.pl[0]=live(slots[1]);bt.pl[1]=live(slots[2]);bt.turn=1;bt.activeSlot=null;bt.phase='waiting';bt.readySlots=[];
   document.getElementById('nav-battle').style.display='block';
   goScreen('battle');renderBattle();buildActions();
-  addLog(`Duelo: ${p(1).blader} vs ${p(2).blader}`,'event');
   document.getElementById('b-mode-badge').textContent=document.getElementById('battle-mode').value==='1v1'?'1v1':'Torneio';
-
-  // Auto-roll armor for both combatants and resolve initiative right away,
-  // so both the master and any connected player immediately see who goes first.
-  rollArmor(1);
-  rollArmor(2);
-  rollInitUntilResolved();
-  buildActions();
+  // Show LET IT RIP! button on master's screen
+  document.getElementById('master-lir-btn').style.display='inline-flex';
+  updateReadyBadges();
+  // Save waiting state to cloud so player sees the waiting screen
+  const logEl=document.getElementById('combat-log');
+  if(logEl)logEl.innerHTML='<div class="log-entry event"><div class="log-turn">Sistema</div><div class="log-text">Duelo montado. Aguardando LET IT RIP!</div></div>';
   syncBattleToCloud();
 }
 
-// Rolls initiative repeatedly until there's a clear winner (ties re-roll automatically on battle start).
+function updateReadyBadges(){
+  const el=document.getElementById('ready-status-badges');if(!el)return;
+  if(!bt.pl[0]||bt.phase!=='waiting'){el.innerHTML='';return;}
+  const badges=[bt.pl[0],bt.pl[1]].map((b,i)=>{
+    const ready=(bt.readySlots||[]).includes(i+1);
+    return `<span class="ready-badge ${ready?'yes':'no'}">${b.blader} ${ready?'✓ Pronto':'Aguardando'}</span>`;
+  }).join('');
+  el.innerHTML=badges;
+}
+
+function masterLetItRip(){
+  if(!bt.pl[0]||!bt.pl[1])return;
+  // Mark master as ready (slot 1 or whichever is not a player in this fight)
+  if(!(bt.readySlots||[]).includes('master'))bt.readySlots=[...(bt.readySlots||[]),'master'];
+  executeLaunch();
+}
+
+function executeLaunch(){
+  bt.phase='active';
+  document.getElementById('master-lir-btn').style.display='none';
+  document.getElementById('ready-status-badges').innerHTML='';
+  // Roll armor for both
+  rollArmor(1);rollArmor(2);
+  // Roll initiative
+  rollInitUntilResolved();
+  buildActions();
+  addLog(`Duelo: ${p(1).blader} vs ${p(2).blader}`,'event');
+  syncBattleToCloud();
+  // Show animated battle start overlay
+  showBattleStartOverlay();
+}
+
+// Rolls initiative repeatedly until there's a clear winner (ties re-roll automatically).
 function rollInitUntilResolved(){
   rollInit();
-  if(bt.activeSlot===null||bt.activeSlot===undefined){
-    rollInitUntilResolved();
+  if(bt.activeSlot===null||bt.activeSlot===undefined)rollInitUntilResolved();
+}
+
+// ── BATTLE START OVERLAY ANIMATION ────────────────────────────────────────
+function showBattleStartOverlay(mySlot){
+  const overlay=document.getElementById('battleStartOverlay');
+  if(!overlay)return;
+  overlay.style.display='flex';overlay.style.opacity='1';
+
+  const b1=bt.pl[0],b2=bt.pl[1];
+  document.getElementById('bso-names').textContent=`${b1.blader} vs ${b2.blader}`;
+
+  // Armor — show own armor (mySlot) or both for master (mySlot=null)
+  const armorCard=document.getElementById('bso-armor-card');
+  const armorVal=document.getElementById('bso-armor-val');
+  const armorDetail=document.getElementById('bso-armor-detail');
+  if(mySlot){
+    const me=bt.pl[mySlot-1];
+    armorVal.textContent=me.armor;
+    armorDetail.textContent=`-${me.armor} em todo dano recebido`;
+  } else {
+    armorVal.textContent=`${b1.armor} / ${b2.armor}`;
+    armorDetail.textContent=`${b1.blader}: -${b1.armor}  ·  ${b2.blader}: -${b2.armor}`;
   }
+
+  // Initiative result
+  const initBox=document.getElementById('bso-init-box');
+  const firstB=bt.pl[bt.activeSlot-1];
+  const otherB=bt.pl[bt.activeSlot===1?1:0];
+  document.getElementById('bso-init-detail').textContent=`${b1.blader}: ${b1._lastInitRoll||'?'}  ·  ${b2.blader}: ${b2._lastInitRoll||'?'}`;
+  document.getElementById('bso-first-name').textContent=`⚡ ${firstB.blader}`;
+
+  // Stagger reveal animations
+  setTimeout(()=>armorCard.classList.add('reveal'),200);
+  setTimeout(()=>initBox.classList.add('reveal'),700);
+}
+
+function closeBattleStartOverlay(){
+  const overlay=document.getElementById('battleStartOverlay');
+  if(!overlay)return;
+  overlay.style.opacity='0';
+  setTimeout(()=>{
+    overlay.style.display='none';
+    document.getElementById('bso-armor-card').classList.remove('reveal');
+    document.getElementById('bso-init-box').classList.remove('reveal');
+  },500);
 }
 
 function renderBattle(){renderC(1);renderC(2);document.getElementById('turn-num').textContent=bt.turn;document.getElementById('b-turn-badge').textContent=`Turno ${bt.turn}`;updateActiveTurnIndicator();}
@@ -1398,9 +1640,7 @@ function renderC(n){
     shieldWrap.className='shield-bar-wrap';
     b._shieldPeak=0;
   }
-  const ab=document.getElementById(`arm${n}-bar`);
-  ab.style.width=(b.armorMax>0?b.armor/b.armorMax*100:0)+'%';
-  document.getElementById(`arm${n}-lbl`).textContent=`${b.armor}/${b.armorMax}`;
+  document.getElementById(`arm${n}-lbl`).textContent=`-${b.armor||0} todo dano`;
   rdots(`eng${n}-dots`,b.eng,b.engMax,'energy-dot');
   rdots(`eb${n}-dots`,b.eb,b.ebMax,'eb-dot');
   const pe=document.getElementById(`presas${n}`);
@@ -1420,18 +1660,10 @@ function rdots(cid,cur,max,cls){const c=document.getElementById(cid);c.innerHTML
 
 // COMBAT
 function applyDmg(n){
-  const b=p(n);let raw=parseInt(document.getElementById(`dmg${n}`).value)||0;if(raw<=0)return;
-  let shieldAbs=0;
-  if(b.shield>0){
-    shieldAbs=Math.min(b.shield,raw);
-    b.shield-=shieldAbs;
-    raw-=shieldAbs;
-    if(b.shield<=0){b.shield=0;b.shieldTurnosRestantes=0;}
-  }
-  const abs=Math.min(b.armor,raw);b.armor=Math.max(0,b.armor-abs);b.hp=Math.max(0,b.hp-(raw-abs));
+  const b=p(n);const raw=parseInt(document.getElementById(`dmg${n}`).value)||0;if(raw<=0)return;
+  const result=calcDamage(b,raw);
   document.getElementById(`dmg${n}`).value=0;
-  const shieldTxt=shieldAbs>0?` (${shieldAbs} absorvido pelo Escudo)`:'';
-  addLog(`${b.bey} recebe <span class="lv red">${shieldAbs+abs+(raw-abs)}</span> de dano${shieldTxt} (${abs} absorvido pela armadura). HP: <span class="lv">${b.hp}/${b.hpMax}</span>`,'dmg');
+  addLog(dmgLogText(b,result),'dmg');
   renderC(n);if(b.hp<=0)showKO(n);
 }
 function applyHeal(n){
@@ -1442,7 +1674,7 @@ function applyHeal(n){
 function rollArmor(n){
   const b=p(n);const roll=Math.floor(Math.random()*4)+1;const total=roll+b.def;
   b.armor=total;b.armorMax=total;
-  addLog(`${b.bey} armadura: 1d4(${roll})+DEF(${b.def})=<span class="lv cyan">${total}</span>`,'roll');renderC(n);
+  addLog(`🛡️ ${b.bey} define armadura: 1d4(${roll})+DEF(${b.def})=<span class="lv cyan">${total}</span> — todo dano recebido será reduzido em ${total}`,'event');renderC(n);
 }
 function applyRecarga(n){
   const b=p(n);b.eng=Math.min(b.engMax,b.eng+3);
@@ -1459,8 +1691,8 @@ function nextTurn(){
   bt.turn++;
   bt.pl.forEach(b=>{
     if(!b)return;
-    if(bt.turn>3&&b.type!=='res'&&b.armor>0){b.armor=Math.max(0,b.armor-1);addLog(`Armadura de ${b.bey} decai → ${b.armor}`,'event');}
-    // Decay status effects
+    // Armor is now a permanent fixed reduction — no decay per turn.
+    // Decay status effects only
     if(b.statusEffects && b.statusEffects.length){
       const expired=[];
       b.statusEffects=b.statusEffects.filter(eff=>{
@@ -1532,6 +1764,7 @@ function rollInit(){
   const b1=p(1),b2=p(2);
   const r1=Math.floor(Math.random()*6)+1+Math.floor(Math.random()*6)+1+b1.vel;
   const r2=Math.floor(Math.random()*6)+1+Math.floor(Math.random()*6)+1+b2.vel;
+  b1._lastInitRoll=r1; b2._lastInitRoll=r2;
   document.getElementById('in1').textContent=b1.blader;document.getElementById('iv1').textContent=r1;
   document.getElementById('in2').textContent=b2.blader;document.getElementById('iv2').textContent=r2;
   const r1e=document.getElementById('ir1'),r2e=document.getElementById('ir2');
@@ -1580,11 +1813,14 @@ function rollDice(){
   const sum=rolls.reduce((a,b)=>a+b,0)+mod;
   const expr=`${qty}${curDice}${mod!==0?(mod>0?'+'+mod:mod):''}`;
   lastRollExpr=expr;
-  const el=document.getElementById('roll-num');el.textContent=sum;el.className='roll-number rolling';setTimeout(()=>el.className='roll-number',350);
-  document.getElementById('roll-expr').textContent=expr;
-  document.getElementById('roll-det').textContent=`[${rolls.join(', ')}]${mod?` + ${mod}`:''}`;
-  document.getElementById('override-val').value=sum;
-  addLog(`🎲 ${expr} → [${rolls.join(', ')}]${mod?` + ${mod}`:''}=<span class="lv cyan">${sum}</span>`,'roll');
+  // Show animation, then update UI
+  animateDiceRoll({rolls,total:sum,label:expr,onDone:()=>{
+    const el=document.getElementById('roll-num');el.textContent=sum;el.className='roll-number rolling';setTimeout(()=>el.className='roll-number',350);
+    document.getElementById('roll-expr').textContent=expr;
+    document.getElementById('roll-det').textContent=`[${rolls.join(', ')}]${mod?` + ${mod}`:''}`;
+    document.getElementById('override-val').value=sum;
+    addLog(`🎲 ${expr} → [${rolls.join(', ')}]${mod?` + ${mod}`:''}=<span class="lv cyan">${sum}</span>`,'roll');
+  }});
 }
 function applyOverride(){
   const val=document.getElementById('override-val').value;
@@ -1641,60 +1877,114 @@ function buildActions(){
 // Executes a combat action for combatant n: rolls the dice automatically, applies the effect, logs the result.
 function executeAction(n,action){
   const b=p(n);if(!b)return;
-  const targetN=n===1?2:1; // only 2 combatants supported today; future multi-target picker hooks in here
+  const targetN=n===1?2:1;
   const target=p(targetN);
-
   if(b.eng<action.cost){showToast('Energia insuficiente.','err');return;}
   if(action.cost>0)b.eng-=action.cost;
 
-  let rollResult=null;
+  function applyAndLog(rollResult){
+    const actorTag=n===1?'P1':'P2';
+    let logMsg=`<b>${b.blader}</b> (${actorTag}) usa <b>${action.nome}</b>`;
+    if(rollResult)logMsg+=` → [${rollResult.rolls.join(', ')}]${rollResult.mod?` +${rollResult.mod}`:''} = <span class="lv cyan">${rollResult.total}</span>`;
+
+    if(action.efeito==='dano' && rollResult && target){
+      const result=calcDamage(target,rollResult.total);
+      logMsg+=` — ${dmgLogText(target,result)}`;
+      renderC(targetN);
+      if(target.hp<=0){addLog(logMsg,'dmg');renderC(n);buildActions();showKO(targetN);return;}
+    } else if(action.efeito==='armadura' && rollResult){
+      b.armor=(b.armor||0)+rollResult.total;
+      b.armorMax=Math.max(b.armorMax||0,b.armor);
+      logMsg+=` — Armadura aumenta para ${b.armor}`;
+    } else if(action.efeito==='recarga'){
+      b.eng=Math.min(b.engMax,b.eng+3);
+      logMsg=`<b>${b.blader}</b> (${actorTag}) usa <b>Recarga</b> — Energia: ${b.eng}/${b.engMax}`;
+      if(b.type==='res'){b.hp=Math.min(b.hpMax,b.hp+4);logMsg+=` · +4 HP`;}
+    } else if(action.efeito==='contestado' && rollResult){
+      logMsg+=` (compare o resultado com a ação do oponente)`;
+    }
+    addLog(logMsg, action.efeito==='dano'?'dmg':action.efeito==='recarga'?'heal':'roll');
+    renderC(n);buildActions();
+  }
+
   if(action.formula){
-    rollResult=parseRollFormula(action.formula,b);
+    const preResult=parseRollFormula(action.formula,b);
+    animateDiceRoll({rolls:preResult.rolls,total:preResult.total,label:`${action.nome} — ${action.formula}`,onDone:()=>applyAndLog(preResult)});
+  } else {
+    applyAndLog(null);
   }
-
-  const actorTag=n===1?'P1':'P2';
-  let logMsg=`<b>${b.blader}</b> (${actorTag}) usa <b>${action.nome}</b>`;
-
-  if(rollResult){
-    logMsg+=` → [${rollResult.rolls.join(', ')}]${rollResult.mod?` +${rollResult.mod}`:''} = <span class="lv cyan">${rollResult.total}</span>`;
-  }
-
-  if(action.efeito==='dano' && rollResult && target){
-    let dmgLeft=rollResult.total;
-    let shieldAbs=0;
-    if(target.shield>0){
-      shieldAbs=Math.min(target.shield,dmgLeft);
-      target.shield-=shieldAbs;
-      dmgLeft-=shieldAbs;
-      if(target.shield<=0){target.shield=0;target.shieldTurnosRestantes=0;}
-    }
-    const armAbs=Math.min(target.armor,dmgLeft);
-    target.armor=Math.max(0,target.armor-armAbs);
-    target.hp=Math.max(0,target.hp-(dmgLeft-armAbs));
-    logMsg+=` em ${target.bey}${shieldAbs>0?` (${shieldAbs} no Escudo,`:' ('}${armAbs} na armadura)`;
-    renderC(targetN);
-    if(target.hp<=0){addLog(logMsg,'dmg');renderC(n);buildActions();showKO(targetN);return;}
-  } else if(action.efeito==='armadura' && rollResult){
-    b.armor+=rollResult.total;
-    b.armorMax=Math.max(b.armorMax,b.armor);
-    logMsg+=` — Armadura: ${b.armor}/${b.armorMax}`;
-  } else if(action.efeito==='recarga'){
-    b.eng=Math.min(b.engMax,b.eng+3);
-    logMsg=`<b>${b.blader}</b> (${actorTag}) usa <b>Recarga</b> — Energia: ${b.eng}/${b.engMax}`;
-    if(b.type==='res'){
-      b.hp=Math.min(b.hpMax,b.hp+4);
-      logMsg+=` · +4 HP (Resistência)`;
-    }
-  } else if(action.efeito==='contestado' && rollResult && target){
-    logMsg+=` (use o resultado para comparar manualmente com a ação do oponente)`;
-  }
-
-  addLog(logMsg, action.efeito==='dano'?'dmg':action.efeito==='recarga'?'heal':'roll');
-  renderC(n);
-  buildActions();
 }
 
 function addLog(text,type){const log=document.getElementById('combat-log');const e=document.createElement('div');e.className=`log-entry ${type||''}`;e.innerHTML=`<div class="log-turn">Turno ${bt.turn}</div><div class="log-text">${text}</div>`;log.insertBefore(e,log.firstChild);}
+
+// ── DICE ANIMATION ────────────────────────────────────────────────────────
+// Shows a center-screen dice animation then calls callback with result.
+// rolls: array of individual die results, total: sum, label: "2d6+ATQ" etc.
+function animateDiceRoll({rolls, total, label, onDone}){
+  const overlay=document.getElementById('diceOverlay');
+  const face=document.getElementById('diceOverlayFace');
+  const resultEl=document.getElementById('diceOverlayResult');
+  const detailEl=document.getElementById('diceOverlayDetail');
+  const labelEl=document.getElementById('diceOverlayLabel');
+  if(!overlay)return onDone&&onDone();
+
+  labelEl.textContent=label||'Rolando...';
+  resultEl.style.display='none';
+  face.style.display='flex';
+  detailEl.textContent='';
+  overlay.classList.add('show');
+
+  // Spin dice face through random numbers for effect
+  let spinCount=0;
+  const spinInterval=setInterval(()=>{
+    face.textContent=Math.ceil(Math.random()*12);
+    spinCount++;
+    if(spinCount>=8){
+      clearInterval(spinInterval);
+      face.textContent=total;
+      setTimeout(()=>{
+        face.style.display='none';
+        resultEl.style.display='block';
+        resultEl.textContent=total;
+        detailEl.textContent=rolls?`[${rolls.join(', ')}]`:'';
+        setTimeout(()=>{
+          overlay.classList.remove('show');
+          resultEl.style.display='none';
+          face.style.display='flex';
+          onDone&&onDone();
+        },900);
+      },300);
+    }
+  },80);
+}
+
+// Wraps parseRollFormula and shows dice animation, then calls onDone(result)
+function rollWithAnimation(formula, bey, label, onDone){
+  const result=parseRollFormula(formula, bey);
+  if(!result)return onDone&&onDone(null);
+  animateDiceRoll({rolls:result.rolls, total:result.total, label:label||formula, onDone:()=>onDone&&onDone(result)});
+}
+
+// ── PLAYER LET IT RIP ─────────────────────────────────────────────────────
+async function playerClickLetItRip(){
+  if(!playerSession)return;
+  const remoteBattle=await dbGet(BATTLE_KEY);
+  if(!remoteBattle)return;
+  if(!remoteBattle.readySlots)remoteBattle.readySlots=[];
+  // Find which slot this player is
+  const b1=remoteBattle.pl[0],b2=remoteBattle.pl[1];
+  let mySlot=null;
+  if(b1&&b1.id===playerSession.bladerId)mySlot=1;
+  else if(b2&&b2.id===playerSession.bladerId)mySlot=2;
+  if(!mySlot)return;
+  if(!remoteBattle.readySlots.includes(mySlot)){
+    remoteBattle.readySlots.push(mySlot);
+    await dbSet(BATTLE_KEY,remoteBattle);
+  }
+  showToast('Pronto! Aguardando o mestre iniciar.','ok');
+  renderPlayerView();
+}
+
 function showKO(n){const w=p(n===1?2:1);document.getElementById('ko-sub').textContent=`${w.blader} e ${w.bey} vencem!`;document.getElementById('koOverlay').className='ko-overlay open';}
 function openFichaModal(){renderFicha(1);renderFicha(2);document.getElementById('fichaModal').className='modal-overlay open';}
 function closeFichaModal(){document.getElementById('fichaModal').className='modal-overlay';}
@@ -1759,18 +2049,11 @@ function useCustomAbility(n,idx){
       rollTxt=` → [${parsed.rolls.join(', ')}]${parsed.mod?` +${parsed.mod}`:''} = <span class="lv cyan">${parsed.total}</span>`;
       if(a.dadoTipo==='dano'){
         const target=p(n===1?2:1);
-        let dmgLeft=parsed.total;
-        let shieldAbs=0;
-        if(target.shield>0){
-          shieldAbs=Math.min(target.shield,dmgLeft);
-          target.shield-=shieldAbs;
-          dmgLeft-=shieldAbs;
-          if(target.shield<=0){target.shield=0;target.shieldTurnosRestantes=0;}
-        }
-        const abs=Math.min(target.armor,dmgLeft);
-        target.armor=Math.max(0,target.armor-abs);
-        target.hp=Math.max(0,target.hp-(dmgLeft-abs));
-        rollTxt+=` de dano em ${target.bey} (${shieldAbs>0?`${shieldAbs} no Escudo, `:''}${abs} na armadura)`;
+        const result=calcDamage(target,parsed.total);
+        const parts=[];
+        if(result.shieldAbs>0)parts.push(`${result.shieldAbs} no Escudo`);
+        if(result.armorRed>0)parts.push(`${result.armorRed} reduzido pela Armadura`);
+        rollTxt+=` de dano em ${target.bey}${parts.length?` (${parts.join(', ')})`:''}`; 
         renderC(n===1?2:1);
       } else if(a.dadoTipo==='cura'){
         b.hp=Math.min(b.hpMax,b.hp+parsed.total);
@@ -1890,18 +2173,20 @@ function startMasterBattlePoll(){
     if(!bt.pl[0] && !bt.pl[1])return;
     const remote=await dbGet(BATTLE_KEY);
     if(!remote)return;
-    // Merge remote pl[] data into local bt — remote wins for fields the player could have changed,
-    // but we keep rendering through the normal local functions so the master's DOM stays in sync.
+    // Update ready badges during waiting phase
+    if(remote.readySlots && JSON.stringify(remote.readySlots)!==JSON.stringify(bt.readySlots||[])){
+      bt.readySlots=remote.readySlots;
+      updateReadyBadges();
+    }
+    // Merge remote pl[] data (player-driven changes like using abilities)
     let changed=false;
     [0,1].forEach(i=>{
       if(remote.pl[i] && bt.pl[i] && JSON.stringify(remote.pl[i])!==JSON.stringify(bt.pl[i])){
-        bt.pl[i]=remote.pl[i];
-        changed=true;
+        bt.pl[i]=remote.pl[i];changed=true;
       }
     });
     if(remote.logHtml && remote.logHtml!==document.getElementById('combat-log').innerHTML){
-      document.getElementById('combat-log').innerHTML=remote.logHtml;
-      changed=true;
+      document.getElementById('combat-log').innerHTML=remote.logHtml;changed=true;
     }
     if(changed){renderC(1);renderC(2);buildActions();}
   },3000);
@@ -2336,28 +2621,69 @@ async function renderPlayerView(){
   if(!playerSession)return;
   checkPlayerPendingRewards();
 
-  // Player reads the battle state from the cloud — their own `bt` is always empty,
-  // since only the master's browser ever calls startBattle().
   const remoteBattle=await dbGet(BATTLE_KEY);
+
+  // Helper to hide all player screens
+  function hideAll(){
+    document.getElementById('player-no-battle').style.display='none';
+    document.getElementById('player-lir-screen').style.display='none';
+    document.getElementById('player-battle-content').style.display='none';
+  }
+
   if(!remoteBattle || (!remoteBattle.pl[0] && !remoteBattle.pl[1])){
+    hideAll();
     document.getElementById('player-no-battle').style.display='block';
-    document.getElementById('player-battle-content').style.display='none';
     return;
   }
-  const turn=remoteBattle.turn;
+
   const b1=remoteBattle.pl[0], b2=remoteBattle.pl[1];
-  let me=null, enemy=null;
-  if(b1 && b1.id===playerSession.bladerId){me=b1;enemy=b2;}
-  else if(b2 && b2.id===playerSession.bladerId){me=b2;enemy=b1;}
+  let me=null, enemy=null, mySlot=null;
+  if(b1 && b1.id===playerSession.bladerId){me=b1;enemy=b2;mySlot=1;}
+  else if(b2 && b2.id===playerSession.bladerId){me=b2;enemy=b1;mySlot=2;}
 
-  if(!me || !enemy){
+  if(!me){
+    hideAll();
     document.getElementById('player-no-battle').style.display='block';
-    document.getElementById('player-battle-content').style.display='none';
     return;
   }
-  document.getElementById('player-no-battle').style.display='none';
-  document.getElementById('player-battle-content').style.display='block';
 
+  // ── WAITING PHASE (Let it Rip screen) ──────────────────────────────────
+  if(remoteBattle.phase==='waiting'){
+    hideAll();
+    document.getElementById('player-lir-screen').style.display='block';
+    const alreadyReady=(remoteBattle.readySlots||[]).includes(mySlot);
+    document.getElementById('lir-sub').textContent=alreadyReady
+      ? '✅ Você está pronto! Aguardando o mestre iniciar...'
+      : 'Um duelo foi montado. Confirme para começar!';
+    // VS preview
+    document.getElementById('lir-vs-preview').innerHTML=`
+      <div><div class="lir-bey-name">${b1.bey}</div><div class="lir-bey-sub">${b1.blader}</div></div>
+      <div class="lir-vs-sep">VS</div>
+      <div><div class="lir-bey-name">${b2.bey}</div><div class="lir-bey-sub">${b2.blader}</div></div>`;
+    // Ready badges
+    document.getElementById('lir-players-ready').innerHTML=[b1,b2].map((b,i)=>{
+      const rdy=(remoteBattle.readySlots||[]).includes(i+1);
+      return `<span class="ready-badge ${rdy?'yes':'no'}">${b.blader} ${rdy?'✓ Pronto':'Aguardando'}</span>`;
+    }).join('');
+    // Hide Let it Rip btn if already ready
+    const lirBtn=document.querySelector('.lir-btn');
+    if(lirBtn)lirBtn.style.display=alreadyReady?'none':'inline-block';
+    return;
+  }
+
+  // ── ACTIVE PHASE ────────────────────────────────────────────────────────
+  // If transitioning from waiting → active for the first time, show battle start overlay
+  const wasWaiting=renderPlayerView._lastPhase==='waiting';
+  if(wasWaiting && remoteBattle.phase==='active'){
+    // Temporarily load state into bt so showBattleStartOverlay can read it
+    bt.pl[0]=b1;bt.pl[1]=b2;bt.activeSlot=remoteBattle.activeSlot;
+    showBattleStartOverlay(mySlot);
+  }
+  renderPlayerView._lastPhase=remoteBattle.phase;
+
+  hideAll();
+  document.getElementById('player-battle-content').style.display='block';
+  const turn=remoteBattle.turn;
   document.getElementById('pv-turn').textContent=`Turno ${turn}`;
 
   // OWN BEY - full info
@@ -2387,9 +2713,7 @@ async function renderPlayerView(){
     pvShieldWrap.className='shield-bar-wrap';
     me._shieldPeak=0;
   }
-  const abar=document.getElementById('pv-own-arm-bar');
-  abar.style.width=(me.armorMax>0?me.armor/me.armorMax*100:0)+'%';
-  document.getElementById('pv-own-arm-lbl').textContent=`${me.armor}/${me.armorMax}`;
+  document.getElementById('pv-own-arm-lbl').textContent=`-${me.armor||0} todo dano`;
   rdots('pv-own-eng-dots',me.eng,me.engMax,'energy-dot');
   rdots('pv-own-eb-dots',me.eb,me.ebMax,'eb-dot');
   const pe=document.getElementById('pv-own-presas');
@@ -2453,7 +2777,6 @@ async function renderPlayerView(){
   }
 
   // TURN STATUS — tells the player clearly whether it's their turn or the opponent's
-  const mySlot = (b1 && b1.id===playerSession.bladerId) ? 1 : 2;
   const isMyTurn = remoteBattle.activeSlot===mySlot;
   const turnStatusEl=document.getElementById('pv-turn-status-text');
   const turnStatusBox=document.getElementById('pv-turn-status');
@@ -2737,19 +3060,15 @@ async function executePlayerAction(actionId){
   if(rollResult)logMsg+=` → [${rollResult.rolls.join(', ')}]${rollResult.mod?` +${rollResult.mod}`:''} = ${rollResult.total}`;
 
   if(action.efeito==='dano' && rollResult && target){
-    let dmgLeft=rollResult.total, shieldAbs=0;
-    if(target.shield>0){
-      shieldAbs=Math.min(target.shield,dmgLeft);
-      target.shield-=shieldAbs;dmgLeft-=shieldAbs;
-      if(target.shield<=0){target.shield=0;target.shieldTurnosRestantes=0;}
-    }
-    const armAbs=Math.min(target.armor,dmgLeft);
-    target.armor=Math.max(0,target.armor-armAbs);
-    target.hp=Math.max(0,target.hp-(dmgLeft-armAbs));
-    logMsg+=` em ${target.bey}`;
+    const result=calcDamage(target,rollResult.total);
+    const parts=[];
+    if(result.shieldAbs>0)parts.push(`${result.shieldAbs} no Escudo`);
+    if(result.armorRed>0)parts.push(`${result.armorRed} reduzido pela Armadura`);
+    logMsg+=` — ${result.totalIn} de dano em ${target.bey}${parts.length?` (${parts.join(', ')})`:''}`; 
   } else if(action.efeito==='armadura' && rollResult){
-    me.armor+=rollResult.total;
-    me.armorMax=Math.max(me.armorMax,me.armor);
+    me.armor=(me.armor||0)+rollResult.total;
+    me.armorMax=Math.max(me.armorMax||0,me.armor);
+    logMsg+=` — Armadura aumenta para ${me.armor}`;
   } else if(action.efeito==='recarga'){
     me.eng=Math.min(me.engMax,me.eng+3);
     logMsg=`<b>${me.blader}</b> (${actorTag}) usa <b>Recarga</b>`;
@@ -2813,16 +3132,11 @@ async function usePlayerCustomAbility(idx){
     if(parsed){
       rollTxt=` → [${parsed.rolls.join(', ')}]${parsed.mod?` +${parsed.mod}`:''} = ${parsed.total}`;
       if(a.dadoTipo==='dano'){
-        let dmgLeft=parsed.total, shieldAbs=0;
-        if(target.shield>0){
-          shieldAbs=Math.min(target.shield,dmgLeft);
-          target.shield-=shieldAbs;dmgLeft-=shieldAbs;
-          if(target.shield<=0){target.shield=0;target.shieldTurnosRestantes=0;}
-        }
-        const armAbs=Math.min(target.armor,dmgLeft);
-        target.armor=Math.max(0,target.armor-armAbs);
-        target.hp=Math.max(0,target.hp-(dmgLeft-armAbs));
-        rollTxt+=` de dano em ${target.bey}`;
+        const result=calcDamage(target,parsed.total);
+        const parts=[];
+        if(result.shieldAbs>0)parts.push(`${result.shieldAbs} no Escudo`);
+        if(result.armorRed>0)parts.push(`${result.armorRed} reduzido pela Armadura`);
+        rollTxt+=` de dano em ${target.bey}${parts.length?` (${parts.join(', ')})`:''}`;
       } else if(a.dadoTipo==='cura'){
         me.hp=Math.min(me.hpMax,me.hp+parsed.total);
         rollTxt+=` de cura`;
