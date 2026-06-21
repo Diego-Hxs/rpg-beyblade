@@ -326,6 +326,7 @@ textarea.form-input{resize:vertical;min-height:60px}
 .ready-badge{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px}
 .ready-badge.yes{background:#27AE6022;color:var(--res);border:1px solid var(--res)}
 .ready-badge.no{background:#7A9ACA22;color:var(--muted);border:1px solid var(--muted)}
+@keyframes pv-turn-flash{0%{transform:scale(1)}25%{transform:scale(1.06);box-shadow:0 0 30px #00B4D888}75%{transform:scale(1.03)}100%{transform:scale(1)}}
 </style>
 </head>
 <body>
@@ -467,6 +468,18 @@ textarea.form-input{resize:vertical;min-height:60px}
   </div>
 
   <!-- PLAYER REWARD RESOLUTION FLOW -->
+  <!-- PLAYER REACTION OVERLAY — shown when attacked, prompts for reaction -->
+  <div id="playerReactionOverlay" style="display:none;position:fixed;inset:0;background:#000000bb;z-index:600;align-items:flex-end;justify-content:center;padding:20px">
+    <div style="background:var(--bg2);border:1px solid var(--red);border-top:3px solid var(--red);border-radius:16px;padding:20px;width:100%;max-width:500px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <div style="font-size:14px;font-weight:900;color:var(--red)">💥 Você está sendo atacado!</div>
+        <button class="btn btn-gray btn-xs" onclick="dismissReaction()">✕ Não fazer nada</button>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Escolha uma reação ou ignore para não gastar energia.</div>
+      <div id="pv-reaction-list" style="display:flex;flex-direction:column;gap:7px"></div>
+    </div>
+  </div>
+
   <div id="playerRewardFlow" style="display:none;min-height:100vh;align-items:center;justify-content:center;padding:20px">
     <div style="background:var(--bg2);border:1px solid var(--bord);border-top:3px solid var(--gold);border-radius:16px;padding:28px;width:100%;max-width:460px">
       <div style="text-align:center;margin-bottom:18px">
@@ -1503,9 +1516,16 @@ let battleSyncTimer=null;
 function syncBattleToCloud(){
   if(battleSyncTimer)clearTimeout(battleSyncTimer);
   battleSyncTimer=setTimeout(async()=>{
-    if(!bt.pl[0] && !bt.pl[1])return; // nothing to sync yet
+    if(!bt.pl[0] && !bt.pl[1])return;
     const logHtml=document.getElementById('combat-log')?document.getElementById('combat-log').innerHTML:'';
-    await dbSet(BATTLE_KEY,{turn:bt.turn,activeSlot:bt.activeSlot,pl:bt.pl,logHtml});
+    await dbSet(BATTLE_KEY,{
+      turn:bt.turn,
+      activeSlot:bt.activeSlot,
+      phase:bt.phase||'active',
+      readySlots:bt.readySlots||[],
+      pl:bt.pl,
+      logHtml
+    });
   },400);
 }
 
@@ -1966,6 +1986,48 @@ function rollWithAnimation(formula, bey, label, onDone){
 }
 
 // ── PLAYER LET IT RIP ─────────────────────────────────────────────────────
+// ── REACTION OVERLAY ─────────────────────────────────────────────────────
+// Shows when player takes damage — prompts for Esquiva, Bloqueio, Contra-ataque.
+function showReactionOverlay(me, dmgTaken){
+  pvState.attackedFlag=true;
+  const overlay=document.getElementById('playerReactionOverlay');
+  if(!overlay)return;
+
+  const reactions=ACTIONS.filter(a=>a.categoria==='reacao');
+  const list=document.getElementById('pv-reaction-list');
+  list.innerHTML=reactions.map(a=>{
+    const canAfford=me.eng>=a.cost;
+    const cc=a.cost===0?'cost-free':a.cost===1?'cost-1e':'cost-2e';
+    return `<div class="action-item" style="cursor:${canAfford?'pointer':'not-allowed'};opacity:${canAfford?1:0.4}" ${canAfford?`onclick="executePlayerReaction('${a.id}')"`:''}>
+      <div class="action-cost ${cc}">${a.cost===0?'Livre':`${a.cost}E`}</div>
+      <div style="flex:1">
+        <div class="action-name">${a.nome}</div>
+        ${a.formula?`<div class="action-roll">${a.formula}</div>`:''}
+        <div class="action-desc">${a.desc}</div>
+        ${!canAfford?`<div style="font-size:10px;color:var(--red);margin-top:2px">Sem energia suficiente</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+
+  // Show the overlay (slides up from bottom)
+  overlay.style.display='flex';
+  // Small delay so the flex renders before transition kicks in
+  requestAnimationFrame(()=>{overlay.style.opacity='0';requestAnimationFrame(()=>{overlay.style.transition='opacity .25s';overlay.style.opacity='1';});});
+}
+
+function dismissReaction(){
+  pvState.attackedFlag=false;
+  const overlay=document.getElementById('playerReactionOverlay');
+  if(!overlay)return;
+  overlay.style.opacity='0';
+  setTimeout(()=>{overlay.style.display='none';overlay.style.opacity='1';},250);
+}
+
+async function executePlayerReaction(actionId){
+  dismissReaction();
+  await executePlayerAction(actionId);
+}
+
 async function playerClickLetItRip(){
   if(!playerSession)return;
   const remoteBattle=await dbGet(BATTLE_KEY);
@@ -2576,8 +2638,16 @@ async function resolvePendingMaster(id,idx,kind){
 
 
 // ============ PLAYER MODE ============
-let playerSession = null; // {bladerId, slotNum}
+let playerSession = null;
 let playerPollInterval = null;
+// Tracks previous battle state for the player so we can detect changes between polls
+const pvState = {
+  phase: null,       // last known phase
+  turn: null,        // last known turn number
+  myHp: null,        // last known own HP
+  activeSlot: null,  // last known active slot
+  attackedFlag: false, // true while reaction overlay is showing
+};
 
 function openPlayerGate(){
   document.getElementById('playerOverlay').style.display='block';
@@ -2603,6 +2673,8 @@ async function playerLogin(){
     return;
   }
   playerSession={bladerId:found.id};
+  // Reset change-detection state so previous battle data doesn't bleed in
+  pvState.phase=null;pvState.turn=null;pvState.myHp=null;pvState.activeSlot=null;pvState.attackedFlag=false;
   document.getElementById('playerGate').style.display='none';
   document.getElementById('playerView').style.display='block';
   await checkPlayerPendingRewards();
@@ -2613,6 +2685,7 @@ async function playerLogin(){
 
 function playerLogout(){
   playerSession=null;
+  pvState.phase=null;pvState.turn=null;pvState.myHp=null;pvState.activeSlot=null;pvState.attackedFlag=false;
   if(playerPollInterval){clearInterval(playerPollInterval);playerPollInterval=null;}
   openPlayerGate();
 }
@@ -2672,14 +2745,44 @@ async function renderPlayerView(){
   }
 
   // ── ACTIVE PHASE ────────────────────────────────────────────────────────
-  // If transitioning from waiting → active for the first time, show battle start overlay
-  const wasWaiting=renderPlayerView._lastPhase==='waiting';
-  if(wasWaiting && remoteBattle.phase==='active'){
-    // Temporarily load state into bt so showBattleStartOverlay can read it
+  const currentPhase=remoteBattle.phase||'active';
+  const currentTurn=remoteBattle.turn;
+  const currentHp=me.hp;
+  const currentActiveSlot=remoteBattle.activeSlot;
+
+  // 1. Transition from waiting → active: show battle start overlay
+  if(pvState.phase==='waiting' && currentPhase==='active'){
     bt.pl[0]=b1;bt.pl[1]=b2;bt.activeSlot=remoteBattle.activeSlot;
     showBattleStartOverlay(mySlot);
   }
-  renderPlayerView._lastPhase=remoteBattle.phase;
+
+  // 2. Turn changed: flash turn indicator
+  if(pvState.turn!==null && pvState.turn!==currentTurn){
+    const tsBox=document.getElementById('pv-turn-status');
+    if(tsBox){tsBox.style.animation='none';void tsBox.offsetWidth;tsBox.style.animation='pv-turn-flash .6s ease';}
+    // If it just became our turn, dismiss any pending reaction overlay
+    if(currentActiveSlot===mySlot){
+      dismissReaction();
+    }
+  }
+
+  // 3. HP dropped (we were attacked): show reaction overlay if not already showing
+  if(pvState.myHp!==null && currentHp<pvState.myHp && !pvState.attackedFlag && currentActiveSlot!==mySlot){
+    const dmgTaken=pvState.myHp-currentHp;
+    showReactionOverlay(me, dmgTaken);
+  }
+
+  // 4. activeSlot changed and it's now our turn: pulse the turn status box
+  if(pvState.activeSlot!==null && pvState.activeSlot!==currentActiveSlot && currentActiveSlot===mySlot){
+    const tsBox=document.getElementById('pv-turn-status');
+    if(tsBox){tsBox.style.animation='none';void tsBox.offsetWidth;tsBox.style.animation='pv-turn-flash .8s ease';}
+  }
+
+  // Update state snapshot
+  pvState.phase=currentPhase;
+  pvState.turn=currentTurn;
+  pvState.myHp=currentHp;
+  pvState.activeSlot=currentActiveSlot;
 
   hideAll();
   document.getElementById('player-battle-content').style.display='block';
