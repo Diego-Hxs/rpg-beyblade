@@ -1532,17 +1532,19 @@ function syncBattleToCloud(){
 function startBattle(){
   if(!slots[1]||!slots[2]){showToast('Selecione dois combatentes.','err');return;}
   function live(b){return{...b,hp:b.hpMax,armor:0,armorMax:0,eng:b.engMax,eb:1,manUsosLeft:b.manobraUsos,presas:false};}
-  bt.pl[0]=live(slots[1]);bt.pl[1]=live(slots[2]);bt.turn=1;bt.activeSlot=null;bt.phase='waiting';bt.readySlots=[];
+  // Set phase BEFORE any render so the very first sync goes out with 'waiting'
+  bt.pl[0]=live(slots[1]);bt.pl[1]=live(slots[2]);
+  bt.turn=1;bt.activeSlot=null;bt.phase='waiting';bt.readySlots=[];
   document.getElementById('nav-battle').style.display='block';
-  goScreen('battle');renderBattle();buildActions();
   document.getElementById('b-mode-badge').textContent=document.getElementById('battle-mode').value==='1v1'?'1v1':'Torneio';
-  // Show LET IT RIP! button on master's screen
+  // Sync waiting state FIRST before any render triggers
+  const logEl=document.getElementById('combat-log');
+  if(logEl)logEl.innerHTML='<div class="log-entry event"><div class="log-turn">Sistema</div><div class="log-text">Duelo montado — aguardando LET IT RIP!</div></div>';
+  syncBattleToCloud();
+  // Then navigate and render
+  goScreen('battle');renderBattle();buildActions();
   document.getElementById('master-lir-btn').style.display='inline-flex';
   updateReadyBadges();
-  // Save waiting state to cloud so player sees the waiting screen
-  const logEl=document.getElementById('combat-log');
-  if(logEl)logEl.innerHTML='<div class="log-entry event"><div class="log-turn">Sistema</div><div class="log-text">Duelo montado. Aguardando LET IT RIP!</div></div>';
-  syncBattleToCloud();
 }
 
 function updateReadyBadges(){
@@ -1566,15 +1568,15 @@ function executeLaunch(){
   bt.phase='active';
   document.getElementById('master-lir-btn').style.display='none';
   document.getElementById('ready-status-badges').innerHTML='';
-  // Roll armor for both
+  // Roll armor and initiative (all state changes before sync)
   rollArmor(1);rollArmor(2);
-  // Roll initiative
   rollInitUntilResolved();
   buildActions();
-  addLog(`Duelo: ${p(1).blader} vs ${p(2).blader}`,'event');
+  addLog(`Duelo iniciado: ${p(1).blader} vs ${p(2).blader}`,'event');
+  // Sync AFTER all state is set correctly
   syncBattleToCloud();
-  // Show animated battle start overlay
-  showBattleStartOverlay();
+  // Show master overlay (null = show both armors)
+  showBattleStartOverlay(null);
 }
 
 // Rolls initiative repeatedly until there's a clear winner (ties re-roll automatically).
@@ -1632,7 +1634,6 @@ function renderBattle(){renderC(1);renderC(2);document.getElementById('turn-num'
 
 function renderC(n){
   const b=p(n);if(!b)return;
-  syncBattleToCloud();
   document.getElementById(`h-blader${n}`).textContent=b.blader.toUpperCase();
   document.getElementById(`h-bey${n}`).textContent=b.bey;
   const tel=document.getElementById(`h-type${n}`);tel.textContent=TM[b.type];tel.className=`tp ${TC[b.type]}`;
@@ -1684,34 +1685,37 @@ function applyDmg(n){
   const result=calcDamage(b,raw);
   document.getElementById(`dmg${n}`).value=0;
   addLog(dmgLogText(b,result),'dmg');
-  renderC(n);if(b.hp<=0)showKO(n);
+  renderC(n);syncBattleToCloud();
+  if(b.hp<=0)showKO(n);
 }
 function applyHeal(n){
   const b=p(n);let v=parseInt(document.getElementById(`dmg${n}`).value)||3;
   b.hp=Math.min(b.hpMax,b.hp+v);document.getElementById(`dmg${n}`).value=0;
-  addLog(`${b.bey} recupera <span class="lv green">${v}</span> HP. HP: <span class="lv">${b.hp}/${b.hpMax}</span>`,'heal');renderC(n);
+  addLog(`${b.bey} recupera <span class="lv green">${v}</span> HP. HP: <span class="lv">${b.hp}/${b.hpMax}</span>`,'heal');
+  renderC(n);syncBattleToCloud();
 }
 function rollArmor(n){
   const b=p(n);const roll=Math.floor(Math.random()*4)+1;const total=roll+b.def;
   b.armor=total;b.armorMax=total;
-  addLog(`🛡️ ${b.bey} define armadura: 1d4(${roll})+DEF(${b.def})=<span class="lv cyan">${total}</span> — todo dano recebido será reduzido em ${total}`,'event');renderC(n);
+  addLog(`🛡️ ${b.bey} define armadura: 1d4(${roll})+DEF(${b.def})=<span class="lv cyan">${total}</span> — todo dano reduzido em ${total}`,'event');
+  renderC(n);
+  // Don't sync here — called from executeLaunch which syncs at the end
 }
 function applyRecarga(n){
   const b=p(n);b.eng=Math.min(b.engMax,b.eng+3);
   addLog(`${b.bey} +<span class="lv gold">3</span> Energia. Energia: ${b.eng}/${b.engMax}`,'heal');
   if(b.type==='res'){b.hp=Math.min(b.hpMax,b.hp+4);addLog(`${b.bey} (Resistência) +<span class="lv green">4</span> HP`,'heal');}
-  renderC(n);
+  renderC(n);syncBattleToCloud();
 }
 function togglePresas(n){
   const b=p(n);b.presas=!b.presas;
   addLog(b.presas?`🔥 PRESAS DO CORAÇÃO — ${b.blader}! Armadura restaurada!`:`Presas desativadas — ${b.blader}.`,'event');
-  renderC(n);
+  renderC(n);syncBattleToCloud();
 }
 function nextTurn(){
   bt.turn++;
   bt.pl.forEach(b=>{
     if(!b)return;
-    // Armor is now a permanent fixed reduction — no decay per turn.
     // Decay status effects only
     if(b.statusEffects && b.statusEffects.length){
       const expired=[];
@@ -1721,7 +1725,7 @@ function nextTurn(){
           if(eff.turnosRestantes<=0){expired.push(eff);return false;}
           return true;
         }
-        return true; // duracao 0 = permanente até remoção manual
+        return true;
       });
       expired.forEach(eff=>addLog(`Efeito <b>${eff.tag||eff.attr.toUpperCase()}</b> em ${b.bey} expirou.`,'event'));
       if(expired.length)applyStatusEffects(b);
@@ -1731,12 +1735,13 @@ function nextTurn(){
       b.shieldTurnosRestantes--;
       if(b.shieldTurnosRestantes<=0){
         addLog(`🛡️ Escudo de ${b.bey} se dissipou (${b.shield} ponto(s) restante(s) perdidos).`,'event');
-        b.shield=0;
-        b.shieldTurnosRestantes=0;
+        b.shield=0;b.shieldTurnosRestantes=0;
       }
     }
   });
-  renderBattle();addLog(`─── Turno ${bt.turn} ───`,'event');
+  renderBattle();
+  addLog(`─── Turno ${bt.turn} ───`,'event');
+  syncBattleToCloud();
 }
 function removeStatusEffect(n,idx){
   const b=p(n);if(!b||!b.statusEffects)return;
@@ -1744,10 +1749,9 @@ function removeStatusEffect(n,idx){
   b.statusEffects.splice(idx,1);
   applyStatusEffects(b);
   addLog(`Efeito <b>${eff.tag||eff.attr.toUpperCase()}</b> removido manualmente de ${b.bey}.`,'event');
-  renderC(n);
+  renderC(n);syncBattleToCloud();
 }
 
-// Master applies a status effect manually, without needing a pre-built ability
 function openStatusManual(n){
   const b=p(n);if(!b)return;
   document.getElementById('sm-slot').value=n;
@@ -1770,14 +1774,12 @@ function applyManualStatus(){
   const duracao=parseInt(document.getElementById('sm-duracao').value)||0;
   const tag=document.getElementById('sm-tag').value.trim();
   const perdeTurno=document.getElementById('sm-perde-turno').checked;
-
   if(!b.statusEffects)b.statusEffects=[];
   b.statusEffects.push({attr,valor,turnosRestantes:duracao,tag,perdeTurno,origem:'Manual'});
   applyStatusEffects(b);
-
   addLog(`✨ ${b.blader} recebe efeito <b>${tag||attr.toUpperCase()}</b> (${valor>0?'+':''}${valor} ${attr.toUpperCase()})${duracao?` por ${duracao} turno(s)`:' permanente'}${perdeTurno?' — perde o turno!':''}`,'event');
   closeStatusManual();
-  renderC(n);
+  renderC(n);syncBattleToCloud();
 }
 
 function rollInit(){
@@ -1924,7 +1926,7 @@ function executeAction(n,action){
       logMsg+=` (compare o resultado com a ação do oponente)`;
     }
     addLog(logMsg, action.efeito==='dano'?'dmg':action.efeito==='recarga'?'heal':'roll');
-    renderC(n);buildActions();
+    renderC(n);buildActions();syncBattleToCloud();
   }
 
   if(action.formula){
@@ -2094,7 +2096,7 @@ function renderFicha(n){
     </div>` : ''}
   `;
 }
-function useMan(n,i){const b=p(n);if(b.manUsosLeft<=0)return;b.manUsosLeft--;addLog(`${b.blader} usa <span class="lv gold">${b.manobra}</span>! Usos: ${b.manUsosLeft}`,'event');renderFicha(n);}
+function useMan(n,i){const b=p(n);if(b.manUsosLeft<=0)return;b.manUsosLeft--;addLog(`${b.blader} usa <span class="lv gold">${b.manobra}</span>! Usos: ${b.manUsosLeft}`,'event');renderFicha(n);syncBattleToCloud();}
 
 // Use a custom ability/manobra during battle: rolls dice if configured, applies status effect, logs everything
 function useCustomAbility(n,idx){
@@ -2146,6 +2148,7 @@ function useCustomAbility(n,idx){
   addLog(`${isManobra?'🌀':'⚡'} ${b.blader} usa <b>${a.nome}</b>${rollTxt}`, logType);
   renderC(n);
   renderFicha(n);
+  syncBattleToCloud();
 }
 
 // Recalculate effective attributes based on active status effects
