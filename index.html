@@ -491,6 +491,34 @@ textarea.form-input{resize:vertical;min-height:60px}
       <button class="btn btn-gray" style="width:100%;margin-top:16px" onclick="closePlayerRewardFlow()">← Voltar</button>
     </div>
   </div>
+  <!-- Player-side dice animation overlay (mirrors master's) -->
+  <div class="dice-overlay" id="pv-diceOverlay">
+    <div class="dice-label" id="pv-diceOverlayLabel">Rolando...</div>
+    <div class="dice-face" id="pv-diceOverlayFace">?</div>
+    <div class="dice-result-big" id="pv-diceOverlayResult" style="display:none"></div>
+    <div class="dice-detail" id="pv-diceOverlayDetail"></div>
+  </div>
+
+  <!-- Player-side battle start overlay -->
+  <div class="battle-start-overlay" id="pv-battleStartOverlay" style="display:none;z-index:710">
+    <div class="bso-content">
+      <div class="bso-vs">⚡ DUELO ⚡</div>
+      <div class="bso-names" id="pv-bso-names"></div>
+      <div class="bso-card" id="pv-bso-armor-card">
+        <div class="bso-card-title">🛡️ Sua Armadura</div>
+        <div class="bso-armor-val" id="pv-bso-armor-val">—</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px" id="pv-bso-armor-detail"></div>
+      </div>
+      <div class="bso-initiative-box" id="pv-bso-init-box">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:4px">⚡ Iniciativa</div>
+        <div id="pv-bso-init-detail" style="font-size:13px;color:var(--muted);margin-bottom:6px"></div>
+        <div class="bso-first" id="pv-bso-first-name"></div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px">age primeiro!</div>
+      </div>
+      <button class="btn btn-blue" style="width:100%;padding:12px;font-size:14px;font-weight:700" onclick="closePvBattleStartOverlay()">⚔️ Começar</button>
+    </div>
+  </div>
+
 </div>
 
 <div class="toast" id="toast"></div>
@@ -663,6 +691,19 @@ textarea.form-input{resize:vertical;min-height:60px}
     <div id="ready-status-badges" style="display:flex;gap:6px;flex-wrap:wrap"></div>
     <button class="btn btn-blue btn-sm" onclick="openFichaModal()">📋 Fichas</button>
     <button class="btn btn-gray btn-sm" onclick="goScreen('battle-select')">← Voltar</button>
+  </div>
+  <!-- Pending attack confirmation banner -->
+  <div id="pending-attack-banner" style="display:none;background:linear-gradient(135deg,#9B1C2299,#07102a99);border:1px solid var(--gold);border-radius:10px;padding:12px 16px;margin-bottom:14px;display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <div>
+        <div style="font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">⚔️ Ataque Pendente — aguardando reação do player</div>
+        <div id="pending-attack-desc" style="font-size:13px;font-weight:700;color:var(--text)"></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-red btn-sm" onclick="confirmPendingAttack()">✓ Confirmar Dano</button>
+        <button class="btn btn-gray btn-sm" onclick="cancelPendingAttack()">✕ Cancelar</button>
+      </div>
+    </div>
   </div>
   <div class="battle-area">
     <!-- P1 -->
@@ -1507,7 +1548,7 @@ function clearSlot(n){slots[n]=null;renderSlot(n);document.getElementById('start
 function clearSlots(){clearSlot(1);clearSlot(2);}
 
 // BATTLE STATE
-const bt={turn:1,pl:[null,null],activeSlot:null};
+const bt={turn:1,pl:[null,null],activeSlot:null,usedActionThisTurn:{}};
 const BATTLE_KEY='battle:current';
 function p(n){return bt.pl[n-1]}
 
@@ -1524,6 +1565,8 @@ function syncBattleToCloud(){
       phase:bt.phase||'active',
       readySlots:bt.readySlots||[],
       pl:bt.pl,
+      pendingAttack:bt.pendingAttack||null,
+      usedActionThisTurn:bt.usedActionThisTurn||{},
       logHtml
     });
   },400);
@@ -1534,7 +1577,7 @@ function startBattle(){
   function live(b){return{...b,hp:b.hpMax,armor:0,armorMax:0,eng:b.engMax,eb:1,manUsosLeft:b.manobraUsos,presas:false};}
   // Set phase BEFORE any render so the very first sync goes out with 'waiting'
   bt.pl[0]=live(slots[1]);bt.pl[1]=live(slots[2]);
-  bt.turn=1;bt.activeSlot=null;bt.phase='waiting';bt.readySlots=[];
+  bt.turn=1;bt.activeSlot=null;bt.phase='waiting';bt.readySlots=[];bt.usedActionThisTurn={};
   document.getElementById('nav-battle').style.display='block';
   document.getElementById('b-mode-badge').textContent=document.getElementById('battle-mode').value==='1v1'?'1v1':'Torneio';
   // Sync waiting state FIRST before any render triggers
@@ -1568,18 +1611,14 @@ function executeLaunch(){
   bt.phase='active';
   document.getElementById('master-lir-btn').style.display='none';
   document.getElementById('ready-status-badges').innerHTML='';
-  // Roll armor and initiative (all state changes before sync)
   rollArmor(1);rollArmor(2);
   rollInitUntilResolved();
   buildActions();
   addLog(`Duelo iniciado: ${p(1).blader} vs ${p(2).blader}`,'event');
-  // Sync AFTER all state is set correctly
   syncBattleToCloud();
-  // Show master overlay (null = show both armors)
   showBattleStartOverlay(null);
 }
 
-// Rolls initiative repeatedly until there's a clear winner (ties re-roll automatically).
 function rollInitUntilResolved(){
   rollInit();
   if(bt.activeSlot===null||bt.activeSlot===undefined)rollInitUntilResolved();
@@ -1627,6 +1666,39 @@ function closeBattleStartOverlay(){
     overlay.style.display='none';
     document.getElementById('bso-armor-card').classList.remove('reveal');
     document.getElementById('bso-init-box').classList.remove('reveal');
+  },500);
+}
+
+// Player-side battle start overlay — uses pv-bso-* elements inside playerOverlay
+function showPvBattleStartOverlay(me, remoteBattle, mySlot){
+  const overlay=document.getElementById('pv-battleStartOverlay');
+  if(!overlay)return;
+  const b1=remoteBattle.pl[0],b2=remoteBattle.pl[1];
+  document.getElementById('pv-bso-names').textContent=`${b1.blader} vs ${b2.blader}`;
+  // Armor — only show own armor
+  document.getElementById('pv-bso-armor-val').textContent=me.armor;
+  document.getElementById('pv-bso-armor-detail').textContent=`-${me.armor} em todo dano recebido`;
+  // Initiative
+  const firstB=remoteBattle.pl[(remoteBattle.activeSlot||1)-1];
+  const b1r=b1._lastInitRoll||'?', b2r=b2._lastInitRoll||'?';
+  document.getElementById('pv-bso-init-detail').textContent=`${b1.blader}: ${b1r}  ·  ${b2.blader}: ${b2r}`;
+  document.getElementById('pv-bso-first-name').textContent=`⚡ ${firstB.blader}`;
+  overlay.style.display='flex';overlay.style.opacity='1';
+  const ac=document.getElementById('pv-bso-armor-card');
+  const ib=document.getElementById('pv-bso-init-box');
+  ac.classList.remove('reveal');ib.classList.remove('reveal');
+  setTimeout(()=>ac.classList.add('reveal'),200);
+  setTimeout(()=>ib.classList.add('reveal'),700);
+}
+
+function closePvBattleStartOverlay(){
+  const overlay=document.getElementById('pv-battleStartOverlay');
+  if(!overlay)return;
+  overlay.style.opacity='0';
+  setTimeout(()=>{
+    overlay.style.display='none';
+    document.getElementById('pv-bso-armor-card')?.classList.remove('reveal');
+    document.getElementById('pv-bso-init-box')?.classList.remove('reveal');
   },500);
 }
 
@@ -1739,6 +1811,7 @@ function nextTurn(){
       }
     }
   });
+  bt.usedActionThisTurn={};
   renderBattle();
   addLog(`─── Turno ${bt.turn} ───`,'event');
   syncBattleToCloud();
@@ -1799,13 +1872,19 @@ function rollInit(){
 function setActiveTurn(n){
   bt.activeSlot=n;
   updateActiveTurnIndicator();
+  buildActions();syncBattleToCloud();
 }
 
 function passTurn(){
   if(!bt.activeSlot)return;
+  const prev=bt.activeSlot;
   bt.activeSlot=bt.activeSlot===1?2:1;
+  // Clear used-action flag for the player who just passed their turn
+  if(!bt.usedActionThisTurn)bt.usedActionThisTurn={};
+  bt.usedActionThisTurn[prev]=false;
   updateActiveTurnIndicator();
   addLog(`Passa a vez para <b>${p(bt.activeSlot).blader}</b>.`,'event');
+  buildActions();syncBattleToCloud();
 }
 
 function updateActiveTurnIndicator(){
@@ -1854,8 +1933,8 @@ function applyOverride(){
   addLog(`🎭 Resultado ajustado pelo mestre (fins narrativos): <span class="lv gold">${val}</span>`,'event');
 }
 // Decides whether combatant n can currently use a given action, based on whose turn it is.
-// "acao" (Investida, Recarga, etc.) only on your own active turn. "reacao" (Esquiva, Bloqueio, etc.)
-// only when it's NOT your turn — i.e. reacting to the opponent's action.
+// "acao" only on your own active turn. "reacao" only when it's NOT your turn.
+// Also locked if a non-special action was already used this turn (usedActionThisTurn[n]).
 function isActionAllowed(n, action, activeSlot){
   if(action.categoria==='acao')return activeSlot===n;
   if(action.categoria==='reacao')return activeSlot!==null && activeSlot!==undefined && activeSlot!==n;
@@ -1867,14 +1946,23 @@ function buildActions(){
   [1,2].forEach(n=>{
     const b=p(n);if(!b)return;
     const isActive=bt.activeSlot===n;
+    const usedAction=!!(bt.usedActionThisTurn&&bt.usedActionThisTurn[n]);
     const group=document.createElement('div');
-    group.style.marginBottom='10px';
-    group.style.cssText+=isActive?'background:#00B4D80c;border:1px solid #00B4D855;border-radius:8px;padding:8px':'';
+    group.style.cssText=`margin-bottom:10px;${isActive?'background:#00B4D80c;border:1px solid #00B4D855;border-radius:8px;padding:8px':''}`;
     const header=document.createElement('div');
-    header.style.cssText='font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:'+(n===1?'var(--blue)':'var(--red)')+';margin-bottom:6px;display:flex;align-items:center;gap:6px';
-    header.innerHTML=`<span style="width:8px;height:8px;border-radius:50%;background:${n===1?'var(--blue)':'var(--red)'}"></span> ${b.blader} — ${b.bey}${isActive?' <span style="color:var(--cyan);margin-left:auto;font-size:10px">● AGINDO</span>':''}`;
-    if(isActive)header.style.justifyContent='flex-start';
+    header.style.cssText=`font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;`+
+      `color:${n===1?'var(--blue)':'var(--red)'};margin-bottom:6px;display:flex;align-items:center;gap:6px`;
+    header.innerHTML=`<span style="width:8px;height:8px;border-radius:50%;background:${n===1?'var(--blue)':'var(--red)'}"></span>`+
+      ` ${b.blader} — ${b.bey}${isActive?' <span style="color:var(--cyan);margin-left:auto;font-size:10px">● AGINDO</span>':''}`;
     group.appendChild(header);
+
+    // If a normal action was already used, show a "waited" notice
+    if(usedAction && isActive){
+      const usedNote=document.createElement('div');
+      usedNote.style.cssText='font-size:11px;color:var(--muted);margin-bottom:6px;padding:5px 8px;background:var(--bg);border-radius:6px';
+      usedNote.textContent='✓ Ação usada neste turno — só Manobra Especial disponível';
+      group.appendChild(usedNote);
+    }
 
     ACTIONS.forEach(a=>{
       const costLabel=a.cost===0?'Livre':`${a.cost}E`;
@@ -1882,13 +1970,21 @@ function buildActions(){
       const catLabel=a.categoria==='reacao'?'Reação':'Ação';
       const catColor=a.categoria==='reacao'?'var(--gold)':'var(--cyan)';
       const turnOk=isActionAllowed(n,a,bt.activeSlot);
-      const canAfford=b.eng>=a.cost;
-      const usable=canAfford&&turnOk;
+      const canAfford=(b.eng||0)>=a.cost;
+      // Lock non-reaction actions if already used this turn (manobra especial unaffected)
+      const actionLocked=usedAction && a.categoria==='acao' && isActive;
+      const usable=canAfford&&turnOk&&!actionLocked;
       const div=document.createElement('div');
       div.className='action-item';
       div.style.cursor=usable?'pointer':'not-allowed';
-      div.style.opacity=usable?'1':'0.4';
-      div.innerHTML=`<div class="action-cost ${cc}">${costLabel}</div><div style="flex:1"><div class="action-name">${a.nome} <span style="font-size:9px;color:${catColor};text-transform:uppercase;letter-spacing:.5px">· ${catLabel}</span></div>${a.formula?`<div class="action-roll">${a.formula}</div>`:''}<div class="action-desc">${a.desc}</div>${!turnOk?`<div style="font-size:10px;color:var(--red);margin-top:2px">${a.categoria==='reacao'?'Disponível só fora do seu turno':'Disponível só no seu turno'}</div>`:''}</div>`;
+      div.style.opacity=usable?'1':'0.35';
+      div.innerHTML=`<div class="action-cost ${cc}">${costLabel}</div><div style="flex:1">`+
+        `<div class="action-name">${a.nome} <span style="font-size:9px;color:${catColor};text-transform:uppercase;letter-spacing:.5px">· ${catLabel}</span></div>`+
+        `${a.formula?`<div class="action-roll">${a.formula}</div>`:''}`+
+        `<div class="action-desc">${a.desc}</div>`+
+        `${actionLocked?'<div style="font-size:10px;color:var(--muted);margin-top:2px">Já usou uma ação neste turno</div>':''}`+
+        `${!turnOk&&!actionLocked?`<div style="font-size:10px;color:var(--red);margin-top:2px">${a.categoria==='reacao'?'Só fora do seu turno':'Só no seu turno'}</div>`:''}`+
+        `</div>`;
       if(usable)div.onclick=()=>executeAction(n,a);
       group.appendChild(div);
     });
@@ -1896,13 +1992,17 @@ function buildActions(){
   });
 }
 
-// Executes a combat action for combatant n: rolls the dice automatically, applies the effect, logs the result.
+
+// ── PENDING ATTACK SYSTEM ────────────────────────────────────────────────
+// Dano nunca é aplicado automaticamente. O mestre declara o ataque (pending),
+// o player vê e pode reagir, depois o mestre confirma e o dano é calculado.
+let pendingAttack=null;
+
 function executeAction(n,action){
   const b=p(n);if(!b)return;
   const targetN=n===1?2:1;
   const target=p(targetN);
   if(b.eng<action.cost){showToast('Energia insuficiente.','err');return;}
-  if(action.cost>0)b.eng-=action.cost;
 
   function applyAndLog(rollResult){
     const actorTag=n===1?'P1':'P2';
@@ -1910,11 +2010,21 @@ function executeAction(n,action){
     if(rollResult)logMsg+=` → [${rollResult.rolls.join(', ')}]${rollResult.mod?` +${rollResult.mod}`:''} = <span class="lv cyan">${rollResult.total}</span>`;
 
     if(action.efeito==='dano' && rollResult && target){
-      const result=calcDamage(target,rollResult.total);
-      logMsg+=` — ${dmgLogText(target,result)}`;
-      renderC(targetN);
-      if(target.hp<=0){addLog(logMsg,'dmg');renderC(n);buildActions();showKO(targetN);return;}
-    } else if(action.efeito==='armadura' && rollResult){
+      // Deduct energy THEN save as pending — never apply damage here
+      b.eng=Math.max(0,b.eng-action.cost);
+      pendingAttack={attackerN:n,targetN,rawDamage:rollResult.total,actionNome:action.nome,
+        rollTxt:`[${rollResult.rolls.join(', ')}]${rollResult.mod?` +${rollResult.mod}`:''} = ${rollResult.total}`,
+        reactionDone:false,reactionDesc:''};
+      bt.pendingAttack=pendingAttack;
+      if(!bt.usedActionThisTurn)bt.usedActionThisTurn={};
+      bt.usedActionThisTurn[n]=true;
+      addLog(`⚔️ <b>${b.blader}</b> declara <b>${action.nome}</b> — ${pendingAttack.rollTxt} de dano. Aguardando reação de ${target.blader}...`,'roll');
+      renderC(n);showPendingAttackBanner();syncBattleToCloud();
+      return;
+    }
+    // Non-damage actions: apply normally
+    b.eng=Math.max(0,b.eng-action.cost);
+    if(action.efeito==='armadura' && rollResult){
       b.armor=(b.armor||0)+rollResult.total;
       b.armorMax=Math.max(b.armorMax||0,b.armor);
       logMsg+=` — Armadura aumenta para ${b.armor}`;
@@ -1923,31 +2033,78 @@ function executeAction(n,action){
       logMsg=`<b>${b.blader}</b> (${actorTag}) usa <b>Recarga</b> — Energia: ${b.eng}/${b.engMax}`;
       if(b.type==='res'){b.hp=Math.min(b.hpMax,b.hp+4);logMsg+=` · +4 HP`;}
     } else if(action.efeito==='contestado' && rollResult){
-      logMsg+=` (compare o resultado com a ação do oponente)`;
+      logMsg+=` (compare com a ação do oponente)`;
     }
-    addLog(logMsg, action.efeito==='dano'?'dmg':action.efeito==='recarga'?'heal':'roll');
+    // Mark action as used for acao categoria (not reacao, not recarga)
+    if(action.categoria==='acao' && action.efeito!=='recarga'){
+      if(!bt.usedActionThisTurn)bt.usedActionThisTurn={};
+      bt.usedActionThisTurn[n]=true;
+    }
+    addLog(logMsg,action.efeito==='recarga'?'heal':'roll');
     renderC(n);buildActions();syncBattleToCloud();
   }
 
   if(action.formula){
-    const preResult=parseRollFormula(action.formula,b);
-    animateDiceRoll({rolls:preResult.rolls,total:preResult.total,label:`${action.nome} — ${action.formula}`,onDone:()=>applyAndLog(preResult)});
-  } else {
-    applyAndLog(null);
-  }
+    const pre=parseRollFormula(action.formula,b);
+    animateDiceRoll({rolls:pre.rolls,total:pre.total,label:`${action.nome} — ${action.formula}`,onDone:()=>applyAndLog(pre)});
+  } else { applyAndLog(null); }
 }
+
+function showPendingAttackBanner(){
+  const banner=document.getElementById('pending-attack-banner');
+  if(!banner||!pendingAttack)return;
+  const attacker=p(pendingAttack.attackerN);const target=p(pendingAttack.targetN);
+  let desc=`${attacker.blader} → ${target.blader} · <b>${pendingAttack.actionNome}</b> · ${pendingAttack.rollTxt} de dano`;
+  if(pendingAttack.reactionDone && pendingAttack.reactionDesc)
+    desc+=` <span style="color:var(--res);font-weight:700">· Reação: ${pendingAttack.reactionDesc}</span>`;
+  document.getElementById('pending-attack-desc').innerHTML=desc;
+  banner.style.display='block';
+}
+
+function confirmPendingAttack(){
+  if(!pendingAttack)return;
+  const targetN=pendingAttack.targetN;const attackerN=pendingAttack.attackerN;
+  const target=bt.pl[targetN-1];
+  // Apply bloqueio bonus if reaction added armor (already reflected in bt.pl from cloud merge)
+  const result=calcDamage(target,pendingAttack.rawDamage);
+  addLog(`✓ Dano confirmado — ${dmgLogText(target,result)}`,'dmg');
+  // Reset bloqueio bonus after this attack (armor boost was temporary for this hit only)
+  if(pendingAttack._bloqueioBonus){
+    target.armor=Math.max(0,(target.armor||0)-pendingAttack._bloqueioBonus);
+    target.armorMax=target.armor;
+  }
+  renderC(targetN);renderC(attackerN);
+  clearPendingAttack();
+  buildActions();syncBattleToCloud();
+  if(target.hp<=0)showKO(targetN);
+}
+
+function cancelPendingAttack(){
+  if(!pendingAttack)return;
+  addLog(`✕ Ataque cancelado pelo mestre.`,'event');
+  clearPendingAttack();renderBattle();buildActions();syncBattleToCloud();
+}
+
+function clearPendingAttack(){
+  pendingAttack=null;bt.pendingAttack=null;
+  const banner=document.getElementById('pending-attack-banner');
+  if(banner)banner.style.display='none';
+}
+
 
 function addLog(text,type){const log=document.getElementById('combat-log');const e=document.createElement('div');e.className=`log-entry ${type||''}`;e.innerHTML=`<div class="log-turn">Turno ${bt.turn}</div><div class="log-text">${text}</div>`;log.insertBefore(e,log.firstChild);}
 
 // ── DICE ANIMATION ────────────────────────────────────────────────────────
-// Shows a center-screen dice animation then calls callback with result.
-// rolls: array of individual die results, total: sum, label: "2d6+ATQ" etc.
+// Shows a center-screen dice animation. Auto-uses pv-diceOverlay when player
+// overlay is visible (playerSession active), otherwise uses master diceOverlay.
 function animateDiceRoll({rolls, total, label, onDone}){
-  const overlay=document.getElementById('diceOverlay');
-  const face=document.getElementById('diceOverlayFace');
-  const resultEl=document.getElementById('diceOverlayResult');
-  const detailEl=document.getElementById('diceOverlayDetail');
-  const labelEl=document.getElementById('diceOverlayLabel');
+  const isPlayerCtx=!!(playerSession && document.getElementById('playerOverlay')?.style.display!=='none');
+  const pfx=isPlayerCtx?'pv-':'';
+  const overlay=document.getElementById(pfx+'diceOverlay');
+  const face=document.getElementById(pfx+'diceOverlayFace');
+  const resultEl=document.getElementById(pfx+'diceOverlayResult');
+  const detailEl=document.getElementById(pfx+'diceOverlayDetail');
+  const labelEl=document.getElementById(pfx+'diceOverlayLabel');
   if(!overlay)return onDone&&onDone();
 
   labelEl.textContent=label||'Rolando...';
@@ -1990,31 +2147,36 @@ function rollWithAnimation(formula, bey, label, onDone){
 // ── PLAYER LET IT RIP ─────────────────────────────────────────────────────
 // ── REACTION OVERLAY ─────────────────────────────────────────────────────
 // Shows when player takes damage — prompts for Esquiva, Bloqueio, Contra-ataque.
-function showReactionOverlay(me, dmgTaken){
+// ── REACTION OVERLAY ─────────────────────────────────────────────────────
+function showReactionOverlay(me, incomingDmg){
   pvState.attackedFlag=true;
   const overlay=document.getElementById('playerReactionOverlay');
   if(!overlay)return;
-
   const reactions=ACTIONS.filter(a=>a.categoria==='reacao');
   const list=document.getElementById('pv-reaction-list');
-  list.innerHTML=reactions.map(a=>{
-    const canAfford=me.eng>=a.cost;
+  list.innerHTML=`<div style="background:var(--bg3);border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:13px;font-weight:700;color:var(--red)">
+    💥 Dano declarado: <span style="font-size:18px">${incomingDmg}</span>&nbsp;&nbsp;(sua armadura fixa: -${me.armor||0})</div>`+
+  reactions.map(a=>{
+    const canAfford=(me.eng||0)>=a.cost;
     const cc=a.cost===0?'cost-free':a.cost===1?'cost-1e':'cost-2e';
-    return `<div class="action-item" style="cursor:${canAfford?'pointer':'not-allowed'};opacity:${canAfford?1:0.4}" ${canAfford?`onclick="executePlayerReaction('${a.id}')"`:''}>
+    let hint='';
+    if(a.id==='esquiva')hint=`Rola ${a.formula} — se resultado > ${incomingDmg}: dano zerado`;
+    if(a.id==='bloqueio')hint=`Rola ${a.formula} — adiciona à armadura só pra este ataque`;
+    if(a.id==='contra')hint=`Rola ${a.formula} — subtrai do dano declarado`;
+    if(a.id==='dupla')hint=a.desc;
+    return `<div class="action-item" style="cursor:${canAfford?'pointer':'not-allowed'};opacity:${canAfford?1:0.35}"
+      ${canAfford?`onclick="executePlayerReaction('${a.id}')"`:''}>
       <div class="action-cost ${cc}">${a.cost===0?'Livre':`${a.cost}E`}</div>
       <div style="flex:1">
         <div class="action-name">${a.nome}</div>
         ${a.formula?`<div class="action-roll">${a.formula}</div>`:''}
-        <div class="action-desc">${a.desc}</div>
-        ${!canAfford?`<div style="font-size:10px;color:var(--red);margin-top:2px">Sem energia suficiente</div>`:''}
-      </div>
-    </div>`;
+        <div class="action-desc">${hint||a.desc}</div>
+        ${!canAfford?`<div style="font-size:10px;color:var(--red);margin-top:2px">Sem energia</div>`:''}
+      </div></div>`;
   }).join('');
-
-  // Show the overlay (slides up from bottom)
   overlay.style.display='flex';
-  // Small delay so the flex renders before transition kicks in
-  requestAnimationFrame(()=>{overlay.style.opacity='0';requestAnimationFrame(()=>{overlay.style.transition='opacity .25s';overlay.style.opacity='1';});});
+  requestAnimationFrame(()=>{overlay.style.opacity='0';
+    requestAnimationFrame(()=>{overlay.style.transition='opacity .25s';overlay.style.opacity='1';});});
 }
 
 function dismissReaction(){
@@ -2022,20 +2184,83 @@ function dismissReaction(){
   const overlay=document.getElementById('playerReactionOverlay');
   if(!overlay)return;
   overlay.style.opacity='0';
-  setTimeout(()=>{overlay.style.display='none';overlay.style.opacity='1';},250);
+  setTimeout(()=>{overlay.style.display='none';overlay.style.transition='';overlay.style.opacity='1';},250);
 }
 
 async function executePlayerReaction(actionId){
-  dismissReaction();
-  await executePlayerAction(actionId);
+  if(!playerSession)return;
+  const action=ACTIONS.find(a=>a.id===actionId);if(!action)return;
+  const remoteBattle=await dbGet(BATTLE_KEY);
+  if(!remoteBattle||!remoteBattle.pendingAttack||remoteBattle.pendingAttack.reactionDone){
+    dismissReaction();return;
+  }
+  const b1=remoteBattle.pl[0],b2=remoteBattle.pl[1];
+  let mySlot=null;
+  if(b1&&b1.id===playerSession.bladerId)mySlot=1;
+  else if(b2&&b2.id===playerSession.bladerId)mySlot=2;
+  if(!mySlot)return;
+  const me=remoteBattle.pl[mySlot-1];
+  if((me.eng||0)<action.cost){showToast('Energia insuficiente.','err');return;}
+
+  // Roll the reaction die with animation
+  let rollResult=null;
+  if(action.formula)rollResult=parseRollFormula(action.formula,me);
+
+  const doReaction=()=>{
+    let reactionDesc='';
+    let finalDmg=remoteBattle.pendingAttack.rawDamage;
+    let bloqueioBonus=0;
+
+    if(action.id==='esquiva'&&rollResult){
+      if(rollResult.total>remoteBattle.pendingAttack.rawDamage){
+        finalDmg=0;
+        reactionDesc=`Esquivou! (${rollResult.total} > ${remoteBattle.pendingAttack.rawDamage}) — dano zerado!`;
+      } else {
+        reactionDesc=`Esquiva falhou (${rollResult.total} ≤ ${remoteBattle.pendingAttack.rawDamage}) — dano mantido`;
+      }
+    } else if(action.id==='bloqueio'&&rollResult){
+      // Bloqueio: armor boost is TEMPORARY — only for this attack
+      bloqueioBonus=rollResult.total;
+      me.armor=(me.armor||0)+bloqueioBonus;
+      me.armorMax=Math.max(me.armorMax||0,me.armor);
+      reactionDesc=`Bloqueio! +${bloqueioBonus} armadura temporária para este ataque`;
+    } else if(action.id==='contra'&&rollResult){
+      finalDmg=Math.max(0,finalDmg-rollResult.total);
+      reactionDesc=`Contra-ataque! Rolou ${rollResult.total} — dano reduzido para ${finalDmg}`;
+    } else {
+      reactionDesc=rollResult?`${action.nome} — rolou ${rollResult.total}`:action.nome;
+    }
+
+    me.eng=Math.max(0,(me.eng||0)-action.cost);
+    remoteBattle.pendingAttack.rawDamage=finalDmg;
+    remoteBattle.pendingAttack.reactionDesc=reactionDesc;
+    remoteBattle.pendingAttack.reactionDone=true;
+    if(bloqueioBonus)remoteBattle.pendingAttack._bloqueioBonus=bloqueioBonus;
+    remoteBattle.pl[mySlot-1]=me;
+
+    const logEntry=`<div class="log-entry roll"><div class="log-turn">Turno ${remoteBattle.turn}</div>`+
+      `<div class="log-text">⚡ ${me.blader} reage com <b>${action.nome}</b>${rollResult?` [${rollResult.rolls.join(', ')}] = ${rollResult.total}`:''}  — ${reactionDesc}</div></div>`;
+    remoteBattle.logHtml=logEntry+(remoteBattle.logHtml||'');
+
+    dbSet(BATTLE_KEY,remoteBattle).then(()=>{
+      showToast(reactionDesc,'ok');
+      dismissReaction();
+      renderPlayerView();
+    });
+  };
+
+  if(rollResult){
+    animateDiceRoll({rolls:rollResult.rolls,total:rollResult.total,
+      label:`${action.nome} — ${action.formula}`,onDone:doReaction});
+  } else { doReaction(); }
 }
+
 
 async function playerClickLetItRip(){
   if(!playerSession)return;
   const remoteBattle=await dbGet(BATTLE_KEY);
   if(!remoteBattle)return;
   if(!remoteBattle.readySlots)remoteBattle.readySlots=[];
-  // Find which slot this player is
   const b1=remoteBattle.pl[0],b2=remoteBattle.pl[1];
   let mySlot=null;
   if(b1&&b1.id===playerSession.bladerId)mySlot=1;
@@ -2045,7 +2270,22 @@ async function playerClickLetItRip(){
     remoteBattle.readySlots.push(mySlot);
     await dbSet(BATTLE_KEY,remoteBattle);
   }
-  showToast('Pronto! Aguardando o mestre iniciar.','ok');
+  // Auto-start if both player slots are ready (no NPC in either slot means both need confirmation)
+  const slots=[1,2];
+  const playerSlots=slots.filter(s=>{
+    const b=remoteBattle.pl[s-1];
+    return b && b.cat==='player';
+  });
+  const allReady=playerSlots.every(s=>remoteBattle.readySlots.includes(s));
+  if(allReady && playerSlots.length>=2){
+    // Both players ready — auto-launch (master doesn't need to click)
+    showToast('Ambos prontos! Iniciando duelo...','ok');
+    // Post a signal for the master to pick up and execute launch
+    remoteBattle.autoLaunch=true;
+    await dbSet(BATTLE_KEY,remoteBattle);
+  } else {
+    showToast('Pronto! Aguardando o outro jogador.','ok');
+  }
   renderPlayerView();
 }
 
@@ -2245,6 +2485,9 @@ function startMasterBattlePoll(){
     }
     // Merge remote pl[] data (player-driven changes like using abilities)
     let changed=false;
+    if(remote.usedActionThisTurn && JSON.stringify(remote.usedActionThisTurn)!==JSON.stringify(bt.usedActionThisTurn||{})){
+      bt.usedActionThisTurn=remote.usedActionThisTurn;changed=true;
+    }
     [0,1].forEach(i=>{
       if(remote.pl[i] && bt.pl[i] && JSON.stringify(remote.pl[i])!==JSON.stringify(bt.pl[i])){
         bt.pl[i]=remote.pl[i];changed=true;
@@ -2254,6 +2497,29 @@ function startMasterBattlePoll(){
       document.getElementById('combat-log').innerHTML=remote.logHtml;changed=true;
     }
     if(changed){renderC(1);renderC(2);buildActions();}
+    // Auto-launch if both players clicked Let it Rip
+    if(remote.autoLaunch && bt.phase==='waiting'){
+      remote.autoLaunch=false;
+      await dbSet(BATTLE_KEY,remote);
+      executeLaunch();
+      return;
+    }
+    // Refresh pending attack banner if player reacted
+    if(remote.pendingAttack && remote.pendingAttack!==null){
+      bt.pendingAttack=remote.pendingAttack;
+      pendingAttack=remote.pendingAttack;
+      if(remote.pendingAttack.reactionDone){
+        const banner=document.getElementById('pending-attack-banner');
+        if(banner&&banner.style.display!=='none'){
+          const desc=document.getElementById('pending-attack-desc');
+          if(desc)desc.innerHTML=desc.innerHTML+
+            ` <span style="color:var(--res);font-weight:700">· Reação: ${remote.pendingAttack.reactionDesc}</span>`;
+        }
+      }
+      showPendingAttackBanner();
+    } else if(!remote.pendingAttack && pendingAttack){
+      clearPendingAttack();
+    }
   },3000);
 }
 function stopMasterBattlePoll(){
@@ -2677,7 +2943,7 @@ async function playerLogin(){
   }
   playerSession={bladerId:found.id};
   // Reset change-detection state so previous battle data doesn't bleed in
-  pvState.phase=null;pvState.turn=null;pvState.myHp=null;pvState.activeSlot=null;pvState.attackedFlag=false;
+  pvState.phase=null;pvState.turn=null;pvState.myHp=null;pvState.activeSlot=null;pvState.attackedFlag=false;pvState.seenBattleStart=false;
   document.getElementById('playerGate').style.display='none';
   document.getElementById('playerView').style.display='block';
   await checkPlayerPendingRewards();
@@ -2688,7 +2954,7 @@ async function playerLogin(){
 
 function playerLogout(){
   playerSession=null;
-  pvState.phase=null;pvState.turn=null;pvState.myHp=null;pvState.activeSlot=null;pvState.attackedFlag=false;
+  pvState.phase=null;pvState.turn=null;pvState.myHp=null;pvState.activeSlot=null;pvState.attackedFlag=false;pvState.seenBattleStart=false;
   if(playerPollInterval){clearInterval(playerPollInterval);playerPollInterval=null;}
   openPlayerGate();
 }
@@ -2753,10 +3019,14 @@ async function renderPlayerView(){
   const currentHp=me.hp;
   const currentActiveSlot=remoteBattle.activeSlot;
 
-  // 1. Transition from waiting → active: show battle start overlay
+  // 1. Transition from waiting → active: show player-side battle start overlay
   if(pvState.phase==='waiting' && currentPhase==='active'){
-    bt.pl[0]=b1;bt.pl[1]=b2;bt.activeSlot=remoteBattle.activeSlot;
-    showBattleStartOverlay(mySlot);
+    showPvBattleStartOverlay(me, remoteBattle, mySlot);
+  }
+  // Also show if pvState.phase was null (player joined after battle started) and hasn't seen overlay yet
+  if(pvState.phase===null && currentPhase==='active' && !pvState.seenBattleStart){
+    pvState.seenBattleStart=true;
+    showPvBattleStartOverlay(me, remoteBattle, mySlot);
   }
 
   // 2. Turn changed: flash turn indicator
@@ -2769,10 +3039,13 @@ async function renderPlayerView(){
     }
   }
 
-  // 3. HP dropped (we were attacked): show reaction overlay if not already showing
-  if(pvState.myHp!==null && currentHp<pvState.myHp && !pvState.attackedFlag && currentActiveSlot!==mySlot){
-    const dmgTaken=pvState.myHp-currentHp;
-    showReactionOverlay(me, dmgTaken);
+  // 3. Pending attack detected: show reaction overlay with incoming damage value
+  const hasPending=!!(remoteBattle.pendingAttack && !remoteBattle.pendingAttack.reactionDone);
+  const targetedByPending=hasPending && remoteBattle.pendingAttack.targetN===mySlot;
+  if(targetedByPending && !pvState.attackedFlag){
+    showReactionOverlay(me, remoteBattle.pendingAttack.rawDamage);
+  } else if(!targetedByPending && pvState.attackedFlag){
+    dismissReaction();
   }
 
   // 4. activeSlot changed and it's now our turn: pulse the turn status box
@@ -2900,7 +3173,8 @@ async function renderPlayerView(){
     turnStatusEl.style.color='var(--gold)';
   }
 
-  // ACTION / REACTION BUTTONS
+  // ACTION / REACTION BUTTONS — with turn locking and used-action locking
+  const remoteUsed=remoteBattle.usedActionThisTurn||{};
   const pvActionsList=document.getElementById('pv-actions-list');
   pvActionsList.innerHTML=ACTIONS.map(a=>{
     const costLabel=a.cost===0?'Livre':`${a.cost}E`;
@@ -2908,26 +3182,36 @@ async function renderPlayerView(){
     const catLabel=a.categoria==='reacao'?'Reação':'Ação';
     const catColor=a.categoria==='reacao'?'var(--gold)':'var(--cyan)';
     const turnOk=isActionAllowed(mySlot,a,remoteBattle.activeSlot);
-    const canAfford=me.eng>=a.cost;
-    const usable=canAfford&&turnOk;
-    return `<div class="action-item" style="cursor:${usable?'pointer':'not-allowed'};opacity:${usable?1:0.4}" ${usable?`onclick="executePlayerAction('${a.id}')"`:''}>
+    const canAfford=(me.eng||0)>=a.cost;
+    const actionLocked=!!(remoteUsed[mySlot] && a.categoria==='acao' && isMyTurn);
+    const usable=canAfford&&turnOk&&!actionLocked;
+    let reason='';
+    if(actionLocked)reason='Já usou uma ação neste turno';
+    else if(!turnOk)reason=a.categoria==='reacao'?'Só fora do seu turno':'Só no seu turno';
+    return `<div class="action-item" style="cursor:${usable?'pointer':'not-allowed'};opacity:${usable?1:0.35}" ${usable?`onclick="executePlayerAction('${a.id}')"`:''}>
       <div class="action-cost ${cc}">${costLabel}</div>
       <div style="flex:1">
         <div class="action-name">${a.nome} <span style="font-size:9px;color:${catColor};text-transform:uppercase;letter-spacing:.5px">· ${catLabel}</span></div>
         ${a.formula?`<div class="action-roll">${a.formula}</div>`:''}
         <div class="action-desc">${a.desc}</div>
-        ${!turnOk?`<div style="font-size:10px;color:var(--red);margin-top:2px">${a.categoria==='reacao'?'Disponível só fora do seu turno':'Disponível só no seu turno'}</div>`:''}
+        ${reason?`<div style="font-size:10px;color:var(--red);margin-top:2px">${reason}</div>`:''}
       </div>
     </div>`;
   }).join('');
 
-  // MANOBRA
+  // MANOBRA — hide whole panel if no usos left
   document.getElementById('pv-man-name').textContent=me.manobra;
   document.getElementById('pv-man-desc').textContent=me.manobraDesc||'';
   document.getElementById('pv-man-uses').textContent=`Usos restantes: ${me.manUsosLeft}/${me.manobraUsos}`;
   const manBtn=document.getElementById('pv-man-use-btn');
-  manBtn.disabled=me.manUsosLeft<=0;
-  manBtn.className=me.manUsosLeft>0?'btn btn-gold btn-xs':'btn btn-gray btn-xs';
+  const manPanel=manBtn?.closest('.panel');
+  if(me.manUsosLeft<=0){
+    if(manPanel)manPanel.style.display='none';
+  } else {
+    if(manPanel)manPanel.style.display='block';
+    manBtn.disabled=false;
+    manBtn.className='btn btn-gold btn-xs';
+  }
 
   // LOG - player only sees: damage dealt/received involving their own bey, plus generic turn/event markers.
   // Everything about the enemy's rolls, armor, energy, recharge etc is fully hidden.
@@ -3179,6 +3463,12 @@ async function executePlayerAction(actionId){
     me.eng=Math.min(me.engMax,me.eng+3);
     logMsg=`<b>${me.blader}</b> (${actorTag}) usa <b>Recarga</b>`;
     if(me.type==='res')me.hp=Math.min(me.hpMax,me.hp+4);
+  }
+
+  // Mark action as used for acao categoria (not reacao, not recarga)
+  if(action.categoria==='acao' && action.efeito!=='recarga'){
+    if(!remoteBattle.usedActionThisTurn)remoteBattle.usedActionThisTurn={};
+    remoteBattle.usedActionThisTurn[String(n)]=true;
   }
 
   const logType=action.efeito==='dano'?'dmg':action.efeito==='recarga'?'heal':'roll';
