@@ -1576,7 +1576,7 @@ function syncBattleToCloud(){
 
 function startBattle(){
   if(!slots[1]||!slots[2]){showToast('Selecione dois combatentes.','err');return;}
-  function live(b){return{...b,hp:b.hpMax,armor:0,armorMax:0,eng:b.engMax,eb:1,manUsosLeft:b.manobraUsos,presas:false};}
+  function live(b){return{...b,hp:b.hpMax,armor:0,armorMax:0,def:parseInt(b.def)||0,atq:parseInt(b.atq)||0,vel:parseInt(b.vel)||0,eng:b.engMax,eb:1,manUsosLeft:b.manobraUsos,presas:false};}
   // Set phase BEFORE any render so the very first sync goes out with 'waiting'
   bt.pl[0]=live(slots[1]);bt.pl[1]=live(slots[2]);
   bt.turn=1;bt.activeSlot=null;bt.phase='waiting';bt.readySlots=[];bt.usedActionThisTurn={};
@@ -1618,8 +1618,12 @@ function executeLaunch(){
   rollInitUntilResolved();
   buildActions();
   addLog(`Duelo iniciado: ${p(1).blader} vs ${p(2).blader}`,'event');
-  // Delay sync slightly so all state (activeSlot) is fully settled before saving
-  setTimeout(()=>syncBattleToCloud(), 150);
+  // Sync after a short delay to ensure activeSlot is set by rollInitUntilResolved
+  console.log('[executeLaunch] activeSlot after init:', bt.activeSlot);
+  setTimeout(()=>{
+    console.log('[executeLaunch sync] activeSlot:', bt.activeSlot, 'phase:', bt.phase);
+    syncBattleToCloud();
+  }, 200);
   showBattleStartOverlay(null);
 }
 
@@ -1771,9 +1775,12 @@ function applyHeal(n){
   renderC(n);syncBattleToCloud();
 }
 function rollArmor(n){
-  const b=p(n);const roll=Math.floor(Math.random()*4)+1;const total=roll+b.def;
+  const b=p(n);if(!b)return;
+  const def=parseInt(b.def)||0;
+  const roll=Math.floor(Math.random()*4)+1;
+  const total=roll+def;
   b.armor=total;b.armorMax=total;
-  addLog(`🛡️ ${b.bey} define armadura: 1d4(${roll})+DEF(${b.def})=<span class="lv cyan">${total}</span> — todo dano reduzido em ${total}`,'event');
+  addLog(`🛡️ ${b.bey} armadura: 1d4(${roll})+DEF(${def})=<span class="lv cyan">${total}</span> — reduz ${total} de todo dano`,'event');
   renderC(n);
   // Don't sync here — called from executeLaunch which syncs at the end
 }
@@ -1940,8 +1947,10 @@ function applyOverride(){
 // "acao" only on your own active turn. "reacao" only when it's NOT your turn.
 // Also locked if a non-special action was already used this turn (usedActionThisTurn[n]).
 function isActionAllowed(n, action, activeSlot){
-  if(action.categoria==='acao')return activeSlot===n;
-  if(action.categoria==='reacao')return activeSlot!==null && activeSlot!==undefined && activeSlot!==n;
+  if(activeSlot===null||activeSlot===undefined)return false; // no turn set yet — nothing allowed
+  const slot=Number(activeSlot);const me=Number(n);
+  if(action.categoria==='acao')return slot===me;
+  if(action.categoria==='reacao')return slot!==me;
   return true;
 }
 
@@ -1950,7 +1959,7 @@ function buildActions(){
   [1,2].forEach(n=>{
     const b=p(n);if(!b)return;
     const isActive=bt.activeSlot===n;
-    const usedAction=!!(bt.usedActionThisTurn&&bt.usedActionThisTurn[n]);
+    const usedAction=!!(bt.usedActionThisTurn&&(bt.usedActionThisTurn[n]||bt.usedActionThisTurn[String(n)]));
     const group=document.createElement('div');
     group.style.cssText=`margin-bottom:10px;${isActive?'background:#00B4D80c;border:1px solid #00B4D855;border-radius:8px;padding:8px':''}`;
     const header=document.createElement('div');
@@ -3214,7 +3223,7 @@ async function renderPlayerView(){
     const catColor=a.categoria==='reacao'?'var(--gold)':'var(--cyan)';
     const turnOk=isActionAllowed(mySlot,a,remoteBattle.activeSlot);
     const canAfford=(me.eng||0)>=a.cost;
-    const actionLocked=!!(remoteUsed[mySlot] && a.categoria==='acao' && isMyTurn);
+    const actionLocked=!!(remoteUsed && (remoteUsed[mySlot]||remoteUsed[String(mySlot)]) && a.categoria==='acao' && isMyTurn);
     const usable=canAfford&&turnOk&&!actionLocked;
     let reason='';
     if(actionLocked)reason='Já usou uma ação neste turno';
