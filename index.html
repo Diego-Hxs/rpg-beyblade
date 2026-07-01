@@ -1611,13 +1611,15 @@ function masterLetItRip(){
 
 function executeLaunch(){
   bt.phase='active';
+  bt.usedActionThisTurn={};
   document.getElementById('master-lir-btn').style.display='none';
   document.getElementById('ready-status-badges').innerHTML='';
   rollArmor(1);rollArmor(2);
   rollInitUntilResolved();
   buildActions();
   addLog(`Duelo iniciado: ${p(1).blader} vs ${p(2).blader}`,'event');
-  syncBattleToCloud();
+  // Delay sync slightly so all state (activeSlot) is fully settled before saving
+  setTimeout(()=>syncBattleToCloud(), 150);
   showBattleStartOverlay(null);
 }
 
@@ -2355,13 +2357,15 @@ function useCustomAbility(n,idx){
     if(parsed){
       rollTxt=` → [${parsed.rolls.join(', ')}]${parsed.mod?` +${parsed.mod}`:''} = <span class="lv cyan">${parsed.total}</span>`;
       if(a.dadoTipo==='dano'){
-        const target=p(n===1?2:1);
-        const result=calcDamage(target,parsed.total);
-        const parts=[];
-        if(result.shieldAbs>0)parts.push(`${result.shieldAbs} no Escudo`);
-        if(result.armorRed>0)parts.push(`${result.armorRed} reduzido pela Armadura`);
-        rollTxt+=` de dano em ${target.bey}${parts.length?` (${parts.join(', ')})`:''}`; 
-        renderC(n===1?2:1);
+        const targetN=n===1?2:1;
+        const rollTxtClean=`[${parsed.rolls.join(', ')}]${parsed.mod?` +${parsed.mod}`:''} = ${parsed.total}`;
+        // Route through pendingAttack so player can react
+        bt.pendingAttack={attackerN:n,targetN,rawDamage:parsed.total,
+          actionNome:a.nome,rollTxt:rollTxtClean,reactionDone:false,reactionDesc:''};
+        if(!bt.usedActionThisTurn)bt.usedActionThisTurn={};
+        bt.usedActionThisTurn[n]=true;
+        rollTxt+=` de dano declarado em ${p(targetN).bey} — aguardando reação`;
+        showPendingAttackBanner();
       } else if(a.dadoTipo==='cura'){
         b.hp=Math.min(b.hpMax,b.hp+parsed.total);
         rollTxt+=` de cura`;
@@ -3035,8 +3039,8 @@ async function renderPlayerView(){
   if(pvState.phase==='waiting' && currentPhase==='active'){
     showPvBattleStartOverlay(me, remoteBattle, mySlot);
   }
-  // Also show if pvState.phase was null (player joined after battle started) and hasn't seen overlay yet
-  if(pvState.phase===null && currentPhase==='active' && !pvState.seenBattleStart){
+  // Also show if player joined after battle started and hasn't seen overlay yet
+  if(currentPhase==='active' && !pvState.seenBattleStart && remoteBattle.activeSlot){
     pvState.seenBattleStart=true;
     showPvBattleStartOverlay(me, remoteBattle, mySlot);
   }
@@ -3572,11 +3576,14 @@ async function usePlayerCustomAbility(idx){
     if(parsed){
       rollTxt=` → [${parsed.rolls.join(', ')}]${parsed.mod?` +${parsed.mod}`:''} = ${parsed.total}`;
       if(a.dadoTipo==='dano'){
-        const result=calcDamage(target,parsed.total);
-        const parts=[];
-        if(result.shieldAbs>0)parts.push(`${result.shieldAbs} no Escudo`);
-        if(result.armorRed>0)parts.push(`${result.armorRed} reduzido pela Armadura`);
-        rollTxt+=` de dano em ${target.bey}${parts.length?` (${parts.join(', ')})`:''}`;
+        const rollTxtClean3=`[${parsed.rolls.join(', ')}] = ${parsed.total}`;
+        // Route through pendingAttack on cloud so master sees it
+        remoteBattle.pendingAttack={attackerN:mySlot,targetN:mySlot===1?2:1,
+          rawDamage:parsed.total,actionNome:a.nome,rollTxt:rollTxtClean3,
+          reactionDone:false,reactionDesc:''};
+        if(!remoteBattle.usedActionThisTurn)remoteBattle.usedActionThisTurn={};
+        remoteBattle.usedActionThisTurn[String(mySlot)]=true;
+        rollTxt+=` de dano declarado — aguardando reação`;
       } else if(a.dadoTipo==='cura'){
         me.hp=Math.min(me.hpMax,me.hp+parsed.total);
         rollTxt+=` de cura`;
