@@ -346,6 +346,84 @@ textarea.form-input{resize:vertical;min-height:60px}
     </div>
   </div>
 
+  <div id="playerGate" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px">
+    <div style="background:var(--bg2);border:1px solid var(--bord);border-top:3px solid var(--red);border-radius:16px;padding:32px;width:100%;max-width:380px;text-align:center">
+      <div style="font-size:22px;font-weight:900;letter-spacing:1px;margin-bottom:4px">BEYBLADE <span style="color:var(--red)">METAL RIO</span></div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:24px">Digite seu PIN de 4 dígitos para acessar seu Bey</div>
+      <input id="pin-input" class="form-input" type="text" inputmode="numeric" maxlength="4" placeholder="• • • •" style="text-align:center;font-size:28px;font-weight:900;letter-spacing:12px;padding:14px;margin-bottom:16px" onkeydown="if(event.key==='Enter')playerLogin()" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+      <button class="submit-btn" onclick="playerLogin()">🔑 Entrar</button>
+      <div id="pin-error" style="color:var(--red);font-size:12px;margin-top:10px;display:none">PIN inválido. Verifique com o mestre.</div>
+      <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--bord)">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Ou assista o duelo em andamento</div>
+        <button class="btn btn-gray" style="width:100%" onclick="enterSpectatorMode()">👁️ Assistir Duelo</button>
+      </div>
+      <button class="btn btn-gray btn-sm" style="width:100%;margin-top:16px" onclick="closePlayerOverlay()">← Voltar ao Painel do Mestre</button>
+    </div>
+  </div>
+
+  <!-- SPECTATOR VIEW -->
+  <div id="spectatorView" style="display:none;padding:16px;max-width:700px;margin:0 auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-size:14px;font-weight:900;letter-spacing:1px">👁️ ESPECTADOR</div>
+      <button class="btn btn-gray btn-sm" onclick="exitSpectatorMode()">← Sair</button>
+    </div>
+    <div id="spec-no-battle" style="text-align:center;padding:60px 20px;color:var(--muted)">
+      <div style="font-size:48px;margin-bottom:12px">👁️</div>
+      <p>Nenhum duelo em andamento.<br>Aguarde o mestre iniciar uma batalha.</p>
+    </div>
+    <div id="spec-battle-content" style="display:none">
+      <div style="text-align:center;margin-bottom:14px">
+        <span class="level-tag" id="spec-turn">Turno 1</span>
+        <div id="spec-active-indicator" style="display:inline-block;margin-left:8px;font-size:12px;font-weight:700;color:var(--cyan)"></div>
+      </div>
+      <!-- Combatant 1 -->
+      <div id="spec-card1" class="bey-card" style="margin-bottom:12px">
+        <div class="card-head">
+          <div><div class="blader-name" id="spec-blader1"></div><div class="bey-name" id="spec-bey1"></div>
+          <div class="meta-row"><span class="tp" id="spec-type1"></span><span style="font-size:11px;color:var(--muted)" id="spec-classe1"></span></div></div>
+          <div class="level-tag" id="spec-nivel1">Nv 1</div>
+        </div>
+        <div class="card-body">
+          <div class="stat-label"><span>VIDA</span><span id="spec-hp1-lbl"></span></div>
+          <div class="hp-bar-wrap"><div class="hp-bar high" id="spec-hp1-bar" style="width:100%"></div></div>
+          <div class="stat-label"><span>🛡️ REDUÇÃO DE DANO</span><span id="spec-arm1-lbl" style="color:var(--blue);font-weight:700"></span></div>
+          <div style="height:4px;background:var(--bg3);border-radius:2px;margin-bottom:8px"></div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted)">
+            <span>⚡ Energia: <b id="spec-eng1" style="color:var(--gold)"></b></span>
+            <span>🔵 EB: <b id="spec-eb1" style="color:var(--blue)"></b></span>
+          </div>
+          <div id="spec-status1" style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap"></div>
+        </div>
+      </div>
+      <!-- VS -->
+      <div style="text-align:center;font-size:20px;font-weight:900;color:var(--red);margin:8px 0">VS</div>
+      <!-- Combatant 2 -->
+      <div id="spec-card2" class="bey-card" style="margin-bottom:12px">
+        <div class="card-head">
+          <div><div class="blader-name" id="spec-blader2"></div><div class="bey-name" id="spec-bey2"></div>
+          <div class="meta-row"><span class="tp" id="spec-type2"></span><span style="font-size:11px;color:var(--muted)" id="spec-classe2"></span></div></div>
+          <div class="level-tag" id="spec-nivel2">Nv 1</div>
+        </div>
+        <div class="card-body">
+          <div class="stat-label"><span>VIDA</span><span id="spec-hp2-lbl"></span></div>
+          <div class="hp-bar-wrap"><div class="hp-bar high" id="spec-hp2-bar" style="width:100%"></div></div>
+          <div class="stat-label"><span>🛡️ REDUÇÃO DE DANO</span><span id="spec-arm2-lbl" style="color:var(--blue);font-weight:700"></span></div>
+          <div style="height:4px;background:var(--bg3);border-radius:2px;margin-bottom:8px"></div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted)">
+            <span>⚡ Energia: <b id="spec-eng2" style="color:var(--gold)"></b></span>
+            <span>🔵 EB: <b id="spec-eb2" style="color:var(--blue)"></b></span>
+          </div>
+          <div id="spec-status2" style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap"></div>
+        </div>
+      </div>
+      <!-- Combat Log -->
+      <div class="panel">
+        <div class="panel-title">Log de Combate</div>
+        <div id="spec-log" style="max-height:300px;overflow-y:auto;font-size:12px"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- PLAYER BATTLE VIEW -->
   <div id="playerView" style="display:none;padding:16px;max-width:700px;margin:0 auto">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
@@ -1170,13 +1248,13 @@ function dmgLogText(bey, result){
 
 const ACTIONS=[
   {id:"investida",nome:"Investida Básica",formula:"1d6+ATQ",cost:0,efeito:"dano",categoria:"acao",desc:"Ataque padrão de turno."},
-  {id:"rapidos",nome:"Ataques Rápidos",formula:"1d3+ATQ",cost:0,efeito:"dano",categoria:"acao",desc:"Apenas se VEL > VEL inimigo."},
+  {id:"rapidos",nome:"Ataques Rápidos",formula:"4d3+ATQ",cost:0,efeito:"dano",categoria:"acao",desc:"Apenas se VEL > VEL inimigo.",condicao:"vel"},
   {id:"rigida",nome:"Investida Rígida",formula:"1d10+ATQ",cost:0,efeito:"dano",categoria:"acao",desc:"Investida mais forte que o normal."},
   {id:"recarga",nome:"Recarga",formula:null,cost:0,efeito:"recarga",categoria:"acao",desc:"Recupera 3 de Energia. Resistência: +4 HP."},
   {id:"fuga",nome:"Fuga",formula:"1d6+VEL",cost:0,efeito:"contestado",categoria:"acao",desc:"Vence: ação extra. Perde: perde turno."},
   {id:"esquiva",nome:"Esquiva",formula:"1d6+VEL",cost:1,efeito:"contestado",categoria:"reacao",desc:"Fora do turno. Se maior que ataque do inimigo, esquiva."},
   {id:"bloqueio",nome:"Bloqueio",formula:"1d4+DEF",cost:1,efeito:"armadura",categoria:"reacao",desc:"Fora do turno. Adiciona à armadura atual."},
-  {id:"dupla",nome:"Ataque em Dupla",formula:"1d6",cost:1,efeito:"rng",categoria:"reacao",desc:"No turno do aliado: diferença ≤2 = +1d6+ATK no dano dele."},
+  {id:"dupla",nome:"Ataque em Dupla",formula:"1d6",cost:1,efeito:"rng",categoria:"bonus",desc:"Só em batalhas não 1v1. No turno do aliado: diferença ≤2 = +1d6+ATQ no dano dele.",condicao:"nao1v1"},
   {id:"contra",nome:"Contra-ataque",formula:"1d6+ATQ",cost:2,efeito:"dano",categoria:"reacao",desc:"Fora do turno. Subtrai do dano recebido."},
   {id:"carregar",nome:"Carregar Ataque",formula:"1d6+ATQ",cost:2,efeito:"dano",categoria:"acao",desc:"Antes de atacar: dano reforçado."},
 ];
@@ -1947,7 +2025,8 @@ function applyOverride(){
 // "acao" only on your own active turn. "reacao" only when it's NOT your turn.
 // Also locked if a non-special action was already used this turn (usedActionThisTurn[n]).
 function isActionAllowed(n, action, activeSlot){
-  if(activeSlot===null||activeSlot===undefined)return false; // no turn set yet — nothing allowed
+  if(action.categoria==='bonus')return true; // bonus actions always allowed regardless of turn
+  if(activeSlot===null||activeSlot===undefined)return false;
   const slot=Number(activeSlot);const me=Number(n);
   if(action.categoria==='acao')return slot===me;
   if(action.categoria==='reacao')return slot!==me;
@@ -1984,19 +2063,23 @@ function buildActions(){
       const catColor=a.categoria==='reacao'?'var(--gold)':'var(--cyan)';
       const turnOk=isActionAllowed(n,a,bt.activeSlot);
       const canAfford=(b.eng||0)>=a.cost;
-      // Lock non-reaction actions if already used this turn (manobra especial unaffected)
       const actionLocked=usedAction && a.categoria==='acao' && isActive;
-      const usable=canAfford&&turnOk&&!actionLocked;
+      // Check velocity condition for Ataques Rápidos
+      const enemy=p(n===1?2:1);
+      const velOk=!a.condicao||a.condicao!=='vel'||(parseInt(b.vel)||0)>(parseInt(enemy?.vel)||0);
+      const is1v1=document.getElementById('battle-mode')?.value==='1v1';
+      const modeOk=!a.condicao||a.condicao!=='nao1v1'||!is1v1;
+      const usable=canAfford&&turnOk&&!actionLocked&&velOk&&modeOk;
       const div=document.createElement('div');
       div.className='action-item';
       div.style.cursor=usable?'pointer':'not-allowed';
       div.style.opacity=usable?'1':'0.35';
+      const reasonM=actionLocked?'Já usou uma ação neste turno':!modeOk?'Só disponível em batalhas com aliados':!turnOk?(a.categoria==='reacao'?'Só fora do seu turno':a.categoria==='bonus'?'':' Só no seu turno'):!velOk?'VEL insuficiente (inimigo é mais veloz)':'';
       div.innerHTML=`<div class="action-cost ${cc}">${costLabel}</div><div style="flex:1">`+
         `<div class="action-name">${a.nome} <span style="font-size:9px;color:${catColor};text-transform:uppercase;letter-spacing:.5px">· ${catLabel}</span></div>`+
         `${a.formula?`<div class="action-roll">${a.formula}</div>`:''}`+
         `<div class="action-desc">${a.desc}</div>`+
-        `${actionLocked?'<div style="font-size:10px;color:var(--muted);margin-top:2px">Já usou uma ação neste turno</div>':''}`+
-        `${!turnOk&&!actionLocked?`<div style="font-size:10px;color:var(--red);margin-top:2px">${a.categoria==='reacao'?'Só fora do seu turno':'Só no seu turno'}</div>`:''}`+
+        `${reasonM?`<div style="font-size:10px;color:var(--red);margin-top:2px">${reasonM}</div>`:''}`+
         `</div>`;
       if(usable)div.onclick=()=>executeAction(n,a);
       group.appendChild(div);
@@ -2048,8 +2131,8 @@ function executeAction(n,action){
     } else if(action.efeito==='contestado' && rollResult){
       logMsg+=` (compare com a ação do oponente)`;
     }
-    // Mark action as used for acao categoria (not reacao, not recarga)
-    if(action.categoria==='acao' && action.efeito!=='recarga'){
+    // Mark action as used for all acao categoria (including recarga)
+    if(action.categoria==='acao'){
       if(!bt.usedActionThisTurn)bt.usedActionThisTurn={};
       bt.usedActionThisTurn[n]=true;
     }
@@ -2078,14 +2161,20 @@ function confirmPendingAttack(){
   if(!pendingAttack)return;
   const targetN=pendingAttack.targetN;const attackerN=pendingAttack.attackerN;
   const target=bt.pl[targetN-1];
-  // Apply bloqueio bonus if reaction added armor (already reflected in bt.pl from cloud merge)
-  const result=calcDamage(target,pendingAttack.rawDamage);
-  addLog(`✓ Dano confirmado — ${dmgLogText(target,result)}`,'dmg');
-  // Reset bloqueio bonus after this attack (armor boost was temporary for this hit only)
+  const baseArmor=target.armor||0;
+  // Temporarily apply bloqueio bonus before damage calculation
   if(pendingAttack._bloqueioBonus){
-    target.armor=Math.max(0,(target.armor||0)-pendingAttack._bloqueioBonus);
-    target.armorMax=target.armor;
+    target.armor=baseArmor+pendingAttack._bloqueioBonus;
   }
+  const result=calcDamage(target,pendingAttack.rawDamage);
+  // Restore armor to base immediately after
+  target.armor=baseArmor;
+  target.armorMax=Math.max(target.armorMax||0,baseArmor);
+  let logMsg=`✓ Dano confirmado — ${dmgLogText(target,result)}`;
+  if(pendingAttack._bloqueioBonus){
+    logMsg+=` <span style="color:var(--muted);font-size:11px">(bloqueio +${pendingAttack._bloqueioBonus} armadura temporária aplicado)</span>`;
+  }
+  addLog(logMsg,'dmg');
   renderC(targetN);renderC(attackerN);
   clearPendingAttack();
   buildActions();syncBattleToCloud();
@@ -2233,10 +2322,9 @@ async function executePlayerReaction(actionId){
         reactionDesc=`Esquiva falhou (${rollResult.total} ≤ ${remoteBattle.pendingAttack.rawDamage}) — dano mantido`;
       }
     } else if(action.id==='bloqueio'&&rollResult){
-      // Bloqueio: armor boost is TEMPORARY — only for this attack
+      // Bloqueio: ONLY save the bonus in pendingAttack — do NOT permanently change me.armor in pl[]
+      // The master's confirmPendingAttack reads _bloqueioBonus and temporarily boosts before calcDamage
       bloqueioBonus=rollResult.total;
-      me.armor=(me.armor||0)+bloqueioBonus;
-      me.armorMax=Math.max(me.armorMax||0,me.armor);
       reactionDesc=`Bloqueio! +${bloqueioBonus} armadura temporária para este ataque`;
     } else if(action.id==='contra'&&rollResult){
       finalDmg=Math.max(0,finalDmg-rollResult.total);
@@ -2950,6 +3038,10 @@ function openPlayerGate(){
 function closePlayerOverlay(){
   document.getElementById('playerOverlay').style.display='none';
   if(playerPollInterval){clearInterval(playerPollInterval);playerPollInterval=null;}
+  if(spectatorPollInterval){clearInterval(spectatorPollInterval);spectatorPollInterval=null;}
+  // Reset views
+  document.getElementById('spectatorView').style.display='none';
+  document.getElementById('playerGate').style.display='flex';
 }
 
 async function playerLogin(){
@@ -3224,10 +3316,15 @@ async function renderPlayerView(){
     const turnOk=isActionAllowed(mySlot,a,remoteBattle.activeSlot);
     const canAfford=(me.eng||0)>=a.cost;
     const actionLocked=!!(remoteUsed && (remoteUsed[mySlot]||remoteUsed[String(mySlot)]) && a.categoria==='acao' && isMyTurn);
-    const usable=canAfford&&turnOk&&!actionLocked;
+    const pvEnemy=remoteBattle.pl[mySlot===1?1:0];
+    const velOkPv=!a.condicao||a.condicao!=='vel'||(parseInt(me.vel)||0)>(parseInt(pvEnemy?.vel)||0);
+    const modeOkPv=!a.condicao||a.condicao!=='nao1v1'||(remoteBattle.pl.filter(p=>p).length>2);
+    const usable=canAfford&&turnOk&&!actionLocked&&velOkPv&&modeOkPv;
     let reason='';
-    if(actionLocked)reason='Já usou uma ação neste turno';
-    else if(!turnOk)reason=a.categoria==='reacao'?'Só fora do seu turno':'Só no seu turno';
+    if(!modeOkPv)reason='Só disponível em batalhas com aliados';
+    else if(actionLocked)reason='Já usou uma ação neste turno';
+    else if(!velOkPv)reason='VEL insuficiente (inimigo é mais veloz)';
+    else if(!turnOk && a.categoria!=='bonus')reason=a.categoria==='reacao'?'Só fora do seu turno':'Só no seu turno';
     return `<div class="action-item" style="cursor:${usable?'pointer':'not-allowed'};opacity:${usable?1:0.35}" ${usable?`onclick="executePlayerAction('${a.id}')"`:''}>
       <div class="action-cost ${cc}">${costLabel}</div>
       <div style="flex:1">
@@ -3514,6 +3611,11 @@ async function executePlayerAction(actionId){
       logMsg=`<b>${me.blader}</b> (${actorTag}) usa <b>Recarga</b> — Energia: ${me.eng}`;
       if(me.type==='res')me.hp=Math.min(me.hpMax,me.hp+4);
       logType='heal';
+      // Recarga is still a turn action — lock others
+      if(action.categoria==='acao'){
+        if(!remoteBattle.usedActionThisTurn)remoteBattle.usedActionThisTurn={};
+        remoteBattle.usedActionThisTurn[String(n)]=true;
+      }
     } else if(action.efeito==='contestado'&&rollResult){
       me.eng=Math.max(0,(me.eng||0)-action.cost);
       logMsg+=` (compare com o ataque do oponente)`;
@@ -3743,6 +3845,82 @@ async function deleteCustomAbility(bladerId,idx){
   }
   renderRoster();
 })();
+
+// ── SPECTATOR MODE ────────────────────────────────────────────────────────
+let spectatorPollInterval=null;
+
+function enterSpectatorMode(){
+  document.getElementById('playerGate').style.display='none';
+  document.getElementById('spectatorView').style.display='block';
+  renderSpectatorView();
+  if(spectatorPollInterval)clearInterval(spectatorPollInterval);
+  spectatorPollInterval=setInterval(renderSpectatorView,2500);
+}
+
+function exitSpectatorMode(){
+  if(spectatorPollInterval){clearInterval(spectatorPollInterval);spectatorPollInterval=null;}
+  document.getElementById('spectatorView').style.display='none';
+  document.getElementById('playerGate').style.display='flex';
+}
+
+async function renderSpectatorView(){
+  const remote=await dbGet(BATTLE_KEY);
+  const noBattle=document.getElementById('spec-no-battle');
+  const content=document.getElementById('spec-battle-content');
+
+  if(!remote||!remote.pl||(!remote.pl[0]&&!remote.pl[1])||remote.phase==='ended'||remote.phase==='waiting'){
+    noBattle.style.display='block';content.style.display='none';
+    if(remote&&remote.phase==='waiting')noBattle.innerHTML='<div style="font-size:48px;margin-bottom:12px">⚡</div><p style="font-weight:700">Duelo sendo preparado...<br><span style="font-size:13px;color:var(--muted)">Aguarde o Let it Rip!</span></p>';
+    else noBattle.innerHTML='<div style="font-size:48px;margin-bottom:12px">👁️</div><p>Nenhum duelo em andamento.<br>Aguarde o mestre iniciar uma batalha.</p>';
+    return;
+  }
+  noBattle.style.display='none';content.style.display='block';
+
+  document.getElementById('spec-turn').textContent=`Turno ${remote.turn}`;
+  const activeB=remote.pl[remote.activeSlot-1];
+  document.getElementById('spec-active-indicator').textContent=activeB?`● Turno de ${activeB.blader}`:'';
+
+  [0,1].forEach(i=>{
+    const n=i+1;
+    const b=remote.pl[i];if(!b)return;
+    const isPlayer=b.cat==='player';
+    // Card header — always visible for players, generic for NPCs
+    document.getElementById(`spec-blader${n}`).textContent=isPlayer?b.blader.toUpperCase():'NPC';
+    document.getElementById(`spec-bey${n}`).textContent=isPlayer?b.bey:'??? ??? ???';
+    const tEl=document.getElementById(`spec-type${n}`);
+    if(isPlayer){tEl.textContent=TM[b.type]||b.type;tEl.className=`tp ${TC[b.type]||''}`;}
+    else{tEl.textContent='';tEl.className='';}
+    document.getElementById(`spec-classe${n}`).textContent=isPlayer?(CLASSES[b.classe]?.nome||b.classe):'';
+    document.getElementById(`spec-nivel${n}`).textContent=isPlayer?`Nv ${b.nivel}`:'';
+    document.getElementById(`spec-card${n}`).className=`bey-card ${isPlayer?CC[b.type]||'':''}`;
+    // HP — full for players, generic bar for NPCs
+    const pct=Math.max(0,b.hp/b.hpMax*100);
+    const hbar=document.getElementById(`spec-hp${n}-bar`);
+    hbar.style.width=pct+'%';
+    hbar.className='hp-bar '+(pct>60?'high':pct>30?'mid':'low');
+    if(isPlayer){
+      document.getElementById(`spec-hp${n}-lbl`).textContent=`${Math.max(0,b.hp)}/${b.hpMax}`;
+      document.getElementById(`spec-arm${n}-lbl`).textContent=`-${b.armor||0} todo dano`;
+      document.getElementById(`spec-eng${n}`).textContent=`${b.eng||0}/${b.engMax||0}`;
+      document.getElementById(`spec-eb${n}`).textContent=`${b.eb||0}/${b.ebMax||0}`;
+      // Status tags
+      const statusEl=document.getElementById(`spec-status${n}`);
+      if(b.statusEffects&&b.statusEffects.length){
+        statusEl.innerHTML=b.statusEffects.map(e=>`<span class="status-tag">${e.tag||e.attr} ${e.valor>0?'+':''}${e.valor} (${e.turnosRestantes}t)</span>`).join('');
+      } else statusEl.innerHTML='';
+    } else {
+      document.getElementById(`spec-hp${n}-lbl`).textContent='';
+      document.getElementById(`spec-arm${n}-lbl`).textContent='?';
+      document.getElementById(`spec-eng${n}`).textContent='?';
+      document.getElementById(`spec-eb${n}`).textContent='?';
+      document.getElementById(`spec-status${n}`).innerHTML='';
+    }
+  });
+
+  // Log — full log visible to spectators
+  const logEl=document.getElementById('spec-log');
+  logEl.innerHTML=remote.logHtml||'<div style="color:var(--muted);font-size:11px">Sem entradas ainda.</div>';
+}
 
 // ── PLAYER END TURN (remote) ──────────────────────────────────────────────
 async function playerEndTurn(){
