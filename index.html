@@ -334,17 +334,6 @@ textarea.form-input{resize:vertical;min-height:60px}
 <!-- ============ PLAYER MODE OVERLAY ============ -->
 <div id="playerOverlay" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:500;overflow-y:auto">
 
-  <!-- PLAYER LOGIN GATE -->
-  <div id="playerGate" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px">
-    <div style="background:var(--bg2);border:1px solid var(--bord);border-top:3px solid var(--red);border-radius:16px;padding:32px;width:100%;max-width:380px;text-align:center">
-      <div style="font-size:22px;font-weight:900;letter-spacing:1px;margin-bottom:4px">BEYBLADE <span style="color:var(--red)">METAL RIO</span></div>
-      <div style="font-size:13px;color:var(--muted);margin-bottom:24px">Digite seu PIN de 4 dígitos para acessar seu Bey</div>
-      <input id="pin-input" class="form-input" type="text" inputmode="numeric" maxlength="4" placeholder="• • • •" style="text-align:center;font-size:28px;font-weight:900;letter-spacing:12px;padding:14px;margin-bottom:16px" onkeydown="if(event.key==='Enter')playerLogin()" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
-      <button class="submit-btn" onclick="playerLogin()">🔑 Entrar</button>
-      <div id="pin-error" style="color:var(--red);font-size:12px;margin-top:10px;display:none">PIN inválido. Verifique com o mestre.</div>
-      <button class="btn btn-gray btn-sm" style="width:100%;margin-top:16px" onclick="closePlayerOverlay()">← Voltar ao Painel do Mestre</button>
-    </div>
-  </div>
 
   <div id="playerGate" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px">
     <div style="background:var(--bg2);border:1px solid var(--bord);border-top:3px solid var(--red);border-radius:16px;padding:32px;width:100%;max-width:380px;text-align:center">
