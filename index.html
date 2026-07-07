@@ -325,6 +325,11 @@ textarea.form-input{resize:vertical;min-height:60px}
 .lir-players-ready{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:16px}
 .ready-badge{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px}
 .ready-badge.yes{background:#27AE6022;color:var(--res);border:1px solid var(--res)}
+.hab-row{background:var(--bg2);border:1px solid var(--bord);border-radius:8px;padding:8px 10px;margin-bottom:6px;transition:border-color .2s}
+.hab-row:hover:not(.hab-used):not(.hab-cant){border-color:var(--gold)}
+.passive-hab{border-left:3px solid var(--cyan)}
+.hab-used{opacity:0.45;cursor:not-allowed}
+.hab-cant{opacity:0.5;cursor:not-allowed;border-left:3px solid var(--red)}
 .ready-badge.no{background:#7A9ACA22;color:var(--muted);border:1px solid var(--muted)}
 @keyframes pv-turn-flash{0%{transform:scale(1)}25%{transform:scale(1.06);box-shadow:0 0 30px #00B4D888}75%{transform:scale(1.03)}100%{transform:scale(1)}}
 </style>
@@ -1163,35 +1168,58 @@ textarea.form-input{resize:vertical;min-height:60px}
 <script>
 const CLASSES={
   marrento:{nome:"Marrento",habilidades:[
-    {nome:"Força de Aço (Passiva)",desc:"Primeiro ataque causa +3 de dano."},
-    {nome:"Grito do Predador",desc:"Intimida inimigo: próximas 2 ações em desvantagem. Pode ser usado em combate de outro jogador."},
-    {nome:"Casco Blindado",desc:"Resistência total a provocações e golpes físicos."},
-    {nome:"Vândalo em Potencial",desc:"Facilidade em entrar em lugares proibidos e ignorar regras."},
-    {nome:"Fúria Iminente",desc:"Se acertar próximo ataque, rola 1d6: resultado 4+ empurra inimigo 3 unidades."},
-    {nome:"Resistência de Touro",desc:"Usar antes do combate para ter +5 HP extra."},
+    {id:"forca_aco",     nome:"Força de Aço",      tipo:"passiva", combate:true,
+      desc:"Primeiro ataque de cada duelo causa +3 de dano automaticamente."},
+    {id:"grito_predador",nome:"Grito do Predador",  tipo:"ativa",   combate:true,  eb:1,
+      desc:"Intimida o inimigo (gritando). Próximas 2 ações do alvo em desvantagem. Pode ser usado em combate de outro jogador."},
+    {id:"casco_blindado",nome:"Casco Blindado",     tipo:"roleplay",combate:false,
+      desc:"Resistência total a provocações e golpes físicos — apenas roleplay."},
+    {id:"vandalo",       nome:"Vândalo em Potencial",tipo:"roleplay",combate:false,
+      desc:"Facilidade em entrar em lugares proibidos e ignorar regras — apenas roleplay."},
+    {id:"furia_iminente",nome:"Fúria Iminente",     tipo:"ativa",   combate:true,  eb:1,
+      desc:"Se acertar o próximo ataque: rola 1d6 — resultado 4+ empurra inimigo 3 unidades."},
+    {id:"resistencia_touro",nome:"Resistência de Touro",tipo:"ativa",combate:true, eb:1,
+      desc:"Usar antes ou no início do combate: +5 HP extra ao bey."},
   ]},
   nerdola:{nome:"Nerdola",habilidades:[
-    {nome:"Sabe Muito (Passiva)",desc:"Identifica o tipo do bey inimigo no início do combate e analisa situação de todos beys na arena."},
-    {nome:"Plano Perfeito",desc:"Após 2 turnos, rola 1d6 extra em esquivas."},
-    {nome:"Assistente de Mecânico",desc:"Repara beys ou instala peças novas com facilidade."},
-    {nome:"Meu Bey Minhas Regras",desc:"+1 no atributo de proficiência do bey durante todo combate."},
-    {nome:"Olhos de Falcão",desc:"Percebe detalhes ocultos — habilidades especiais, funcionamentos e detalhes fora de combate."},
+    {id:"sabe_muito",    nome:"Sabe Muito",          tipo:"passiva", combate:true,
+      desc:"Identifica automaticamente o tipo do bey inimigo e analisa todos beys na arena no início do combate."},
+    {id:"plano_perfeito",nome:"Plano Perfeito",      tipo:"ativa",   combate:true,  eb:1,
+      desc:"Após o turno 2: rola 1d6 extra em Esquivas pelo resto do duelo."},
+    {id:"assistente_mecanico",nome:"Assistente de Mecânico",tipo:"roleplay",combate:false,
+      desc:"Repara beys ou instala peças novas com facilidade — apenas roleplay."},
+    {id:"bey_regras",    nome:"Meu Bey Minhas Regras",tipo:"passiva",combate:true,
+      desc:"+1 no atributo de proficiência do bey durante todo combate (automático)."},
+    {id:"olhos_falcao",  nome:"Olhos de Falcão",     tipo:"ativa",   combate:true,  eb:1,
+      desc:"Percebe detalhes ocultos — habilidades especiais do inimigo, funcionamentos específicos de beys."},
   ]},
   determinado:{nome:"Determinado",habilidades:[
-    {nome:"Não Vou Perder (Passiva)",desc:"Se HP chegar a zero, ainda realiza sua última ação podendo vencer o duelo."},
-    {nome:"Eu Aguento",desc:"Recebe o dano de um ataque pelo seu bey (personagem pode desmaiar)."},
-    {nome:"Cheguei Longe Demais",desc:"Em final de torneio ou duelo importante, com 5 HP: todos ataques dão +1d6 de dano."},
-    {nome:"Oponente Digno",desc:"Após 3 turnos, se diferença de vida ≤5: ganha +5 de armadura até fim do duelo."},
-    {nome:"Alma em Combustão",desc:"Recebe 2 pontos de EB. (Não gasta EB)"},
-    {nome:"Sentimento Bey",desc:"Sente e entende beys — pode achá-los ou entender o que ocorre entre bey e blader."},
+    {id:"nao_vou_perder",nome:"Não Vou Perder",      tipo:"passiva", combate:true,
+      desc:"Se HP chegar a zero, ainda realiza a última ação — podendo vencer o duelo."},
+    {id:"eu_aguento",    nome:"Eu Aguento",           tipo:"ativa",   combate:true,  eb:1,
+      desc:"Recebe o dano de um ataque pelo seu bey (personagem pode desmaiar dependendo da situação)."},
+    {id:"cheguei_longe", nome:"Cheguei Longe Demais", tipo:"ativa",   combate:true,  eb:1,
+      desc:"Critério do mestre (duelo importante). Ativa: a partir de agora, todos seus ataques dão +1d6 de dano."},
+    {id:"oponente_digno",nome:"Oponente Digno",       tipo:"passiva", combate:true,
+      desc:"Após 3 turnos, se diferença de HP entre os beys for ≤5: ganha +5 armadura até fim do duelo (automático)."},
+    {id:"alma_combustao",nome:"Alma em Combustão",    tipo:"ativa",   combate:true,  eb:0,
+      desc:"Recebe +2 pontos de EB. (Não gasta EB para usar esta habilidade)"},
+    {id:"sentimento_bey",nome:"Sentimento Bey",       tipo:"roleplay",combate:false,
+      desc:"Sente e entende beys — pode achá-los ou entender o que ocorre entre bey e blader — apenas roleplay."},
   ]},
   famosinho:{nome:"Famosinho",habilidades:[
-    {nome:"VIP (Passiva)",desc:"Entra em lugares com facilidade — festas, eventos, torneios. Pode ameaçar fazer barraco."},
-    {nome:"Meus Fãs Clamam",desc:"Plateia inspira: pode rolar novamente três ações durante todo o duelo."},
-    {nome:"Eu Conheço um Cara",desc:"Conhece famosos e especialistas de todos os tipos."},
-    {nome:"Patrocinadores",desc:"Ao acertar ataque, diz que foi oferecimento de patrocinador. Rola iniciativa; se vencer, ataca novamente."},
-    {nome:"Ego Alimentado",desc:"Bey recupera 5 de HP."},
-    {nome:"Esnobada Tática",desc:"Ignora a armadura do oponente no próximo ataque. Pode ser usado em combate de outro jogador."},
+    {id:"vip",           nome:"VIP",                  tipo:"roleplay",combate:false,
+      desc:"Entra em lugares com facilidade — festas, eventos, torneios — apenas roleplay."},
+    {id:"fas_clamam",    nome:"Meus Fãs Clamam",      tipo:"ativa",   combate:true,  eb:1,
+      desc:"Ativa: por 3 usos neste duelo, qualquer roll seu terá opção de re-rolar. Você escolhe o melhor resultado."},
+    {id:"conheco_cara",  nome:"Eu Conheço um Cara",   tipo:"roleplay",combate:false,
+      desc:"Conhece famosos e especialistas — apenas roleplay."},
+    {id:"patrocinadores",nome:"Patrocinadores",        tipo:"ativa",   combate:true,  eb:1,
+      desc:"Ao acertar ataque: declare o patrocinador, role iniciativa. Se vencer, ataque novamente. Pode ser usado em combate de outro jogador."},
+    {id:"ego_alimentado",nome:"Ego Alimentado",        tipo:"ativa",   combate:true,  eb:1,
+      desc:"Seu bey recupera 5 de HP."},
+    {id:"esnobada_tatica",nome:"Esnobada Tática",      tipo:"ativa",   combate:true,  eb:1,
+      desc:"Ignora a armadura do oponente no próximo ataque. Pode ser usado em combate de outro jogador."},
   ]},
 };
 
@@ -1236,16 +1264,26 @@ function dmgLogText(bey, result){
 // ──────────────────────────────────────────────────────────────────────────
 
 const ACTIONS=[
-  {id:"investida",nome:"Investida Básica",formula:"1d6+ATQ",cost:0,efeito:"dano",categoria:"acao",desc:"Ataque padrão de turno."},
-  {id:"rapidos",nome:"Ataques Rápidos",formula:"4d3+ATQ",cost:0,efeito:"dano",categoria:"acao",desc:"Apenas se VEL > VEL inimigo.",condicao:"vel"},
-  {id:"rigida",nome:"Investida Rígida",formula:"1d10+ATQ",cost:0,efeito:"dano",categoria:"acao",desc:"Investida mais forte que o normal."},
-  {id:"recarga",nome:"Recarga",formula:null,cost:0,efeito:"recarga",categoria:"acao",desc:"Recupera 3 de Energia. Resistência: +4 HP."},
-  {id:"fuga",nome:"Fuga",formula:"1d6+VEL",cost:0,efeito:"contestado",categoria:"acao",desc:"Vence: ação extra. Perde: perde turno."},
-  {id:"esquiva",nome:"Esquiva",formula:"1d6+VEL",cost:1,efeito:"contestado",categoria:"reacao",desc:"Fora do turno. Se maior que ataque do inimigo, esquiva."},
-  {id:"bloqueio",nome:"Bloqueio",formula:"1d4+DEF",cost:1,efeito:"armadura",categoria:"reacao",desc:"Fora do turno. Adiciona à armadura atual."},
-  {id:"dupla",nome:"Ataque em Dupla",formula:"1d6",cost:1,efeito:"rng",categoria:"bonus",desc:"Só em batalhas não 1v1. No turno do aliado: diferença ≤2 = +1d6+ATQ no dano dele.",condicao:"nao1v1"},
-  {id:"contra",nome:"Contra-ataque",formula:"1d6+ATQ",cost:2,efeito:"dano",categoria:"reacao",desc:"Fora do turno. Subtrai do dano recebido."},
-  {id:"carregar",nome:"Carregar Ataque",formula:"1d6+ATQ",cost:2,efeito:"dano",categoria:"acao",desc:"Antes de atacar: dano reforçado."},
+  {id:"investida",nome:"Investida Básica",formula:"2d6+ATQ",cost:0,efeito:"dano",categoria:"acao",
+    desc:"Ataque padrão de turno."},
+  {id:"rapidos",nome:"Ataques Rápidos",formula:"4d3+ATQ",cost:0,efeito:"dano",categoria:"acao",condicao:"vel",
+    desc:"Só se sua VEL > VEL do oponente."},
+  {id:"rigida",nome:"Investida Rígida",formula:"1d10+ATQ",cost:0,efeito:"dano",categoria:"acao",
+    desc:"Empurra o oponente 4 unidades — pode expulsar da arena."},
+  {id:"recarga",nome:"Recarga",formula:null,cost:0,efeito:"recarga",categoria:"acao",
+    desc:"Recupera 3 de Energia. Beys de Resistência também recuperam HP."},
+  {id:"fuga",nome:"Fuga",formula:"2d6+VEL",cost:0,efeito:"contestado",categoria:"acao",
+    desc:"Ambos rolam 2d6+VEL. Vence: ação extra. Perde: perde o turno. Não pode usar duas vezes seguidas."},
+  {id:"esquiva",nome:"Esquiva",formula:"2d6+VEL",cost:1,efeito:"contestado",categoria:"reacao",
+    desc:"Durante ataque inimigo: 1E. Role 2d6+VEL — se maior que o ataque, esquiva totalmente. Não gasta ação."},
+  {id:"bloqueio",nome:"Bloqueio",formula:null,cost:1,efeito:"armadura",categoria:"reacao",
+    desc:"Durante ataque inimigo: 1E. Adiciona sua DEF à armadura atual para este ataque. Não gasta ação."},
+  {id:"dupla",nome:"Ataque em Dupla",formula:"1d6",cost:1,efeito:"rng",categoria:"bonus",condicao:"nao1v1",
+    desc:"Batalhas em dupla/grupo: 1E. No turno do aliado, ambos rolam 1d6 — diferença ≤2 adiciona 1d6+ATQ no dano dele."},
+  {id:"contra",nome:"Contra-ataque",formula:"2d6+ATQ",cost:2,efeito:"dano",categoria:"reacao",
+    desc:"Durante ataque inimigo: 2E. Role 2d6+ATQ — subtrai do dano recebido. Pode causar dano no oponente. Não gasta ação."},
+  {id:"carregar",nome:"Carregar Ataque",formula:"1d6",cost:2,efeito:"bonus_dano",categoria:"acao",
+    desc:"Antes de atacar: 2E. Role 1d6 — soma ao próximo ataque e empurra inimigos essa quantidade de unidades."},
 ];
 const TM={atk:"Ataque",def:"Defesa",eq:"Equilíbrio",res:"Resistência"};
 const TC={atk:"tp-atk",def:"tp-def",eq:"tp-eq",res:"tp-res"};
@@ -1643,7 +1681,7 @@ function syncBattleToCloud(){
 
 function startBattle(){
   if(!slots[1]||!slots[2]){showToast('Selecione dois combatentes.','err');return;}
-  function live(b){return{...b,hp:b.hpMax,armor:0,armorMax:0,def:parseInt(b.def)||0,atq:parseInt(b.atq)||0,vel:parseInt(b.vel)||0,eng:b.engMax,eb:1,manUsosLeft:b.manobraUsos,presas:false};}
+  function live(b){return{...b,hp:b.hpMax,armor:0,armorMax:0,def:parseInt(b.def)||0,atq:parseInt(b.atq)||0,vel:parseInt(b.vel)||0,eng:b.engMax,eb:1,manUsosLeft:b.manobraUsos,presas:false,usedHabThisCombat:[]};}
   // Set phase BEFORE any render so the very first sync goes out with 'waiting'
   bt.pl[0]=live(slots[1]);bt.pl[1]=live(slots[2]);
   bt.turn=1;bt.activeSlot=null;bt.phase='waiting';bt.readySlots=[];bt.usedActionThisTurn={};
@@ -2252,9 +2290,9 @@ function showReactionOverlay(me, incomingDmg){
     const canAfford=(me.eng||0)>=a.cost;
     const cc=a.cost===0?'cost-free':a.cost===1?'cost-1e':'cost-2e';
     let hint='';
-    if(a.id==='esquiva')hint=`Rola ${a.formula} — se resultado > ${incomingDmg}: dano zerado`;
-    if(a.id==='bloqueio')hint=`Rola ${a.formula} — adiciona à armadura só pra este ataque`;
-    if(a.id==='contra')hint=`Rola ${a.formula} — subtrai do dano declarado`;
+    if(a.id==='esquiva')hint=`Role 2d6+VEL — se maior que ${incomingDmg}: dano zerado`;
+    if(a.id==='bloqueio')hint=`Adiciona sua DEF (${me.def||0}) à armadura só pra este ataque`;
+    if(a.id==='contra')hint=`Role 2d6+ATQ — subtrai do dano de ${incomingDmg}`;
     if(a.id==='dupla')hint=a.desc;
     return `<div class="action-item" style="cursor:${canAfford?'pointer':'not-allowed'};opacity:${canAfford?1:0.35}"
       ${canAfford?`onclick="executePlayerReaction('${a.id}')"`:''}>
@@ -2304,20 +2342,21 @@ async function executePlayerReaction(actionId){
     let bloqueioBonus=0;
 
     if(action.id==='esquiva'&&rollResult){
-      if(rollResult.total>remoteBattle.pendingAttack.rawDamage){
+      const attackVal=remoteBattle.pendingAttack.rawDamage;
+      if(rollResult.total>attackVal){
         finalDmg=0;
-        reactionDesc=`Esquivou! (${rollResult.total} > ${remoteBattle.pendingAttack.rawDamage}) — dano zerado!`;
+        reactionDesc=`Esquivou! Rolou ${rollResult.total} > ${attackVal} — dano zerado!`;
       } else {
-        reactionDesc=`Esquiva falhou (${rollResult.total} ≤ ${remoteBattle.pendingAttack.rawDamage}) — dano mantido`;
+        reactionDesc=`Esquiva falhou — rolou ${rollResult.total} ≤ ${attackVal} — dano mantido`;
       }
-    } else if(action.id==='bloqueio'&&rollResult){
-      // Bloqueio: ONLY save the bonus in pendingAttack — do NOT permanently change me.armor in pl[]
-      // The master's confirmPendingAttack reads _bloqueioBonus and temporarily boosts before calcDamage
-      bloqueioBonus=rollResult.total;
-      reactionDesc=`Bloqueio! +${bloqueioBonus} armadura temporária para este ataque`;
+    } else if(action.id==='bloqueio'){
+      // Bloqueio: adds DEF stat as armor bonus — no roll needed
+      bloqueioBonus=parseInt(me.def)||0;
+      reactionDesc=`Bloqueio! +${bloqueioBonus} DEF como armadura temporária para este ataque`;
     } else if(action.id==='contra'&&rollResult){
       finalDmg=Math.max(0,finalDmg-rollResult.total);
-      reactionDesc=`Contra-ataque! Rolou ${rollResult.total} — dano reduzido para ${finalDmg}`;
+      const dmgOnEnemy=rollResult.total>remoteBattle.pendingAttack.rawDamage?rollResult.total-remoteBattle.pendingAttack.rawDamage:0;
+      reactionDesc=`Contra-ataque! Rolou ${rollResult.total} — dano reduzido para ${finalDmg}${dmgOnEnemy>0?` (+${dmgOnEnemy} de volta ao oponente)`:''}`;
     } else {
       reactionDesc=rollResult?`${action.nome} — rolou ${rollResult.total}`:action.nome;
     }
@@ -2386,47 +2425,92 @@ function closeFichaModal(){document.getElementById('fichaModal').className='moda
 function renderFicha(n){
   const b=p(n);if(!b)return;
   const cls=CLASSES[b.classe]||{nome:b.classe,habilidades:[]};
+  const unlockedIds=b.habilidades||[];
+  const usedHabIds=b.usedHabThisCombat||[];
   const dots=Array.from({length:b.manobraUsos},(_,i)=>`<span class="man-dot${i>=b.manUsosLeft?' used':''}" onclick="useMan(${n},${i})"></span>`).join('');
   const customAbs=b.customAbilities||[];
+
+  // Split class abilities: passiva (auto), ativa (button), roleplay (hidden in combat)
+  const passivas=cls.habilidades.filter(h=>h.tipo==='passiva'&&h.combate&&unlockedIds.includes(h.id));
+  const ativas=cls.habilidades.filter(h=>h.tipo==='ativa'&&h.combate&&unlockedIds.includes(h.id));
+
+  const passivaHtml=passivas.length?`
+    <div class="sec-title" style="margin-bottom:6px">Passivas Ativas</div>
+    ${passivas.map(h=>`<div class="hab-row passive-hab">
+      <div style="font-size:12px;font-weight:700;color:var(--cyan)">⚙️ ${h.nome}</div>
+      <div style="font-size:11px;color:var(--muted)">${h.desc}</div>
+    </div>`).join('')}`:'';
+
+  const ativaHtml=ativas.length?`
+    <div class="sec-title" style="margin-bottom:6px;margin-top:8px">Habilidades de Combate</div>
+    ${ativas.map(h=>{
+      const used=usedHabIds.includes(h.id);
+      const ebCost=h.eb??1;
+      const canUse=!used&&(b.eb>=ebCost||ebCost===0);
+      const ebLabel=ebCost===0?'Grátis':`${ebCost} EB`;
+      return `<div class="hab-row ${used?'hab-used':canUse?'':'hab-cant'}" ${canUse?`onclick="useClassAbility(${n},'${h.id}')" style="cursor:pointer"`:''} title="${used?'Já usada neste combate':!canUse?'EB insuficiente':''}">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-size:12px;font-weight:700;color:${used?'var(--muted)':canUse?'var(--gold)':'var(--red)'}">${used?'✓':canUse?'⚡':'🔒'} ${h.nome}</div>
+          <span class="cost-${ebCost===0?'free':'1e'}" style="font-size:10px">${ebLabel}</span>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">${h.desc}</div>
+        ${used?'<div style="font-size:10px;color:var(--muted);margin-top:2px;font-style:italic">Usada neste combate</div>':''}
+      </div>`;
+    }).join('')}`:'';
+
+  const customHtml=customAbs.length?`
+    <div class="sec-title" style="margin-bottom:6px;margin-top:8px">Habilidades Customizadas</div>
+    ${customAbs.map((a,i)=>{
+      const isManobra=a.tipo==='manobra';
+      const statusTxt=a.statusAttr&&a.statusValor!==null?`${a.statusAttr.toUpperCase()} ${a.statusValor>0?'+':''}${a.statusValor} (${a.statusDuracao||0}t${a.statusPerdeTurno?', perde turno':''})${a.statusTag?` — ${a.statusTag}`:''}`:null;
+      return `<div class="custom-ab-item">
+        <div class="ca-head">
+          <div><span class="ca-tipo ${isManobra?'tp-eq':'tp-atk'}">${isManobra?'Manobra':'Habilidade'}</span> <b>${a.nome}</b></div>
+          <button class="btn btn-xs ${isManobra?'btn-gold':'btn-blue'}" onclick="useCustomAbility(${n},${i})">Usar</button>
+        </div>
+        <div class="ca-desc">${a.desc||''}</div>
+        ${a.dadoTipo&&a.dadoFormula?`<div class="ca-roll">🎲 ${a.dadoFormula} → ${a.dadoTipo}</div>`:''}
+        ${statusTxt?`<div class="ca-roll">✨ ${statusTxt}</div>`:''}
+        <div class="manobra-uses">⚡ ${isManobra?'Gratuito':`Custo: ${a.energia||0} Energia`}</div>
+      </div>`;
+    }).join('')}`: '';
+
   document.getElementById(`ficha${n}`).innerHTML=`
     <div class="g2" style="margin-bottom:10px">
       <div><div class="sec-title">Blader</div><div style="font-size:15px;font-weight:800">${b.blader}</div></div>
       <div><div class="sec-title">Bey</div><div style="font-size:15px;font-weight:800">${b.bey}</div></div>
-      <div><div class="sec-title">Classe</div>${cls.nome}</div>
-      <div><div class="sec-title">Nível</div>${b.nivel}</div>
-      ${b.constelacao?`<div><div class="sec-title">Constelação</div>${b.constelacao}</div>`:''}
-      ${b.estacao?`<div><div class="sec-title">Estação</div>${b.estacao}</div>`:''}
-      ${b.ambicao?`<div style="grid-column:1/-1"><div class="sec-title">Ambição</div>${b.ambicao}</div>`:''}
     </div>
-    <div class="sep"></div>
-    <div class="sec-title">Manobra Especial</div>
-    <div class="manobra-item"><div class="manobra-name">${b.manobra}</div>${b.manobraDesc?`<div class="manobra-desc">${b.manobraDesc}</div>`:''}<div class="manobra-uses">Usos: ${b.manUsosLeft}/${b.manobraUsos}</div><div>${dots}</div></div>
-    <div class="sep"></div>
-    <div class="sec-title">Habilidades — ${cls.nome}</div>
-    ${cls.habilidades.map(h=>`<div class="hab-item"><div class="hab-name">${h.nome}</div><div class="hab-desc">${h.desc}</div></div>`).join('')}
-    ${customAbs.length?`
-    <div class="sep"></div>
-    <div class="sec-title">Habilidades & Manobras Customizadas</div>
-    <div style="display:flex;flex-direction:column;gap:8px">
-      ${customAbs.map((a,idx)=>{
-        const isManobra=a.tipo==='manobra';
-        const canUse = isManobra ? true : (b.eng>=(a.energia||0));
-        const dadoTxt=a.dadoTipo?`${a.dadoFormula||''} (${a.dadoTipo})`:'';
-        const statusTxt=a.statusAttr?`${a.statusValor>0?'+':''}${a.statusValor} ${a.statusAttr.toUpperCase()} em ${a.statusAlvo==='proprio'?'si mesmo':'inimigo'}${a.statusDuracao?` por ${a.statusDuracao}t`:''}${a.statusTag?` [${a.statusTag}]`:''}${a.statusPerdeTurno?' (perde turno)':''}`:'';
-        return `<div class="manobra-item">
-          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-            <div class="manobra-name" style="color:${isManobra?'var(--gold)':'var(--cyan)'}">${isManobra?'🌀':'⚡'} ${a.nome}</div>
-            <button class="btn btn-xs ${canUse?'btn-blue':'btn-gray'}" ${canUse?'':'disabled'} onclick="useCustomAbility(${n},${idx})">Usar</button>
-          </div>
-          ${a.desc?`<div class="manobra-desc">${a.desc}</div>`:''}
-          ${dadoTxt?`<div class="manobra-uses">🎲 ${dadoTxt}</div>`:''}
-          ${statusTxt?`<div class="manobra-uses">✨ ${statusTxt}</div>`:''}
-          <div class="manobra-uses">⚡ ${isManobra?'Gratuito':`Custo: ${a.energia||0} Energia`}</div>
-        </div>`;
-      }).join('')}
-    </div>` : ''}
+    <div class="sec-title">Manobra Especial — ${b.manobra}</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:8px">${b.manobraDesc||''}</div>
+    <div class="man-dots">${dots}</div>
+    ${passivaHtml}
+    ${ativaHtml}
+    ${customHtml}
   `;
 }
+
+// Uses a class ability (ativa) — costs EB, single use per combat
+function useClassAbility(n, habId){
+  const b=p(n);if(!b)return;
+  const cls=CLASSES[b.classe]||{habilidades:[]};
+  const hab=cls.habilidades.find(h=>h.id===habId);
+  if(!hab)return;
+  if(!b.usedHabThisCombat)b.usedHabThisCombat=[];
+  if(b.usedHabThisCombat.includes(habId)){showToast('Habilidade já usada neste combate.','err');return;}
+  const ebCost=hab.eb??1;
+  if(b.eb<ebCost&&ebCost>0){showToast('EB insuficiente.','err');return;}
+  // Apply EB cost
+  if(ebCost>0)b.eb=Math.max(0,b.eb-ebCost);
+  b.usedHabThisCombat=[...b.usedHabThisCombat,habId];
+  // Special effects
+  let extra='';
+  if(habId==='alma_combustao'){b.eb=Math.min(b.ebMax,(b.eb||0)+2);extra=` → +2 EB (total: ${b.eb})`;}
+  if(habId==='ego_alimentado'){b.hp=Math.min(b.hpMax,(b.hp||0)+5);extra=` → +5 HP (total: ${b.hp})`;}
+  if(habId==='resistencia_touro'){b.hp=Math.min(b.hpMax+5,(b.hp||0)+5);b.hpMax+=5;extra=` → +5 HP máximo e atual`;}
+  addLog(`✨ <b>${b.blader}</b> usa <b>${hab.nome}</b>${extra}${ebCost>0?` (${ebCost} EB)`:''}`, 'event');
+  renderC(n);renderFicha(n);syncBattleToCloud();
+}
+
 function useMan(n,i){const b=p(n);if(b.manUsosLeft<=0)return;b.manUsosLeft--;addLog(`${b.blader} usa <span class="lv gold">${b.manobra}</span>! Usos: ${b.manUsosLeft}`,'event');renderFicha(n);syncBattleToCloud();}
 
 // Use a custom ability/manobra during battle: rolls dice if configured, applies status effect, logs everything
@@ -2862,15 +2946,19 @@ function openEvolutionModal(b){
   document.getElementById('evo-cls-name').textContent=cls.nome;
   const habs=b.habilidades||[];
   document.getElementById('evo-habs-list').innerHTML=cls.habilidades.map((h,i)=>{
-    const unlocked=habs.includes(h.nome);
-    const isPassive=i===0;
-    return `<div class="hab-item" style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+    const unlocked=(habs||[]).includes(h.id);
+    const tipoLabel=h.tipo==='passiva'?'Passiva':h.tipo==='ativa'?'Ativa':'Roleplay';
+    const tipoColor=h.tipo==='passiva'?'var(--cyan)':h.tipo==='ativa'?'var(--gold)':'var(--muted)';
+    const combateTag=h.combate===false?'<span style="font-size:9px;color:var(--muted);margin-left:4px">(apenas roleplay)</span>':'';
+    return `<div class="hab-item" style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:8px;background:${unlocked?'#00B4D810':'var(--bg)'};border:1px solid ${unlocked?'var(--cyan)':'var(--bord)'};border-radius:8px">
       <div style="flex:1">
-        <div class="hab-name">${h.nome}${isPassive?' <span style="color:var(--muted);font-size:10px">(passiva)</span>':''}</div>
-        <div class="hab-desc">${h.desc}</div>
+        <div style="font-size:12px;font-weight:700;color:${tipoColor}">${h.nome} ${combateTag}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.5px">${tipoLabel}</div>
+        <div style="font-size:11px;color:var(--text);margin-top:4px">${h.desc}</div>
       </div>
-      <label style="display:flex;align-items:center;gap:5px;cursor:pointer;flex-shrink:0">
-        <input type="checkbox" ${unlocked?'checked':''} ${isPassive?'disabled':''} onchange="toggleHabMaster('${b.id}','${h.nome.replace(/'/g,"&#39;")}',this.checked)" style="accent-color:var(--cyan);width:16px;height:16px">
+      <label style="display:flex;align-items:center;gap:4px;cursor:pointer;flex-shrink:0">
+        <span style="font-size:10px;color:var(--muted)">${unlocked?'Desbloq.':'Bloq.'}</span>
+        <input type="checkbox" class="hab-check" value="${h.id}" ${unlocked?'checked':''} onchange="toggleHabMaster('${evoCurrentId}','${h.id}',this.checked)" style="accent-color:var(--cyan);width:16px;height:16px">
       </label>
     </div>`;
   }).join('');
@@ -2945,17 +3033,19 @@ async function saveEvoAttrs(){
   renderRoster();
 }
 
-async function toggleHabMaster(id,habNome,checked){
+async function toggleHabMaster(id,habId,checked){
   const b=await dbGet('blader:'+id);
   if(!b)return;
   if(!b.habilidades)b.habilidades=[];
-  if(checked && !b.habilidades.includes(habNome)){
-    b.habilidades.push(habNome);
+  if(checked && !b.habilidades.includes(habId)){
+    b.habilidades.push(habId);
   } else if(!checked){
-    b.habilidades=b.habilidades.filter(h=>h!==habNome);
+    b.habilidades=b.habilidades.filter(h=>h!==habId);
   }
   await dbSet('blader:'+id,b);
-  showToast(checked?`Habilidade desbloqueada: ${habNome}`:`Habilidade bloqueada: ${habNome}`,'ok');
+  const cls=CLASSES[b.classe]||{habilidades:[]};
+  const hab=cls.habilidades.find(h=>h.id===habId);
+  showToast(checked?`Desbloqueada: ${hab?.nome||habId}`:`Bloqueada: ${hab?.nome||habId}`,'ok');
 }
 
 // Master resolving a pending reward directly (quick-resolve, marks as done)
@@ -2979,7 +3069,7 @@ async function resolvePendingMaster(id,idx,kind){
   } else if(kind==='hab'){
     const cls=CLASSES[b.classe];
     if(!cls)return;
-    const locked=cls.habilidades.filter(h=>!(b.habilidades||[]).includes(h.nome));
+    const locked=cls.habilidades.filter(h=>!(b.habilidades||[]).includes(h.id));
     if(!locked.length){showToast('Todas as habilidades já estão desbloqueadas.','err');return;}
     const opts=locked.map((h,i)=>`${i+1}. ${h.nome}`).join('\n');
     const choice=prompt(`Escolha a habilidade a desbloquear:\n${opts}`,'1');
@@ -2987,7 +3077,7 @@ async function resolvePendingMaster(id,idx,kind){
     const i=parseInt(choice)-1;
     if(i<0||i>=locked.length){showToast('Opção inválida.','err');return;}
     if(!b.habilidades)b.habilidades=[];
-    b.habilidades.push(locked[i].nome);
+    b.habilidades.push(locked[i].id);
     reward.resolved=true;
     await dbSet('blader:'+id,b);
     showToast(`Habilidade desbloqueada: ${locked[i].nome}`,'ok');
@@ -3220,10 +3310,39 @@ async function renderPlayerView(){
   const cls=CLASSES[me.classe]||{nome:me.classe,habilidades:[]};
   document.getElementById('pv-cls-name').textContent=cls.nome;
   const habs=me.habilidades||[];
-  document.getElementById('pv-habs').innerHTML=cls.habilidades.map((h,i)=>{
-    const unlocked=habs.includes(h.nome)||i===0;
-    return `<div class="hab-item" style="opacity:${unlocked?1:0.4}"><div class="hab-name">${unlocked?'✓ ':'🔒 '}${h.nome}</div>${unlocked?`<div class="hab-desc">${h.desc}</div>`:''}</div>`;
-  }).join('');
+  document.getElementById('pv-habs').innerHTML=(()=>{
+    const unlockedIds=me.habilidades||[];
+    const usedIds=me.usedHabThisCombat||[];
+    const passivas=cls.habilidades.filter(h=>h.tipo==='passiva'&&h.combate&&unlockedIds.includes(h.id));
+    const ativas=cls.habilidades.filter(h=>h.tipo==='ativa'&&h.combate&&unlockedIds.includes(h.id));
+    const passivaHtml=passivas.map(h=>'<div class="hab-item" style="border-left:3px solid var(--cyan);padding-left:8px;margin-bottom:6px">'+
+      '<div class="hab-name" style="color:var(--cyan)">⚙️ '+h.nome+' <span style="font-size:9px;color:var(--muted)">(passiva)</span></div>'+
+      '<div class="hab-desc">'+h.desc+'</div></div>').join('');
+    const ativaHtml=ativas.map(function(h){
+      var used=usedIds.includes(h.id);
+      var ebCost=(h.eb!=null)?h.eb:1;
+      var canUse=!used&&((me.eb||0)>=ebCost||ebCost===0);
+      var ebLabel=ebCost===0?'Grátis':(ebCost+' EB');
+      var color=used?'var(--muted)':canUse?'var(--gold)':'var(--red)';
+      var icon=used?'[OK]':canUse?'[EB]':'[X]';
+      var style='opacity:'+(used?'0.4':canUse?'1':'0.6')+';margin-bottom:6px;cursor:'+(canUse?'pointer':'not-allowed');
+      return '<div class="hab-item pv-hab-clickable" style="'+style+'" data-habid="'+h.id+'" data-canuse="'+(canUse?'1':'0')+'">'+
+        '<div style="display:flex;justify-content:space-between">'+
+        '<div class="hab-name" style="color:'+color+'">'+icon+' '+h.nome+'</div>'+
+        '<span style="font-size:10px">'+ebLabel+'</span></div>'+
+        '<div class="hab-desc">'+h.desc+'</div>'+
+        (used?'<div style="font-size:10px;color:var(--muted);font-style:italic">Usada neste combate</div>':'')+
+        '</div>';
+    }).join('');
+    return passivaHtml+ativaHtml||'<div style="color:var(--muted);font-size:12px">Nenhuma habilidade desbloqueada.</div>';
+  })();
+  // Wire delegated click for class ability buttons
+  const pvHabsEl=document.getElementById('pv-habs');
+  if(pvHabsEl)pvHabsEl.onclick=function(e){
+    const item=e.target.closest('.pv-hab-clickable');
+    if(!item||item.dataset.canuse!=='1')return;
+    pvUseClassAbility(item.dataset.habid);
+  };
 
   // CUSTOM ABILITIES / MANOBRAS — player can use them too if energy allows
   const customAbs=me.customAbilities||[];
@@ -3440,14 +3559,14 @@ async function openPlayerRewardFlow(){
 
   if(reward.habs>0){
     const cls=CLASSES[b.classe]||{habilidades:[]};
-    const locked=cls.habilidades.filter(h=>!(b.habilidades||[]).includes(h.nome));
+    const locked=cls.habilidades.filter(h=>!(b.habilidades||[]).includes(h.id));
     html+=`
       <div style="margin-bottom:16px">
         <div class="sec-title">Escolha ${reward.habs} habilidade(s) para desbloquear</div>
         <div style="display:flex;flex-direction:column;gap:6px">
           ${locked.map((h,i)=>`
             <label class="hab-item" style="display:flex;gap:10px;align-items:flex-start;cursor:pointer;margin-bottom:0">
-              <input type="checkbox" class="prf-hab-check" value="${h.nome.replace(/"/g,'&quot;')}" style="accent-color:var(--cyan);width:16px;height:16px;margin-top:2px">
+              <input type="checkbox" class="prf-hab-check" value="${h.id}" style="accent-color:var(--cyan);width:16px;height:16px;margin-top:2px">
               <div><div class="hab-name">${h.nome}</div><div class="hab-desc">${h.desc}</div></div>
             </label>`).join('')}
         </div>
@@ -3909,6 +4028,38 @@ async function renderSpectatorView(){
   // Log — full log visible to spectators
   const logEl=document.getElementById('spec-log');
   logEl.innerHTML=remote.logHtml||'<div style="color:var(--muted);font-size:11px">Sem entradas ainda.</div>';
+}
+
+// Player uses a class ability from their own screen
+async function pvUseClassAbility(habId){
+  if(!playerSession)return;
+  const remoteBattle=await dbGet(BATTLE_KEY);
+  if(!remoteBattle)return;
+  const b1=remoteBattle.pl[0],b2=remoteBattle.pl[1];
+  let mySlot=null;
+  if(b1&&b1.id===playerSession.bladerId)mySlot=1;
+  else if(b2&&b2.id===playerSession.bladerId)mySlot=2;
+  if(!mySlot)return;
+  const me=remoteBattle.pl[mySlot-1];
+  const cls=CLASSES[me.classe]||{habilidades:[]};
+  const hab=cls.habilidades.find(h=>h.id===habId);
+  if(!hab)return;
+  if(!me.usedHabThisCombat)me.usedHabThisCombat=[];
+  if(me.usedHabThisCombat.includes(habId)){showToast('Habilidade já usada neste combate.','err');return;}
+  const ebCost=hab.eb??1;
+  if((me.eb||0)<ebCost&&ebCost>0){showToast('EB insuficiente.','err');return;}
+  if(ebCost>0)me.eb=Math.max(0,(me.eb||0)-ebCost);
+  me.usedHabThisCombat=[...me.usedHabThisCombat,habId];
+  let extra='';
+  if(habId==='alma_combustao'){me.eb=Math.min(me.ebMax,(me.eb||0)+2);extra=` → +2 EB`;}
+  if(habId==='ego_alimentado'){me.hp=Math.min(me.hpMax,(me.hp||0)+5);extra=` → +5 HP`;}
+  if(habId==='resistencia_touro'){me.hp=Math.min(me.hpMax+5,(me.hp||0)+5);me.hpMax+=5;extra=` → +5 HP`;}
+  remoteBattle.pl[mySlot-1]=me;
+  const logEntry=`<div class="log-entry event"><div class="log-turn">Turno ${remoteBattle.turn}</div><div class="log-text">✨ <b>${me.blader}</b> usa <b>${hab.nome}</b>${extra}${ebCost>0?` (${ebCost} EB)`:''}</div></div>`;
+  remoteBattle.logHtml=logEntry+(remoteBattle.logHtml||'');
+  await dbSet(BATTLE_KEY,remoteBattle);
+  showToast(`${hab.nome} usada!`,'ok');
+  renderPlayerView();
 }
 
 // ── PLAYER END TURN (remote) ──────────────────────────────────────────────
