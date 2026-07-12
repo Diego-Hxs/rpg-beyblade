@@ -373,19 +373,23 @@ textarea.form-input{resize:vertical;min-height:60px}
       <!-- Combatant 1 -->
       <div id="spec-card1" class="bey-card" style="margin-bottom:12px">
         <div class="card-head">
-          <div><div class="blader-name" id="spec-blader1"></div><div class="bey-name" id="spec-bey1"></div>
-          <div class="meta-row"><span class="tp" id="spec-type1"></span><span style="font-size:11px;color:var(--muted)" id="spec-classe1"></span></div></div>
-          <div class="level-tag" id="spec-nivel1">Nv 1</div>
+          <div><div class="blader-name" id="spec-blader1">???</div><div class="bey-name" id="spec-bey1">??? ??? ???</div>
+          <div class="meta-row"><span class="tp" id="spec-type1" style="display:none"></span><span style="font-size:11px;color:var(--muted)" id="spec-classe1"></span></div></div>
+          <div class="level-tag" id="spec-nivel1" style="display:none">Nv 1</div>
         </div>
         <div class="card-body">
-          <div class="stat-label"><span>VIDA</span><span id="spec-hp1-lbl"></span></div>
-          <div class="hp-bar-wrap"><div class="hp-bar high" id="spec-hp1-bar" style="width:100%"></div></div>
-          <div class="stat-label"><span>🛡️ REDUÇÃO DE DANO</span><span id="spec-arm1-lbl" style="color:var(--blue);font-weight:700"></span></div>
-          <div style="height:4px;background:var(--bg3);border-radius:2px;margin-bottom:8px"></div>
-          <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted)">
-            <span>⚡ Energia: <b id="spec-eng1" style="color:var(--gold)"></b></span>
-            <span>🔵 EB: <b id="spec-eb1" style="color:var(--blue)"></b></span>
+          <div id="spec-hp1-row" style="display:none">
+            <div class="stat-label"><span>VIDA</span><span id="spec-hp1-lbl"></span></div>
+            <div class="hp-bar-wrap"><div class="hp-bar high" id="spec-hp1-bar" style="width:100%"></div></div>
+            <div class="stat-label"><span>🛡️ REDUÇÃO</span><span id="spec-arm1-lbl" style="color:var(--blue);font-weight:700"></span></div>
+            <div style="height:4px;background:var(--bg3);border-radius:2px;margin-bottom:8px"></div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted)">
+              <span>⚡ <b id="spec-eng1" style="color:var(--gold)"></b></span>
+              <span>🔵 EB: <b id="spec-eb1" style="color:var(--blue)"></b></span>
+            </div>
           </div>
+          <div id="spec-mystery1" style="text-align:center;padding:8px 0;color:var(--muted);font-size:12px">🌀 Use Beywatcher para revelar informações</div>
+          <div id="spec-extra1" style="display:none;margin-top:6px;font-size:11px;color:var(--muted)"></div>
           <div id="spec-status1" style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap"></div>
         </div>
       </div>
@@ -394,22 +398,38 @@ textarea.form-input{resize:vertical;min-height:60px}
       <!-- Combatant 2 -->
       <div id="spec-card2" class="bey-card" style="margin-bottom:12px">
         <div class="card-head">
-          <div><div class="blader-name" id="spec-blader2"></div><div class="bey-name" id="spec-bey2"></div>
-          <div class="meta-row"><span class="tp" id="spec-type2"></span><span style="font-size:11px;color:var(--muted)" id="spec-classe2"></span></div></div>
-          <div class="level-tag" id="spec-nivel2">Nv 1</div>
+          <div><div class="blader-name" id="spec-blader2">???</div><div class="bey-name" id="spec-bey2">??? ??? ???</div>
+          <div class="meta-row"><span class="tp" id="spec-type2" style="display:none"></span><span style="font-size:11px;color:var(--muted)" id="spec-classe2"></span></div></div>
+          <div class="level-tag" id="spec-nivel2" style="display:none">Nv 1</div>
         </div>
         <div class="card-body">
-          <div class="stat-label"><span>VIDA</span><span id="spec-hp2-lbl"></span></div>
-          <div class="hp-bar-wrap"><div class="hp-bar high" id="spec-hp2-bar" style="width:100%"></div></div>
-          <div class="stat-label"><span>🛡️ REDUÇÃO DE DANO</span><span id="spec-arm2-lbl" style="color:var(--blue);font-weight:700"></span></div>
-          <div style="height:4px;background:var(--bg3);border-radius:2px;margin-bottom:8px"></div>
-          <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted)">
-            <span>⚡ Energia: <b id="spec-eng2" style="color:var(--gold)"></b></span>
-            <span>🔵 EB: <b id="spec-eb2" style="color:var(--blue)"></b></span>
+          <div id="spec-hp2-row" style="display:none">
+            <div class="stat-label"><span>VIDA</span><span id="spec-hp2-lbl"></span></div>
+            <div class="hp-bar-wrap"><div class="hp-bar high" id="spec-hp2-bar" style="width:100%"></div></div>
+            <div class="stat-label"><span>🛡️ REDUÇÃO</span><span id="spec-arm2-lbl" style="color:var(--blue);font-weight:700"></span></div>
+            <div style="height:4px;background:var(--bg3);border-radius:2px;margin-bottom:8px"></div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted)">
+              <span>⚡ <b id="spec-eng2" style="color:var(--gold)"></b></span>
+              <span>🔵 EB: <b id="spec-eb2" style="color:var(--blue)"></b></span>
+            </div>
           </div>
+          <div id="spec-mystery2" style="text-align:center;padding:8px 0;color:var(--muted);font-size:12px">🌀 Use Beywatcher para revelar informações</div>
+          <div id="spec-extra2" style="display:none;margin-top:6px;font-size:11px;color:var(--muted)"></div>
           <div id="spec-status2" style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap"></div>
         </div>
       </div>
+
+      <!-- BEYWATCHER PANEL -->
+      <div class="panel" style="margin-bottom:12px;border:1px solid var(--gold);background:linear-gradient(135deg,#1a120a,var(--bg2))">
+        <div class="panel-title" style="color:var(--gold)">👁️ Beywatcher</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Role 1d6 para tentar revelar informações sobre os beys em batalha. Cooldown global de 3 turnos.</div>
+        <div id="bw-result" style="display:none;background:var(--bg);border-radius:8px;padding:10px;margin-bottom:10px;font-size:13px"></div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <button id="bw-btn" class="btn btn-gold" onclick="rollBeywatcher()">🎲 Rolar Beywatcher</button>
+          <div id="bw-cooldown" style="font-size:12px;color:var(--muted)"></div>
+        </div>
+      </div>
+
       <!-- Combat Log -->
       <div class="panel">
         <div class="panel-title">Log de Combate</div>
@@ -486,17 +506,25 @@ textarea.form-input{resize:vertical;min-height:60px}
       <div style="text-align:center;font-size:22px;font-weight:900;color:var(--red);margin:10px 0">VS</div>
 
       <!-- ENEMY BEY (hidden info) -->
-      <div class="bey-card" style="margin-bottom:16px;border-top-color:var(--bord)">
+      <div class="bey-card" id="pv-enemy-card" style="margin-bottom:16px;border-top-color:var(--bord)">
         <div class="card-head">
           <div>
-            <div class="blader-name">OPONENTE</div>
-            <div class="bey-name">??? ??? ???</div>
+            <div class="blader-name" id="pv-enemy-blader">OPONENTE</div>
+            <div class="bey-name" id="pv-enemy-bey">??? ??? ???</div>
+            <div class="meta-row"><span class="tp" id="pv-enemy-type" style="display:none"></span></div>
           </div>
         </div>
         <div class="card-body">
-          <div class="stat-label"><span>VIDA ESTIMADA</span></div>
-          <div class="hp-bar-wrap"><div class="hp-bar high" id="pv-enemy-hp-bar" style="width:100%"></div></div>
-          <div style="text-align:center;color:var(--muted);font-size:12px;margin-top:8px">Tipo, atributos e energia do oponente são desconhecidos.</div>
+          <!-- Life bar only shown if Beywatcher reveals it -->
+          <div id="pv-enemy-hp-row" style="display:none">
+            <div class="stat-label"><span>VIDA</span><span style="color:var(--muted);font-size:11px">estimativa visual</span></div>
+            <div class="hp-bar-wrap"><div class="hp-bar high" id="pv-enemy-hp-bar" style="width:100%"></div></div>
+          </div>
+          <div id="pv-enemy-mystery" style="text-align:center;padding:12px 0">
+            <div style="font-size:32px;margin-bottom:6px">🌀</div>
+            <div style="color:var(--muted);font-size:12px">Informações do oponente desconhecidas.</div>
+          </div>
+          <div id="pv-enemy-extra" style="display:none;margin-top:8px;font-size:11px;color:var(--muted)"></div>
         </div>
       </div>
 
@@ -3299,12 +3327,38 @@ async function renderPlayerView(){
   pe.className='presas-tag'+(me.presas?' active':'');
   pe.textContent=me.presas?'🔥 Presas do Coração — ATIVO':'⭕ Presas do Coração — Inativo';
 
-  // ENEMY - only HP bar as vague indicator, no numbers, no type
+  // ENEMY — what's visible depends on Beywatcher reveals stored in remoteBattle
+  const bwReveal=remoteBattle.beywatcherReveal||0; // 0=nothing, 3=name/type, 4=+bar, 5+=+extra
   const epct=Math.max(0,enemy.hp/enemy.hpMax*100);
-  const ebar=document.getElementById('pv-enemy-hp-bar');
-  ebar.style.width=epct+'%';
-  ebar.className='hp-bar '+(epct>60?'high':epct>30?'mid':'low');
-  ebar.textContent='';
+  // Name/type only shown on roll 3+
+  document.getElementById('pv-enemy-blader').textContent=bwReveal>=3?enemy.blader.toUpperCase():'OPONENTE';
+  document.getElementById('pv-enemy-bey').textContent=bwReveal>=3?enemy.bey:'??? ??? ???';
+  const pvEnemyType=document.getElementById('pv-enemy-type');
+  if(bwReveal>=3&&enemy.cat==='player'){
+    pvEnemyType.textContent=TM[enemy.type]||enemy.type;
+    pvEnemyType.className=`tp ${TC[enemy.type]||''}`;
+    pvEnemyType.style.display='inline';
+  } else { pvEnemyType.style.display='none'; }
+  // HP bar shown on roll 4+
+  const enemyHpRow=document.getElementById('pv-enemy-hp-row');
+  const enemyMystery=document.getElementById('pv-enemy-mystery');
+  if(bwReveal>=4){
+    enemyHpRow.style.display='block';
+    enemyMystery.style.display='none';
+    const ebar=document.getElementById('pv-enemy-hp-bar');
+    ebar.style.width=epct+'%';
+    ebar.className='hp-bar '+(epct>60?'high':epct>30?'mid':'low');
+    ebar.textContent='';
+  } else {
+    enemyHpRow.style.display='none';
+    enemyMystery.style.display=bwReveal>=3?'none':'block';
+  }
+  // Extra info (mechanic/weakness) shown on roll 5+
+  const enemyExtra=document.getElementById('pv-enemy-extra');
+  if(bwReveal>=5&&remoteBattle.beywatcherExtra){
+    enemyExtra.style.display='block';
+    enemyExtra.innerHTML=`🔍 <b>Observação:</b> ${remoteBattle.beywatcherExtra}`;
+  } else { enemyExtra.style.display='none'; }
 
   // ABILITIES
   const cls=CLASSES[me.classe]||{nome:me.classe,habilidades:[]};
@@ -3965,6 +4019,43 @@ function enterSpectatorMode(){
   spectatorPollInterval=setInterval(renderSpectatorView,2500);
 }
 
+async function rollBeywatcher(){
+  const remote=await dbGet(BATTLE_KEY);
+  if(!remote)return;
+  // Check cooldown
+  const currentTurn=remote.turn||1;
+  if(remote.beywatcherCooldownUntilTurn&&remote.beywatcherCooldownUntilTurn>currentTurn){
+    const left=remote.beywatcherCooldownUntilTurn-currentTurn;
+    showToast(`Cooldown: ${left} turno(s) restante(s).`,'err');
+    return;
+  }
+  const roll=Math.floor(Math.random()*6)+1;
+  let reveal=0,resultMsg='';
+  if(roll>=5){
+    reveal=5;
+    resultMsg=`🎯 <b>${roll}</b> — Excelente! Descobriu: tipo/nome dos beys, vida estimada visual, e possível mecânica única ou fraqueza. (O mestre revelará os detalhes extras)`;
+  } else if(roll===4){
+    reveal=4;
+    resultMsg=`✅ <b>${roll}</b> — Bom! Descobriu: tipo/nome dos beys e vida estimada visual (sem números).`;
+  } else if(roll>=2){
+    reveal=3;
+    resultMsg=`🔍 <b>${roll}</b> — Descobriu apenas: tipo e nome dos beys.`;
+  } else {
+    reveal=0;
+    resultMsg=`❌ <b>1</b> — Azar! Nenhuma informação revelada.`;
+  }
+  // Save to cloud: reveal level + cooldown (next roll only after 3 more turns)
+  remote.beywatcherReveal=Math.max(remote.beywatcherReveal||0,reveal);
+  remote.beywatcherCooldownUntilTurn=(currentTurn+3);
+  remote.beywatcherLastRoll=roll;
+  await dbSet(BATTLE_KEY,remote);
+  // Show result
+  const resultEl=document.getElementById('bw-result');
+  if(resultEl){resultEl.style.display='block';resultEl.innerHTML=resultMsg;}
+  // Animate die
+  animateDiceRoll({rolls:[roll],total:roll,label:'Beywatcher — 1d6',playerCtx:true,onDone:()=>renderSpectatorView()});
+}
+
 function exitSpectatorMode(){
   if(spectatorPollInterval){clearInterval(spectatorPollInterval);spectatorPollInterval=null;}
   document.getElementById('spectatorView').style.display='none';
@@ -3988,41 +4079,73 @@ async function renderSpectatorView(){
   const activeB=remote.pl[remote.activeSlot-1];
   document.getElementById('spec-active-indicator').textContent=activeB?`● Turno de ${activeB.blader}`:'';
 
+  // Beywatcher reveal level for this spectator session
+  const bwReveal=remote.beywatcherReveal||0;
+  // Update Beywatcher button/cooldown UI
+  const bwCooldownTurnsLeft=remote.beywatcherCooldownUntilTurn?Math.max(0,remote.beywatcherCooldownUntilTurn-remote.turn):0;
+  const bwBtn=document.getElementById('bw-btn');
+  const bwCd=document.getElementById('bw-cooldown');
+  if(bwBtn){
+    bwBtn.disabled=bwCooldownTurnsLeft>0;
+    bwBtn.style.opacity=bwCooldownTurnsLeft>0?'0.4':'1';
+    bwCd.textContent=bwCooldownTurnsLeft>0?`Cooldown: ${bwCooldownTurnsLeft} turno(s) restante(s)`:'';
+  }
+
   [0,1].forEach(i=>{
     const n=i+1;
     const b=remote.pl[i];if(!b)return;
     const isPlayer=b.cat==='player';
-    // Card header — always visible for players, generic for NPCs
-    document.getElementById(`spec-blader${n}`).textContent=isPlayer?b.blader.toUpperCase():'NPC';
-    document.getElementById(`spec-bey${n}`).textContent=isPlayer?b.bey:'??? ??? ???';
-    const tEl=document.getElementById(`spec-type${n}`);
-    if(isPlayer){tEl.textContent=TM[b.type]||b.type;tEl.className=`tp ${TC[b.type]||''}`;}
-    else{tEl.textContent='';tEl.className='';}
-    document.getElementById(`spec-classe${n}`).textContent=isPlayer?(CLASSES[b.classe]?.nome||b.classe):'';
-    document.getElementById(`spec-nivel${n}`).textContent=isPlayer?`Nv ${b.nivel}`:'';
-    document.getElementById(`spec-card${n}`).className=`bey-card ${isPlayer?CC[b.type]||'':''}`;
-    // HP — full for players, generic bar for NPCs
     const pct=Math.max(0,b.hp/b.hpMax*100);
-    const hbar=document.getElementById(`spec-hp${n}-bar`);
-    hbar.style.width=pct+'%';
-    hbar.className='hp-bar '+(pct>60?'high':pct>30?'mid':'low');
-    if(isPlayer){
-      document.getElementById(`spec-hp${n}-lbl`).textContent=`${Math.max(0,b.hp)}/${b.hpMax}`;
-      document.getElementById(`spec-arm${n}-lbl`).textContent=`-${b.armor||0} todo dano`;
+
+    // Name/type — only if player AND beywatcher roll 3+, or if it's a player (always shown for players that beywatcher revealed)
+    const nameRevealed=isPlayer&&bwReveal>=3;
+    document.getElementById(`spec-blader${n}`).textContent=nameRevealed?b.blader.toUpperCase():'???';
+    document.getElementById(`spec-bey${n}`).textContent=nameRevealed?b.bey:'??? ??? ???';
+    document.getElementById(`spec-card${n}`).className='bey-card '+(nameRevealed&&isPlayer?CC[b.type]||'':'');
+    const tEl=document.getElementById(`spec-type${n}`);
+    const nEl=document.getElementById(`spec-nivel${n}`);
+    if(nameRevealed){
+      tEl.textContent=TM[b.type]||b.type;tEl.className=`tp ${TC[b.type]||''}`;tEl.style.display='inline';
+      nEl.textContent=`Nv ${b.nivel}`;nEl.style.display='inline';
+      document.getElementById(`spec-classe${n}`).textContent=CLASSES[b.classe]?.nome||b.classe;
+    } else {
+      tEl.style.display='none';nEl.style.display='none';
+      document.getElementById(`spec-classe${n}`).textContent='';
+    }
+
+    // HP/stats row — only if beywatcher roll 4+ (players) or NPC always hidden
+    const hpRevealed=isPlayer&&bwReveal>=4;
+    const hpRow=document.getElementById(`spec-hp${n}-row`);
+    const mystery=document.getElementById(`spec-mystery${n}`);
+    if(hpRevealed){
+      hpRow.style.display='block';
+      mystery.style.display='none';
+      const hbar=document.getElementById(`spec-hp${n}-bar`);
+      hbar.style.width=pct+'%';
+      hbar.className='hp-bar '+(pct>60?'high':pct>30?'mid':'low');
+      document.getElementById(`spec-hp${n}-lbl`).textContent='';  // no numbers — visual only
+      document.getElementById(`spec-arm${n}-lbl`).textContent=`-${b.armor||0}`;
       document.getElementById(`spec-eng${n}`).textContent=`${b.eng||0}/${b.engMax||0}`;
       document.getElementById(`spec-eb${n}`).textContent=`${b.eb||0}/${b.ebMax||0}`;
-      // Status tags
-      const statusEl=document.getElementById(`spec-status${n}`);
-      if(b.statusEffects&&b.statusEffects.length){
-        statusEl.innerHTML=b.statusEffects.map(e=>`<span class="status-tag">${e.tag||e.attr} ${e.valor>0?'+':''}${e.valor} (${e.turnosRestantes}t)</span>`).join('');
-      } else statusEl.innerHTML='';
     } else {
-      document.getElementById(`spec-hp${n}-lbl`).textContent='';
-      document.getElementById(`spec-arm${n}-lbl`).textContent='?';
-      document.getElementById(`spec-eng${n}`).textContent='?';
-      document.getElementById(`spec-eb${n}`).textContent='?';
-      document.getElementById(`spec-status${n}`).innerHTML='';
+      hpRow.style.display='none';
+      mystery.style.display=nameRevealed?'none':'block';
+      mystery.textContent=nameRevealed?'':'🌀 Use Beywatcher para revelar informações';
     }
+
+    // Extra info (roll 5+) — shown per-bey if stored
+    const extraEl=document.getElementById(`spec-extra${n}`);
+    const extraKey='beywatcherExtra'+n;
+    if(bwReveal>=5&&remote[extraKey]){
+      extraEl.style.display='block';
+      extraEl.innerHTML=`🔍 <b>Observação:</b> ${remote[extraKey]}`;
+    } else { extraEl.style.display='none'; }
+
+    // Status tags
+    const statusEl=document.getElementById(`spec-status${n}`);
+    if(hpRevealed&&b.statusEffects&&b.statusEffects.length){
+      statusEl.innerHTML=b.statusEffects.map(e=>`<span class="status-tag">${e.tag||e.attr} ${e.valor>0?'+':''}${e.valor} (${e.turnosRestantes}t)</span>`).join('');
+    } else statusEl.innerHTML='';
   });
 
   // Log — full log visible to spectators
