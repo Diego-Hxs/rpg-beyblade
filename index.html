@@ -336,6 +336,39 @@ textarea.form-input{resize:vertical;min-height:60px}
 </head>
 <body>
 
+<!-- ============ MASTER LOGIN GATE ============ -->
+<div id="masterGate" style="position:fixed;inset:0;background:var(--bg);z-index:900;display:flex;align-items:center;justify-content:center;padding:20px">
+  <div style="width:100%;max-width:420px;text-align:center">
+    <div style="font-size:32px;font-weight:900;letter-spacing:2px;margin-bottom:4px">BEYBLADE <span style="color:var(--red)">MR</span></div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:32px;letter-spacing:1px">METAL RIO</div>
+
+    <!-- Choice buttons -->
+    <div id="gate-choice" style="display:flex;flex-direction:column;gap:12px">
+      <button class="submit-btn" style="background:linear-gradient(135deg,#1E3A8A,#3B82F6)" onclick="showMasterLogin()">🎮 Acessar como Mestre</button>
+      <button class="submit-btn" onclick="showPlayerGateFromMain()">👤 Acessar como Player / Espectador</button>
+    </div>
+
+    <!-- Master password form (hidden initially) -->
+    <div id="gate-master-form" style="display:none">
+      <div style="font-size:16px;font-weight:700;margin-bottom:16px;color:var(--blue)">🎮 Acesso do Mestre</div>
+      <input id="master-password-input" class="form-input" type="password" placeholder="Senha do mestre" style="text-align:center;font-size:18px;padding:14px;margin-bottom:12px" onkeydown="if(event.key==='Enter')masterLogin()">
+      <button class="submit-btn" style="background:linear-gradient(135deg,#1E3A8A,#3B82F6);margin-bottom:10px" onclick="masterLogin()">🔑 Entrar</button>
+      <div id="master-pw-error" style="color:var(--red);font-size:12px;margin-bottom:10px;display:none">Senha incorreta.</div>
+      <button class="btn btn-gray btn-sm" onclick="showGateChoice()">← Voltar</button>
+    </div>
+
+    <!-- Player/spectator gate (hidden initially) -->
+    <div id="gate-player-form" style="display:none">
+      <div style="font-size:16px;font-weight:700;margin-bottom:16px;color:var(--red)">👤 Acesso do Player</div>
+      <input id="gate-pin-input" class="form-input" type="text" inputmode="numeric" maxlength="4" placeholder="• • • •" style="text-align:center;font-size:28px;font-weight:900;letter-spacing:12px;padding:14px;margin-bottom:12px" onkeydown="if(event.key==='Enter')gatePlayerLogin()" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+      <button class="submit-btn" style="margin-bottom:10px" onclick="gatePlayerLogin()">🔑 Entrar com PIN</button>
+      <div id="gate-pin-error" style="color:var(--red);font-size:12px;margin-bottom:10px;display:none">PIN inválido. Verifique com o mestre.</div>
+      <button class="btn btn-gray" style="width:100%;margin-bottom:8px" onclick="gateEnterSpectator()">👁️ Assistir como Espectador</button>
+      <button class="btn btn-gray btn-sm" onclick="showGateChoice()">← Voltar</button>
+    </div>
+  </div>
+</div>
+
 <!-- ============ PLAYER MODE OVERLAY ============ -->
 <div id="playerOverlay" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:500;overflow-y:auto">
 
@@ -453,6 +486,7 @@ textarea.form-input{resize:vertical;min-height:60px}
     <div id="player-no-battle" style="display:none;text-align:center;padding:60px 20px;color:var(--muted)">
       <div style="font-size:48px;margin-bottom:12px">🌀</div>
       <p>Nenhum duelo em andamento.<br>Aguarde o mestre montar a batalha.</p>
+      <button class="btn btn-gray" style="margin-top:16px" onclick="enterSpectatorMode()">👁️ Assistir Duelo</button>
     </div>
 
     <!-- LET IT RIP WAITING SCREEN -->
@@ -638,6 +672,8 @@ textarea.form-input{resize:vertical;min-height:60px}
     <button class="btn btn-gray btn-sm" onclick="document.getElementById('importFile').click()" title="Restaura dados de um backup JSON">⬆️ Importar</button>
     <input type="file" id="importFile" accept=".json" style="display:none" onchange="importBackup(event)">
     <button class="btn btn-gray btn-sm" onclick="openPlayerGate()">👤 Acesso Player</button>
+    <button class="btn btn-gray btn-sm" onclick="changeMasterPassword()" title="Alterar senha do mestre">🔐 Senha</button>
+    <button class="btn btn-gray btn-sm" onclick="masterLogout()">Sair</button>
   </div>
 </nav>
 
@@ -1709,7 +1745,7 @@ function syncBattleToCloud(){
 
 function startBattle(){
   if(!slots[1]||!slots[2]){showToast('Selecione dois combatentes.','err');return;}
-  function live(b){return{...b,hp:b.hpMax,armor:0,armorMax:0,def:parseInt(b.def)||0,atq:parseInt(b.atq)||0,vel:parseInt(b.vel)||0,eng:b.engMax,eb:1,manUsosLeft:b.manobraUsos,presas:false,usedHabThisCombat:[]};}
+  function live(b){return{...b,hp:b.hpMax,armor:0,armorMax:0,def:parseInt(b.def)||0,atq:parseInt(b.atq)||0,vel:parseInt(b.vel)||0,eng:b.engMax,eb:1,manUsosLeft:b.manobraUsos,presas:false,usedHabThisCombat:[],usedCustomThisCombat:[]};}
   // Set phase BEFORE any render so the very first sync goes out with 'waiting'
   bt.pl[0]=live(slots[1]);bt.pl[1]=live(slots[2]);
   bt.turn=1;bt.activeSlot=null;bt.phase='waiting';bt.readySlots=[];bt.usedActionThisTurn={};
@@ -2486,20 +2522,38 @@ function renderFicha(n){
       </div>`;
     }).join('')}`:'';
 
+  const usedCustomIds=b.usedCustomThisCombat||[];
   const customHtml=customAbs.length?`
-    <div class="sec-title" style="margin-bottom:6px;margin-top:8px">Habilidades Customizadas</div>
+    <div class="sec-title" style="margin-bottom:6px;margin-top:8px">Habilidades & Manobras Customizadas</div>
     ${customAbs.map((a,i)=>{
       const isManobra=a.tipo==='manobra';
+      // Manobras share the main uso counter; habilidades track separately
+      const usosLeft=isManobra?b.manUsosLeft:null;
+      const usosMax=isManobra?b.manobraUsos:null;
+      const alreadyUsed=!isManobra&&usedCustomIds.includes(i);
+      const noUsos=isManobra&&usosLeft<=0;
+      const canAffordEnergy=isManobra||b.eng>=(a.energia||0);
+      const canUse=!alreadyUsed&&!noUsos&&canAffordEnergy;
       const statusTxt=a.statusAttr&&a.statusValor!==null?`${a.statusAttr.toUpperCase()} ${a.statusValor>0?'+':''}${a.statusValor} (${a.statusDuracao||0}t${a.statusPerdeTurno?', perde turno':''})${a.statusTag?` — ${a.statusTag}`:''}`:null;
-      return `<div class="custom-ab-item">
+      return `<div class="custom-ab-item" style="opacity:${canUse?1:0.4}">
         <div class="ca-head">
-          <div><span class="ca-tipo ${isManobra?'tp-eq':'tp-atk'}">${isManobra?'Manobra':'Habilidade'}</span> <b>${a.nome}</b></div>
-          <button class="btn btn-xs ${isManobra?'btn-gold':'btn-blue'}" onclick="useCustomAbility(${n},${i})">Usar</button>
+          <div>
+            <span class="ca-tipo ${isManobra?'tp-eq':'tp-atk'}">${isManobra?'Manobra':'Habilidade'}</span>
+            <b>${a.nome}</b>
+            ${a.dadoFormula?`<span style="font-size:10px;color:var(--cyan);margin-left:6px">🎲 ${a.dadoFormula}</span>`:''}
+          </div>
+          <button class="btn btn-xs ${isManobra?'btn-gold':'btn-blue'}" onclick="useCustomAbility(${n},${i})" ${canUse?'':'disabled'}>
+            ${canUse?'Usar':alreadyUsed?'Usada':noUsos?'Sem usos':'Sem energia'}
+          </button>
         </div>
         <div class="ca-desc">${a.desc||''}</div>
-        ${a.dadoTipo&&a.dadoFormula?`<div class="ca-roll">🎲 ${a.dadoFormula} → ${a.dadoTipo}</div>`:''}
+        ${a.dadoTipo?`<div class="ca-roll">🎯 Finalidade: ${a.dadoTipo}</div>`:''}
         ${statusTxt?`<div class="ca-roll">✨ ${statusTxt}</div>`:''}
-        <div class="manobra-uses">⚡ ${isManobra?'Gratuito':`Custo: ${a.energia||0} Energia`}</div>
+        <div class="manobra-uses" style="display:flex;gap:12px;flex-wrap:wrap">
+          <span>⚡ ${isManobra?'Gratuita':`${a.energia||0} Energia`}</span>
+          ${isManobra?`<span>🔄 Usos: ${usosLeft}/${usosMax}</span>`:''}
+          ${!isManobra&&alreadyUsed?'<span style="color:var(--muted)">Já usada neste combate</span>':''}
+        </div>
       </div>`;
     }).join('')}`: '';
 
@@ -2547,13 +2601,27 @@ function useCustomAbility(n,idx){
   const a=(b.customAbilities||[])[idx];if(!a)return;
   const isManobra=a.tipo==='manobra';
   const cost=isManobra?0:(a.energia||0);
-  if(!isManobra && b.eng<cost){showToast('Energia insuficiente.','err');return;}
+
+  // Manobra: check and deduct from manUsosLeft
+  if(isManobra){
+    if((b.manUsosLeft||0)<=0){showToast('Sem usos restantes desta manobra.','err');return;}
+    b.manUsosLeft--;
+  } else {
+    // Habilidade: check energy + single-use-per-combat
+    if(!b.usedCustomThisCombat)b.usedCustomThisCombat=[];
+    if(b.usedCustomThisCombat.includes(idx)){showToast('Habilidade já usada neste combate.','err');return;}
+    if(b.eng<cost){showToast('Energia insuficiente.','err');return;}
+    b.eng-=cost;
+    b.usedCustomThisCombat.push(idx);
+  }
 
   let rollTxt='';
   if(a.dadoTipo && a.dadoFormula){
     const parsed=parseRollFormula(a.dadoFormula, b);
     if(parsed){
       rollTxt=` → [${parsed.rolls.join(', ')}]${parsed.mod?` +${parsed.mod}`:''} = <span class="lv cyan">${parsed.total}</span>`;
+      // Animate the dice roll
+      animateDiceRoll({rolls:parsed.rolls,total:parsed.total,label:`${a.nome} — ${a.dadoFormula}`});
       if(a.dadoTipo==='dano'){
         const targetN=n===1?2:1;
         const rollTxtClean=`[${parsed.rolls.join(', ')}]${parsed.mod?` +${parsed.mod}`:''} = ${parsed.total}`;
@@ -2574,8 +2642,6 @@ function useCustomAbility(n,idx){
       }
     }
   }
-
-  if(!isManobra)b.eng-=cost;
 
   // Apply status effect
   if(a.statusAttr && a.statusValor!==null){
@@ -3146,9 +3212,14 @@ function closePlayerOverlay(){
   document.getElementById('playerOverlay').style.display='none';
   if(playerPollInterval){clearInterval(playerPollInterval);playerPollInterval=null;}
   if(spectatorPollInterval){clearInterval(spectatorPollInterval);spectatorPollInterval=null;}
-  // Reset views
+  // Reset player state
+  playerSession=null;
   document.getElementById('spectatorView').style.display='none';
   document.getElementById('playerGate').style.display='flex';
+  document.getElementById('playerView').style.display='none';
+  // Return to main gate instead of master panel
+  document.getElementById('masterGate').style.display='flex';
+  showGateChoice();
 }
 
 async function playerLogin(){
@@ -3841,21 +3912,32 @@ async function usePlayerCustomAbility(idx){
 
   const isManobra=a.tipo==='manobra';
   const cost=isManobra?0:(a.energia||0);
-  if(!isManobra && me.eng<cost){showToast('Energia insuficiente.','err');return;}
+
+  // Manobra: check and deduct from manUsosLeft
+  if(isManobra){
+    if((me.manUsosLeft||0)<=0){showToast('Sem usos restantes desta manobra.','err');return;}
+    me.manUsosLeft--;
+  } else {
+    if(!me.usedCustomThisCombat)me.usedCustomThisCombat=[];
+    if(me.usedCustomThisCombat.includes(idx)){showToast('Habilidade já usada neste combate.','err');return;}
+    if((me.eng||0)<cost){showToast('Energia insuficiente.','err');return;}
+    me.eng-=cost;
+    me.usedCustomThisCombat.push(idx);
+  }
 
   let rollTxt='';
   if(a.dadoTipo && a.dadoFormula){
     const parsed=parseRollFormula(a.dadoFormula, me);
     if(parsed){
       rollTxt=` → [${parsed.rolls.join(', ')}]${parsed.mod?` +${parsed.mod}`:''} = ${parsed.total}`;
+      animateDiceRoll({rolls:parsed.rolls,total:parsed.total,label:`${a.nome} — ${a.dadoFormula}`,playerCtx:true});
       if(a.dadoTipo==='dano'){
         const rollTxtClean3=`[${parsed.rolls.join(', ')}] = ${parsed.total}`;
-        // Route through pendingAttack on cloud so master sees it
-        remoteBattle.pendingAttack={attackerN:mySlot,targetN:mySlot===1?2:1,
+        remoteBattle.pendingAttack={attackerN:n,targetN:n===1?2:1,
           rawDamage:parsed.total,actionNome:a.nome,rollTxt:rollTxtClean3,
           reactionDone:false,reactionDesc:''};
         if(!remoteBattle.usedActionThisTurn)remoteBattle.usedActionThisTurn={};
-        remoteBattle.usedActionThisTurn[String(mySlot)]=true;
+        remoteBattle.usedActionThisTurn[String(n)]=true;
         rollTxt+=` de dano declarado — aguardando reação`;
       } else if(a.dadoTipo==='cura'){
         me.hp=Math.min(me.hpMax,me.hp+parsed.total);
@@ -4011,8 +4093,16 @@ async function deleteCustomAbility(bladerId,idx){
 // ── SPECTATOR MODE ────────────────────────────────────────────────────────
 let spectatorPollInterval=null;
 
+let spectatorFromPlayerView=false;
+
 function enterSpectatorMode(){
-  document.getElementById('playerGate').style.display='none';
+  // Can be called from the login gate OR from inside the player view
+  spectatorFromPlayerView=!!(playerSession && document.getElementById('playerView')?.style.display!=='none');
+  if(spectatorFromPlayerView){
+    document.getElementById('playerView').style.display='none';
+  } else {
+    document.getElementById('playerGate').style.display='none';
+  }
   document.getElementById('spectatorView').style.display='block';
   renderSpectatorView();
   if(spectatorPollInterval)clearInterval(spectatorPollInterval);
@@ -4059,7 +4149,13 @@ async function rollBeywatcher(){
 function exitSpectatorMode(){
   if(spectatorPollInterval){clearInterval(spectatorPollInterval);spectatorPollInterval=null;}
   document.getElementById('spectatorView').style.display='none';
-  document.getElementById('playerGate').style.display='flex';
+  if(spectatorFromPlayerView && playerSession){
+    document.getElementById('playerView').style.display='block';
+    renderPlayerView();
+  } else {
+    document.getElementById('playerGate').style.display='flex';
+  }
+  spectatorFromPlayerView=false;
 }
 
 async function renderSpectatorView(){
@@ -4226,7 +4322,113 @@ function endDuel(){
   showToast('Duelo encerrado.','ok');
 }
 
-selCat('player');selType('atk');updPrev();buildActions();
+// ── MASTER LOGIN GATE ─────────────────────────────────────────────────────
+const MASTER_PW_KEY = 'config:master_password';
+const DEFAULT_MASTER_PW = 'beyblade2025'; // used only if no password set in Supabase yet
+
+function showGateChoice(){
+  document.getElementById('gate-choice').style.display='flex';
+  document.getElementById('gate-master-form').style.display='none';
+  document.getElementById('gate-player-form').style.display='none';
+  document.getElementById('master-pw-error').style.display='none';
+  document.getElementById('gate-pin-error').style.display='none';
+}
+
+function showMasterLogin(){
+  document.getElementById('gate-choice').style.display='none';
+  document.getElementById('gate-master-form').style.display='block';
+  document.getElementById('gate-player-form').style.display='none';
+  setTimeout(()=>document.getElementById('master-password-input').focus(),100);
+}
+
+function showPlayerGateFromMain(){
+  document.getElementById('gate-choice').style.display='none';
+  document.getElementById('gate-master-form').style.display='none';
+  document.getElementById('gate-player-form').style.display='block';
+  setTimeout(()=>document.getElementById('gate-pin-input').focus(),100);
+}
+
+async function masterLogin(){
+  const input=document.getElementById('master-password-input').value;
+  const errEl=document.getElementById('master-pw-error');
+  errEl.style.display='none';
+  if(!input){errEl.textContent='Digite a senha.';errEl.style.display='block';return;}
+  // Load password from Supabase (fallback to default if not set)
+  let storedPw=null;
+  try{
+    const rec=await dbGet(MASTER_PW_KEY);
+    storedPw=rec?.password||DEFAULT_MASTER_PW;
+  }catch{storedPw=DEFAULT_MASTER_PW;}
+  if(input===storedPw){
+    document.getElementById('masterGate').style.display='none';
+    document.getElementById('master-password-input').value='';
+    renderRoster();
+    showToast('Bem-vindo, Mestre!','ok');
+  } else {
+    errEl.textContent='Senha incorreta.';
+    errEl.style.display='block';
+    document.getElementById('master-password-input').value='';
+  }
+}
+
+async function gatePlayerLogin(){
+  const pin=document.getElementById('gate-pin-input').value.trim().replace(/\D/g,'');
+  const errEl=document.getElementById('gate-pin-error');
+  errEl.style.display='none';
+  if(pin.length!==4){errEl.textContent='PIN deve ter 4 dígitos.';errEl.style.display='block';return;}
+  const all=await loadAll();
+  const found=all.find(b=>b.cat==='player'&&b.pin&&String(b.pin).trim()===pin);
+  if(!found){errEl.textContent='PIN inválido. Verifique com o mestre.';errEl.style.display='block';return;}
+  // Close gate and open player overlay directly
+  document.getElementById('masterGate').style.display='none';
+  document.getElementById('gate-pin-input').value='';
+  openPlayerGate();
+  // Auto-login with found PIN
+  playerSession={bladerId:found.id};
+  pvState.phase=null;pvState.turn=null;pvState.myHp=null;pvState.activeSlot=null;
+  pvState.attackedFlag=false;pvState.lastPendingId=null;pvState.seenBattleStart=false;
+  document.getElementById('playerGate').style.display='none';
+  document.getElementById('playerView').style.display='block';
+  await checkPlayerPendingRewards();
+  renderPlayerView();
+  if(playerPollInterval)clearInterval(playerPollInterval);
+  playerPollInterval=setInterval(renderPlayerView,2000);
+}
+
+function gateEnterSpectator(){
+  document.getElementById('masterGate').style.display='none';
+  // Open spectator mode directly (without going through playerOverlay)
+  document.getElementById('playerOverlay').style.display='block';
+  document.getElementById('playerGate').style.display='none';
+  document.getElementById('playerView').style.display='none';
+  spectatorFromPlayerView=false;
+  document.getElementById('spectatorView').style.display='block';
+  renderSpectatorView();
+  if(spectatorPollInterval)clearInterval(spectatorPollInterval);
+  spectatorPollInterval=setInterval(renderSpectatorView,2500);
+}
+
+// Change master password (accessible from within the master panel)
+function masterLogout(){
+  if(!confirm('Sair do painel do mestre?'))return;
+  document.getElementById('masterGate').style.display='flex';
+  showGateChoice();
+  showToast('Sessão encerrada.','ok');
+}
+
+async function changeMasterPassword(){
+  const newPw=prompt('Nova senha do mestre (mínimo 6 caracteres):');
+  if(!newPw||newPw.length<6){showToast('Senha muito curta (mínimo 6 caracteres).','err');return;}
+  await dbSet(MASTER_PW_KEY,{password:newPw});
+  showToast('Senha alterada com sucesso!','ok');
+}
+
+selCat('player');selType('atk');updPrev();
+// Don't call renderRoster on init — wait for master login
+// buildActions() is safe to call (doesn't require auth)
+buildActions();
+// Start on gate choice view
+showGateChoice();
 
 </script>
 </body>
